@@ -6,12 +6,12 @@ import json
 import os
 import uuid
 
-from elasticsearch import Elasticsearch
+import elasticsearch
 import responder
 
 api = responder.API()
 
-es = Elasticsearch()
+es = elasticsearch.Elasticsearch()
 
 
 DOCSTORE_ROOT = os.path.join(os.environ["HOME"], "Documents", "docstore")
@@ -81,6 +81,21 @@ async def documents_endpoint(req, resp):
 
         process_data(data)
         resp.media = {"success": True, "id": doc_id}
+    else:
+        resp.status_code = api.status_codes.HTTP_405
+
+
+@api.route("/api/documents/{doc_id}")
+async def get_document(req, resp, *, doc_id):
+    if req.method == "get":
+        try:
+            es_resp = es.get(index=index_name, doc_type="documents", id=doc_id)
+        except elasticsearch.exceptions.NotFoundError:
+            resp.status_code == api.status_codes.HTTP_404
+        else:
+            resp.media = es_resp["_source"]
+    else:
+        resp.status_code == api.status_codes.HTTP_405
 
 
 if __name__ == "__main__":
