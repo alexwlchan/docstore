@@ -31,7 +31,19 @@ index_name = ("documents" + dt.datetime.now().isoformat()).lower()
 print(index_name)
 
 
-es.indices.create(index=index_name, ignore=400)
+es.indices.create(
+    index=index_name,
+    body={
+        "mappings": {
+            "documents": {
+                "properties": {
+                    "indexed_at": {"type": "date"}
+                }
+            }
+        }
+    }
+)
+
 
 try:
     existing_documents = json.load(open(DOCSTORE_DB))
@@ -48,16 +60,20 @@ for doc in existing_documents:
     es.index(index=index_name, doc_type="documents", id=doc["id"], body=doc)
 
 
+def es_search_documents(index_name):
+    return es.search(index=index_name, doc_type="documents", sort="indexed_at:desc")
+
+
 @api.route("/")
 def list_documents(req, resp):
-    es_resp = es.search(index=index_name, doc_type="documents")
+    es_resp = es_search_documents(index_name)
     resp.content = api.template("document_list.html", documents=es_resp["hits"])
 
 
 @api.route("/api/documents")
 async def documents_endpoint(req, resp):
     if req.method == "get":
-        es_resp = es.search(index=index_name, doc_type="documents")
+        es_resp = es_search_documents(index_name)
         docs = [hit["_source"] for hit in es_resp["hits"]["hits"]]
         resp.media = docs
     elif req.method == "post":
