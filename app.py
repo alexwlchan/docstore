@@ -89,12 +89,19 @@ for doc in existing_documents:
     es_index_document(doc)
 
 
-def es_search_documents(index_name, tags=None):
+def es_search_documents(index_name, tags=None, include_tag_aggs=False):
     body = {
         "sort": [
             {"indexed_at": {"order": "desc"}}
         ]
     }
+
+    if include_tag_aggs:
+        body["aggregations"] = {
+            "tags": {
+                "terms": {"field": "tags"}
+            }
+        }
 
     if tags:
         es_filter = {
@@ -114,11 +121,15 @@ def es_search_documents(index_name, tags=None):
 @api.route("/")
 def list_documents(req, resp):
     req_tags = req.params.get_list("tag", [])
-    es_resp = es_search_documents(index_name, tags=req_tags)
+    es_resp = es_search_documents(index_name, tags=req_tags, include_tag_aggs=True)
     resp.content = api.template(
         "document_list.html",
         documents=es_resp["hits"],
-        req_tags=req_tags
+        req_tags=req_tags,
+        all_tags={
+            b["key"]: b["doc_count"]
+            for b in es_resp["aggregations"]["tags"]["buckets"]
+        }
     )
 
 
