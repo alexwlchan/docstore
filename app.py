@@ -4,6 +4,7 @@
 import datetime as dt
 import json
 import os
+import secrets
 import uuid
 
 import elasticsearch
@@ -75,6 +76,18 @@ def list_documents(req, resp):
     resp.content = api.template("document_list.html", documents=es_resp["hits"])
 
 
+def get_new_path(filename):
+    shard_dir = os.path.join(DOCSTORE_DIR, filename[0].lower())
+    os.makedirs(shard_dir, exist_ok=True)
+
+    basename, ext = os.path.splitext(filename)
+    new_path = os.path.join(shard_dir, filename)
+    while True:
+        if not os.path.exists(new_path):
+            return new_path
+        new_path = os.path.join(shard_dir, basename + "_" + secrets.token_hex(3) + ext)
+
+
 @api.route("/api/documents")
 async def documents_endpoint(req, resp):
     if req.method == "get":
@@ -91,16 +104,13 @@ async def documents_endpoint(req, resp):
             path = data["path"]
             filename = os.path.basename(path)
 
-            shard_dir = os.path.join(DOCSTORE_DIR, filename[0].lower())
-            os.makedirs(shard_dir, exist_ok=True)
-            new_path = os.path.join(shard_dir, filename)
-            os.rename(path, new_path)
-
+            new_path = get_new_path(filename)
             assert not os.path.exists(new_path)
+            os.rename(path, new_path)
 
             doc = {
                 "id": doc_id,
-                "filename": filename,
+                "filename": os.path.basename(new_path),
                 "indexed_at": dt.datetime.now().isoformat(),
             }
 
