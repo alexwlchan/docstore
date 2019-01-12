@@ -44,7 +44,8 @@ es.indices.create(
         "mappings": {
             "documents": {
                 "properties": {
-                    "indexed_at": {"type": "date"}
+                    "indexed_at": {"type": "date"},
+                    "tags": {"type": "keyword"},
                 }
             }
         }
@@ -87,13 +88,34 @@ for doc in existing_documents:
     es_index_document(doc)
 
 
-def es_search_documents(index_name):
-    return es.search(index=index_name, doc_type="documents", sort="indexed_at:desc")
+def es_search_documents(index_name, tags=None):
+    body = {
+        "sort": [
+            {"indexed_at": {"order": "desc"}}
+        ]
+    }
+
+    if tags:
+        es_filter = {
+            "bool": {
+                "must": [
+                    {"term": {"tags": t}} for t in tags
+                ]
+            }
+        }
+        body["query"] = {
+            "bool": {"filter": es_filter}
+        }
+
+    from pprint import pprint
+    pprint(body)
+
+    return es.search(index=index_name, doc_type="documents", body=body)
 
 
 @api.route("/")
 def list_documents(req, resp):
-    es_resp = es_search_documents(index_name)
+    es_resp = es_search_documents(index_name, tags=req.params.get_list("tag", []))
     resp.content = api.template("document_list.html", documents=es_resp["hits"])
 
 
