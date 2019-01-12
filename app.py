@@ -6,6 +6,7 @@ import datetime as dt
 import json
 import os
 import secrets
+import subprocess
 import uuid
 
 import elasticsearch
@@ -165,16 +166,34 @@ async def documents_endpoint(req, resp):
                 except KeyError:
                     pass
 
-            _, ext = os.path.splitext(new_path)
-            if ext.lower() in {".png", ".jpg", ".jpeg",}:
+            thumb_path = new_path.replace(DOCSTORE_DIR, DOCSTORE_THUMBS)
+            os.makedirs(os.path.dirname(thumb_path), exist_ok=True)
+
+            _, ext = os.path.splitext(path)
+            if ext == ".pdf":
+                subprocess.check_call([
+                    "docker", "run", "--rm",
+                    "--volume", "%s:/files" % os.path.dirname(new_path),
+                    "alexwlchan/imagemagick",
+                    "convert",
+                    "/files/%s[0]" % filename,
+                    "/files/%s" % filename.replace(".pdf", ".jpg")
+                ])
+                new_path = new_path.replace(".pdf", ".jpg")
+
+            try:
                 im = Image.open(new_path)
+            except OSError:
+                pass
+            else:
                 im.thumbnail((60, 60))
-                thumb_path = new_path.replace(DOCSTORE_DIR, DOCSTORE_THUMBS)
-                os.makedirs(os.path.dirname(thumb_path), exist_ok=True)
+
                 im.save(thumb_path)
                 doc["has_thumbnail"] = True
-            else:
-                pass
+
+            if ext == ".pdf":
+                os.unlink(new_path)
+                new_path = new_path.replace(".jpg", ".pdf")
 
             es_index_document(doc)
 
