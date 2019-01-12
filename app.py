@@ -10,11 +10,14 @@ import elasticsearch
 from PIL import Image
 import responder
 
+import date_helpers
+
+
 api = responder.API()
 
+api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
+
 es = elasticsearch.Elasticsearch()
-
-
 
 
 DOCSTORE_ROOT = os.path.join(os.environ["HOME"], "Documents", "docstore")
@@ -74,11 +77,12 @@ async def documents_endpoint(req, resp):
 
             doc = {
                 "id": doc_id,
-                "filename": filename
+                "filename": filename,
+                "indexed_at": dt.datetime.now().isoformat(),
             }
 
             _, ext = os.path.splitext(new_path)
-            if ext.lower() in {".png",}:
+            if ext.lower() in {".png", ".jpg",}:
                 im = Image.open(new_path)
                 im.thumbnail((60, 60))
                 thumb_path = new_path.replace(DOCSTORE_DIR, DOCSTORE_THUMBS)

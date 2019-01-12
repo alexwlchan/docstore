@@ -10,6 +10,7 @@
     <style>
       .table td {
         vertical-align: middle;
+        height: 60px;
       }
     </style>
   </head>
@@ -26,6 +27,7 @@
           <tr>
             <th style="width: 60px;"></th>
             <th>Filename</th>
+            <th>Date indexed</th>
           </tr>
         </thead>
         {% for hit in documents.hits %}
@@ -36,6 +38,7 @@
             {% endif %}
           </td>
           <td>{{ hit._source.filename }}</td>
+          <td>{% if hit._source.indexed_at %}{{ hit._source.indexed_at | since_now_date_str }}{% endif %}</td>
         </tr>
         {% endfor %}
       </table>
