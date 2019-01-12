@@ -102,6 +102,11 @@ async def documents_endpoint(req, resp):
                 "indexed_at": dt.datetime.now().isoformat(),
             }
 
+            try:
+                doc["title"] = data["title"]
+            except KeyError:
+                pass
+
             _, ext = os.path.splitext(new_path)
             if ext.lower() in {".png", ".jpg",}:
                 im = Image.open(new_path)
