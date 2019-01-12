@@ -10,7 +10,18 @@
     <style>
       .table td {
         vertical-align: middle;
-        height: 60px;
+        height: 80px;
+      }
+
+      button.tag {
+        border-radius: .75rem;
+        padding: .075rem .4rem;
+        font-size: 80%;
+        margin-top: 0.5em;
+      }
+
+      .tags {
+        margin-bottom: 0;
       }
     </style>
   </head>
@@ -33,6 +44,7 @@
         {% for hit in documents.hits %}
 
         {% set title = hit._source.title %}
+        {% set tags = hit._source.tags %}
 
         <tr>
           <td>
@@ -40,7 +52,17 @@
               <img src="http://localhost:5858/thumbnails/{{ hit._source.filename | shard }}">
             {% endif %}
           </td>
-          <td><a href="http://localhost:5858/files/{{ hit._source.filename | shard }}" target="_blank">{% if title %}{{ title }}{% else %}{{ hit._source.filename }}{% endif %}</a></td>
+          <td><a href="http://localhost:5858/files/{{ hit._source.filename | shard }}" target="_blank">{% if title %}{{ title }}{% else %}{{ hit._source.filename }}{% endif %}</a>
+
+          {% if tags %}
+          <p class="tags">
+            {% for t in tags|sort %}
+            <button type="button" class="btn btn-light tag">{{ t }}</button>
+            {% endfor %}
+          </p>
+          {% endif %}
+
+          </td>
           <td>{% if hit._source.indexed_at %}{{ hit._source.indexed_at | since_now_date_str }}{% endif %}</td>
         </tr>
         {% endfor %}

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import copy
 import datetime as dt
 import json
 import os
@@ -62,8 +63,28 @@ except FileNotFoundError:
     existing_documents = []
 
 
+def es_index_document(doc):
+    enriched_doc = copy.deepcopy(doc)
+
+    try:
+        for t in enriched_doc["tags"]:
+            while ":" in t:
+                t, _ = t.rsplit(":", 1)
+                if t not in enriched_doc["tags"]:
+                    enriched_doc["tags"].append(t)
+    except KeyError:
+        pass
+
+    es.index(
+        index=index_name,
+        doc_type="documents",
+        id=enriched_doc["id"],
+        body=enriched_doc
+    )
+
+
 for doc in existing_documents:
-    es.index(index=index_name, doc_type="documents", id=doc["id"], body=doc)
+    es_index_document(doc)
 
 
 def es_search_documents(index_name):
@@ -114,10 +135,11 @@ async def documents_endpoint(req, resp):
                 "indexed_at": dt.datetime.now().isoformat(),
             }
 
-            try:
-                doc["title"] = data["title"]
-            except KeyError:
-                pass
+            for extra_key in ("tags", "title",):
+                try:
+                    doc[extra_key] = data[extra_key]
+                except KeyError:
+                    pass
 
             _, ext = os.path.splitext(new_path)
             if ext.lower() in {".png", ".jpg", ".jpeg",}:
@@ -130,7 +152,7 @@ async def documents_endpoint(req, resp):
             else:
                 pass
 
-            es.index(index=index_name, doc_type="documents", id=doc_id, body=doc)
+            es_index_document(doc)
 
             existing_documents = json.load(open(DOCSTORE_DB))
             existing_documents.append(doc)
