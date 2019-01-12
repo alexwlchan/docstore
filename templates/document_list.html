@@ -20,6 +20,13 @@
         margin-top: 0.5em;
       }
 
+      .filter_tag {
+        border-radius: .4rem;
+        padding: .075rem .4rem;
+        margin-right: 0.3em;
+        margin-top: -6px;
+      }
+
       .tags {
         margin-bottom: 0;
       }
@@ -34,6 +41,21 @@
           window.location = window.location.pathname + '?' + searchParams.toString();
         }
       }
+
+      function removeTag(tagName) {
+        var searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.getAll("tag").includes(tagName)) {
+          existing = searchParams.getAll("tag");
+          searchParams.delete("tag");
+          for (i = 0; i < existing.length; i++) {
+            var t = existing[i];
+            if (t != tagName) {
+              searchParams.append("tag", t);
+            }
+          }
+          window.location = window.location.pathname + '?' + searchParams.toString();
+        }
+      }
     </script>
   </head>
   <body>
@@ -43,6 +65,12 @@
         <h1>Alex&rsquo;s documents</h1>
         <hr>
       </p>
+
+      {% if req_tags %}
+      <p>Filtering to documents with
+        {% for t in req_tags %}<button type="button" class="filter_tag btn btn-dark" onclick="script:removeTag('{{ t }}')">{{ t }}</button>{% endfor %}
+      </p>
+      {% endif %}
 
       <table class="table">
         <thead class="thead-light">
@@ -68,7 +96,7 @@
           {% if tags %}
           <p class="tags">
             {% for t in tags|sort %}
-            <button type="button" class="btn btn-light tag" onclick="script:gotoTag('{{ t }}')">{{ t }}</button>
+            <button type="button" class="btn btn-light tag" {% if t in req_tags %}disabled{% else %}onclick="script:gotoTag('{{ t }}')"{% endif %}>{{ t }}</button>
             {% endfor %}
           </p>
           {% endif %}

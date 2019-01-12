@@ -107,16 +107,18 @@ def es_search_documents(index_name, tags=None):
             "bool": {"filter": es_filter}
         }
 
-    from pprint import pprint
-    pprint(body)
-
     return es.search(index=index_name, doc_type="documents", body=body)
 
 
 @api.route("/")
 def list_documents(req, resp):
-    es_resp = es_search_documents(index_name, tags=req.params.get_list("tag", []))
-    resp.content = api.template("document_list.html", documents=es_resp["hits"])
+    req_tags = req.params.get_list("tag", [])
+    es_resp = es_search_documents(index_name, tags=req_tags)
+    resp.content = api.template(
+        "document_list.html",
+        documents=es_resp["hits"],
+        req_tags=req_tags
+    )
 
 
 def get_new_path(filename):
