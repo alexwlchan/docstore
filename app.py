@@ -96,6 +96,8 @@ async def documents_endpoint(req, resp):
             new_path = os.path.join(shard_dir, filename)
             os.rename(path, new_path)
 
+            assert not os.path.exists(new_path)
+
             doc = {
                 "id": doc_id,
                 "filename": filename,
