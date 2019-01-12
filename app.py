@@ -110,7 +110,7 @@ async def documents_endpoint(req, resp):
                 pass
 
             _, ext = os.path.splitext(new_path)
-            if ext.lower() in {".png", ".jpg",}:
+            if ext.lower() in {".png", ".jpg", ".jpeg",}:
                 im = Image.open(new_path)
                 im.thumbnail((60, 60))
                 thumb_path = new_path.replace(DOCSTORE_DIR, DOCSTORE_THUMBS)
@@ -119,8 +119,6 @@ async def documents_endpoint(req, resp):
                 doc["has_thumbnail"] = True
             else:
                 pass
-
-
 
             es.index(index=index_name, doc_type="documents", id=doc_id, body=doc)
 
