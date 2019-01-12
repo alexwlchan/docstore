@@ -15,7 +15,13 @@ import date_helpers
 
 api = responder.API()
 
+
+def shard(filename):
+    return os.path.join(filename[0].lower(), filename)
+
+
 api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
+api.jinja_env.filters["shard"] = shard
 
 es = elasticsearch.Elasticsearch()
 
@@ -28,7 +34,6 @@ DOCSTORE_THUMBS = os.path.join(DOCSTORE_ROOT, "thumbnails")
 
 
 index_name = ("documents" + dt.datetime.now().isoformat()).lower()
-print(index_name)
 
 
 es.indices.create(
