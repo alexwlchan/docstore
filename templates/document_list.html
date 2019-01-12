@@ -24,6 +24,17 @@
         margin-bottom: 0;
       }
     </style>
+
+    <script>
+      // https://stackoverflow.com/a/41542008/1558022
+      function gotoTag(tagName) {
+        var searchParams = new URLSearchParams(window.location.search);
+        if (!searchParams.getAll("tag").includes(tagName)) {
+          searchParams.append("tag", tagName);
+          window.location = window.location.pathname + '?' + searchParams.toString();
+        }
+      }
+    </script>
   </head>
   <body>
     <div class="container">
@@ -57,7 +68,7 @@
           {% if tags %}
           <p class="tags">
             {% for t in tags|sort %}
-            <button type="button" class="btn btn-light tag">{{ t }}</button>
+            <button type="button" class="btn btn-light tag" onclick="script:gotoTag('{{ t }}')">{{ t }}</button>
             {% endfor %}
           </p>
           {% endif %}
