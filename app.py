@@ -29,18 +29,7 @@ api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
 api.jinja_env.filters["shard"] = shard
 
 
-# Check if ES is up yet
-for i in range(10):
-    try:
-        requests.get("http://elasticsearch:9200/")
-    except requests.exceptions.ConnectionError:
-        print("Elasticsearch is not up yet, sleeping...")
-        time.sleep(10)
-    else:
-        break
-
-
-es = elasticsearch.Elasticsearch("http://elasticsearch:9200/")
+es = elasticsearch.Elasticsearch()
 
 
 DOCSTORE_ROOT = os.path.join(os.environ["HOME"], "Documents", "docstore")
@@ -197,7 +186,12 @@ async def documents_endpoint(req, resp):
             _, ext = os.path.splitext(path)
             if ext == ".pdf":
                 subprocess.check_call([
-                    "convert", new_path, new_path.replace(".pdf", ".jpg")
+                    "docker", "run", "--rm",
+                    "--volume", "%s:/files" % os.path.dirname(new_path),
+                    "alexwlchan/imagemagick",
+                    "convert",
+                    "/files/%s[0]" % filename,
+                    "/files/%s" % filename.replace(".pdf", ".jpg")
                 ])
                 new_path = new_path.replace(".pdf", ".jpg")
 
@@ -242,4 +236,4 @@ async def get_document(req, resp, *, doc_id):
 
 
 if __name__ == "__main__":
-    api.run(address="0.0.0.0")
+    api.run(port=8072)
