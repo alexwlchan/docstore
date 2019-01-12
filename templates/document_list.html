@@ -80,6 +80,7 @@
       </p>
       {% endif %}
 
+      {% if all_tags %}
       <p>
         <a class="btn btn-light" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
           View all tags
@@ -102,9 +103,11 @@
           </ul>
         </div>
       </div>
+      {% endif %}
 
       <p></p>
 
+      {% if documents.hits %}
       <table class="table">
         <thead class="thead-light">
           <tr>
@@ -121,10 +124,10 @@
         <tr>
           <td class="thumbnail">
             {% if hit._source.has_thumbnail %}
-              <img src="http://localhost:5858/thumbnails/{{ hit._source.filename | shard }}">
+              <img src="http://localhost:8062/thumbnails/{{ hit._source.filename | shard }}">
             {% endif %}
           </td>
-          <td><a href="http://localhost:5858/files/{{ hit._source.filename | shard }}" target="_blank">{% if title %}{{ title }}{% else %}{{ hit._source.filename }}{% endif %}</a>
+          <td><a href="http://localhost:8062/files/{{ hit._source.filename | shard }}" target="_blank">{% if title %}{{ title }}{% else %}{{ hit._source.filename }}{% endif %}</a>
 
           {% if tags %}
           <p class="tags">
@@ -139,6 +142,9 @@
         </tr>
         {% endfor %}
       </table>
+      {% else %}
+      No documents found!
+      {% endif %}
     </div>
   </body>
 </html>
