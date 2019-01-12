@@ -30,6 +30,10 @@
       .tags {
         margin-bottom: 0;
       }
+
+      td.thumbnail {
+        text-align: center;
+      }
     </style>
 
     <script>
@@ -86,7 +90,7 @@
         {% set tags = hit._source.tags %}
 
         <tr>
-          <td>
+          <td class="thumbnail">
             {% if hit._source.has_thumbnail %}
               <img src="http://localhost:5858/thumbnails/{{ hit._source.filename | shard }}">
             {% endif %}
