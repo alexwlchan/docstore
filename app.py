@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
-import copy
 import datetime as dt
 import json
 import os
@@ -69,22 +68,11 @@ except FileNotFoundError:
 
 
 def es_index_document(doc):
-    enriched_doc = copy.deepcopy(doc)
-
-    try:
-        for t in enriched_doc["tags"]:
-            while ":" in t:
-                t, _ = t.rsplit(":", 1)
-                if t not in enriched_doc["tags"]:
-                    enriched_doc["tags"].append(t)
-    except KeyError:
-        pass
-
     es.index(
         index=index_name,
         doc_type="documents",
-        id=enriched_doc["id"],
-        body=enriched_doc
+        id=doc["id"],
+        body=doc
     )
 
 
@@ -102,7 +90,10 @@ def es_search_documents(index_name, tags=None, include_tag_aggs=False):
     if include_tag_aggs:
         body["aggregations"] = {
             "tags": {
-                "terms": {"field": "tags"}
+                "terms": {
+                    "field": "tags",
+                    "size": 1000
+                },
             }
         }
 
@@ -213,7 +204,7 @@ async def documents_endpoint(req, resp):
 
             existing_documents = json.load(open(DOCSTORE_DB))
             existing_documents.append(doc)
-            json_string = json.dumps(existing_documents, indent=2, sort_keys=True)
+            json_string = json.dumps(existing_documents)
             open(DOCSTORE_DB, "w").write(json_string)
 
         process_data(data)

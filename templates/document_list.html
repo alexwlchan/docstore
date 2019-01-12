@@ -5,6 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <title>Alex&rsquo;s documents</title>
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
     <style>
@@ -91,8 +93,14 @@
           <ul style="margin-bottom: 0;">
           {% for tag in all_tags|sort %}
             {% if not loop.first %}
-              {% if tag.count(":") > loop.previtem.count(":") %}<ul>{% endif %}
+              {% if tag.count(":") > loop.previtem.count(":") %}
+                {% if tag.startswith(loop.previtem) %}<ul>
+                {% else %}
+                <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
+                {% endif %}
+              {% endif %}
               {% if tag.count(":") < loop.previtem.count(":") %}</ul>{% endif %}
+              {% if tag.count(":") == loop.previtem.count(":") and tag.count(":") > 0 and tag.rsplit(":", 1)[0] != loop.previtem.rsplit(":", 1)[0] %}</ul><li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>{% endif %}
             {% endif %}
             <li>{% if tag not in req_tags %}<a href="#" onclick="script:gotoTag('{{ tag }}')">{{ tag }}</a>{% else %}{{ tag }}{% endif %} ({{ all_tags[tag] }})</li>
 
