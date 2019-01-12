@@ -3,6 +3,7 @@
 
 import datetime as dt
 import json
+import os
 import uuid
 
 from elasticsearch import Elasticsearch
@@ -13,44 +14,35 @@ api = responder.API()
 es = Elasticsearch()
 
 
+DOCSTORE_ROOT = os.path.join(os.environ["HOME"], "Documents", "docstore")
+
+DOCSTORE_DB = os.path.join(DOCSTORE_ROOT, "documents.json")
+
+
 index_name = ("documents" + dt.datetime.now().isoformat()).lower()
 print(index_name)
 
 
 es.indices.create(index=index_name, ignore=400)
 
-es.index(
-    index=index_name,
-    doc_type="documents",
-    id=str(uuid.uuid4()),
-    body={
-        "filename": "foo.pdf"
-    }
-)
+try:
+    existing_documents = json.load(open(DOCSTORE_DB))
+except FileNotFoundError:
+    os.makedirs(DOCSTORE_ROOT, exist_ok=True)
 
-es.index(
-    index=index_name,
-    doc_type="documents",
-    id=str(uuid.uuid4()),
-    body={
-        "filename": "bar.pdf"
-    }
-)
+    with open(DOCSTORE_DB, "x") as outfile:
+        outfile.write(json.dumps([]))
 
-es.index(
-    index=index_name,
-    doc_type="documents",
-    id=str(uuid.uuid4()),
-    body={
-        "filename": "baz.pdf"
-    }
-)
+    existing_documents = []
+
+
+for doc in existing_documents:
+    es.index(index=index_name, doc_type="documents", id=doc["id"], body=doc)
 
 
 @api.route("/")
-def hello_world(req, resp):
+def list_documents(req, resp):
     es_resp = es.search(index=index_name, doc_type="documents")
-    print(es_resp)
     resp.content = api.template("document_list.html", documents=es_resp["hits"])
 
 
