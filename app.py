@@ -7,6 +7,7 @@ import os
 import uuid
 
 import elasticsearch
+from PIL import Image
 import responder
 
 api = responder.API()
@@ -14,10 +15,13 @@ api = responder.API()
 es = elasticsearch.Elasticsearch()
 
 
+
+
 DOCSTORE_ROOT = os.path.join(os.environ["HOME"], "Documents", "docstore")
 
 DOCSTORE_DB = os.path.join(DOCSTORE_ROOT, "documents.json")
 DOCSTORE_DIR = os.path.join(DOCSTORE_ROOT, "files")
+DOCSTORE_THUMBS = os.path.join(DOCSTORE_ROOT, "thumbnails")
 
 
 index_name = ("documents" + dt.datetime.now().isoformat()).lower()
@@ -65,12 +69,26 @@ async def documents_endpoint(req, resp):
 
             shard_dir = os.path.join(DOCSTORE_DIR, filename[0].lower())
             os.makedirs(shard_dir, exist_ok=True)
-            os.rename(path, os.path.join(shard_dir, filename))
+            new_path = os.path.join(shard_dir, filename)
+            os.rename(path, new_path)
 
             doc = {
                 "id": doc_id,
                 "filename": filename
             }
+
+            _, ext = os.path.splitext(new_path)
+            if ext.lower() in {".png",}:
+                im = Image.open(new_path)
+                im.thumbnail((60, 60))
+                thumb_path = new_path.replace(DOCSTORE_DIR, DOCSTORE_THUMBS)
+                os.makedirs(os.path.dirname(thumb_path), exist_ok=True)
+                im.save(thumb_path)
+                doc["has_thumbnail"] = True
+            else:
+                pass
+
+
 
             es.index(index=index_name, doc_type="documents", id=doc_id, body=doc)
 
