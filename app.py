@@ -175,5 +175,18 @@ async def get_document(req, resp, *, doc_id):
         resp.status_code == api.status_codes.HTTP_405
 
 
+@api.route("/api/trigger_reindex")
+def trigger_reindex(req, resp):
+
+    @api.background.task
+    def run_reindex():
+        for doc in get_existing_documents():
+            es_index.index_document(doc)
+
+    run_reindex()
+
+    resp.media = {"success": True}
+
+
 if __name__ == "__main__":
     api.run(port=8072)
