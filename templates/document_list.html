@@ -154,13 +154,13 @@
             </th>
 
             <th>
-            {% if sort_order == "indexed_at:asc" %}
-            <a href="#" onclick="script:setSortOrder('indexed_at:desc')">Date saved &Uarr;</a>
+            {% if sort_order == "indexed_at:desc" %}
+            <a href="#" onclick="script:setSortOrder('indexed_at:asc')">Date saved &Darr;</a>
             {% else %}
-            <a href="#" onclick="script:setSortOrder('indexed_at:asc')">
+            <a href="#" onclick="script:setSortOrder('indexed_at:desc')">
               Date saved
               {% if sort_order == "indexed_at:desc" %}
-                &Darr;
+                &Uarr;
               {% endif %}
             </a>
             {% endif %}
