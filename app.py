@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import copy
 import datetime as dt
 import json
 import os
@@ -49,6 +50,7 @@ es.indices.create(
                 "properties": {
                     "indexed_at": {"type": "date"},
                     "tags": {"type": "keyword"},
+                    "name": {"type": "keyword"},
                 }
             }
         }
@@ -68,11 +70,14 @@ except FileNotFoundError:
 
 
 def es_index_document(doc):
+    enriched_doc = copy.deepcopy(doc)
+    enriched_doc["name"] = doc.get("title", doc["filename"])
+
     es.index(
         index=index_name,
         doc_type="documents",
         id=doc["id"],
-        body=doc
+        body=enriched_doc
     )
 
 
@@ -80,12 +85,21 @@ for doc in existing_documents:
     es_index_document(doc)
 
 
-def es_search_documents(index_name, tags=None, include_tag_aggs=False):
+def es_search_documents(
+    index_name,
+    tags=None,
+    include_tag_aggs=False,
+    sort_order="indexed_at:desc"
+):
+    field, order = sort_order.split(":")
     body = {
         "sort": [
-            {"indexed_at": {"order": "desc"}}
+            {field: {"order": order}}
         ]
     }
+
+    from pprint import pprint
+    pprint(body)
 
     if include_tag_aggs:
         body["aggregations"] = {
@@ -115,7 +129,14 @@ def es_search_documents(index_name, tags=None, include_tag_aggs=False):
 @api.route("/")
 def list_documents(req, resp):
     req_tags = req.params.get_list("tag", [])
-    es_resp = es_search_documents(index_name, tags=req_tags, include_tag_aggs=True)
+    sort_order = req.params.get("sort", "indexed_at:desc")
+
+    es_resp = es_search_documents(
+        index_name,
+        tags=req_tags,
+        include_tag_aggs=True,
+        sort_order=sort_order
+    )
     resp.content = api.template(
         "document_list.html",
         documents=es_resp["hits"],
@@ -123,7 +144,8 @@ def list_documents(req, resp):
         all_tags={
             b["key"]: b["doc_count"]
             for b in es_resp["aggregations"]["tags"]["buckets"]
-        }
+        },
+        sort_order=sort_order
     )
 
 

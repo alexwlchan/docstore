@@ -12,7 +12,7 @@
     <style>
       .table td {
         vertical-align: middle;
-        height: 80px;
+        height: 88px;
       }
 
       button.tag {
@@ -40,6 +40,14 @@
       td.thumbnail img {
         border: 0.25px solid #eee;
       }
+
+      th a {
+        color: #495057;
+      }
+
+      th a:hover {
+        text-decoration: none;
+      }
     </style>
 
     <script>
@@ -65,6 +73,13 @@
           }
           window.location = window.location.pathname + '?' + searchParams.toString();
         }
+      }
+
+      function setSortOrder(sortOrder) {
+        var searchParams = new URLSearchParams(window.location.search);
+        searchParams.delete("sort");
+        searchParams.append("sort", sortOrder);
+        window.location = window.location.pathname + '?' + searchParams.toString();
       }
     </script>
 
@@ -124,8 +139,32 @@
         <thead class="thead-light">
           <tr>
             <th style="width: 60px;"></th>
-            <th>Name</th>
-            <th>Date indexed</th>
+
+            <th>
+            {% if sort_order == "name:asc" %}
+            <a href="#" onclick="script:setSortOrder('name:desc')">Name &Uarr;</a>
+            {% else %}
+            <a href="#" onclick="script:setSortOrder('name:asc')">
+              Name
+              {% if sort_order == "name:desc" %}
+                &Darr;
+              {% endif %}
+            </a>
+            {% endif %}
+            </th>
+
+            <th>
+            {% if sort_order == "indexed_at:asc" %}
+            <a href="#" onclick="script:setSortOrder('indexed_at:desc')">Date saved &Uarr;</a>
+            {% else %}
+            <a href="#" onclick="script:setSortOrder('indexed_at:asc')">
+              Date saved
+              {% if sort_order == "indexed_at:desc" %}
+                &Darr;
+              {% endif %}
+            </a>
+            {% endif %}
+            </th>
           </tr>
         </thead>
         {% for hit in documents.hits %}
@@ -139,7 +178,7 @@
               <img src="http://localhost:8062/thumbnails/{{ hit._source.filename | shard }}">
             {% endif %}
           </td>
-          <td><a href="http://localhost:8062/files/{{ hit._source.filename | shard }}" target="_blank">{% if title %}{{ title }}{% else %}{{ hit._source.filename }}{% endif %}</a>
+          <td><a href="http://localhost:8062/files/{{ hit._source.filename | shard }}" target="_blank">{{ hit._source.name }}</a>
 
           {% if tags %}
           <p class="tags">
