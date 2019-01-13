@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
-import sys
-
 import click
 import requests
 
 
 @click.command()
-@click.option("--path", required=True)
+@click.argument("path", required=True)
+@click.option(
+    "--tags", prompt="What is this document tagged with?", default=""
+)
 @click.option("--title", prompt="What is the title?", default="")
-@click.option("--tags", prompt="What is this document tagged with?", default="")
 def main(path, title, tags):
     json = {
         "path": path

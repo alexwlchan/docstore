@@ -1,21 +1,19 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
-import copy
 import datetime as dt
 import json
 import os
 import secrets
 import subprocess
-import time
 import uuid
 
 import elasticsearch
 from PIL import Image
-import requests
 import responder
 
 import date_helpers
+import elasticsearch_helpers
 
 
 api = responder.API()
@@ -29,7 +27,7 @@ api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
 api.jinja_env.filters["shard"] = shard
 
 
-es = elasticsearch.Elasticsearch()
+es_index = elasticsearch_helpers.DocumentIndex()
 
 
 DOCSTORE_ROOT = os.path.join(os.environ["HOME"], "Documents", "docstore")
@@ -39,91 +37,18 @@ DOCSTORE_DIR = os.path.join(DOCSTORE_ROOT, "files")
 DOCSTORE_THUMBS = os.path.join(DOCSTORE_ROOT, "thumbnails")
 
 
-index_name = ("documents" + dt.datetime.now().isoformat()).lower()
+def get_existing_documents():
+    try:
+        return json.load(open(DOCSTORE_DB))
+    except FileNotFoundError:
+        return []
 
 
-es.indices.create(
-    index=index_name,
-    body={
-        "mappings": {
-            "documents": {
-                "properties": {
-                    "indexed_at": {"type": "date"},
-                    "tags": {"type": "keyword"},
-                    "name": {"type": "keyword"},
-                }
-            }
-        }
-    }
-)
-
-
-try:
-    existing_documents = json.load(open(DOCSTORE_DB))
-except FileNotFoundError:
-    os.makedirs(DOCSTORE_ROOT, exist_ok=True)
-
-    with open(DOCSTORE_DB, "x") as outfile:
-        outfile.write(json.dumps([]))
-
-    existing_documents = []
-
-
-def es_index_document(doc):
-    enriched_doc = copy.deepcopy(doc)
-    enriched_doc["name"] = doc.get("title", doc["filename"])
-
-    es.index(
-        index=index_name,
-        doc_type="documents",
-        id=doc["id"],
-        body=enriched_doc
-    )
+existing_documents = get_existing_documents()
 
 
 for doc in existing_documents:
-    es_index_document(doc)
-
-
-def es_search_documents(
-    index_name,
-    tags=None,
-    include_tag_aggs=False,
-    sort_order="indexed_at:desc"
-):
-    field, order = sort_order.split(":")
-    body = {
-        "sort": [
-            {field: {"order": order}}
-        ]
-    }
-
-    from pprint import pprint
-    pprint(body)
-
-    if include_tag_aggs:
-        body["aggregations"] = {
-            "tags": {
-                "terms": {
-                    "field": "tags",
-                    "size": 1000
-                },
-            }
-        }
-
-    if tags:
-        es_filter = {
-            "bool": {
-                "must": [
-                    {"term": {"tags": t}} for t in tags
-                ]
-            }
-        }
-        body["query"] = {
-            "bool": {"filter": es_filter}
-        }
-
-    return es.search(index=index_name, doc_type="documents", body=body)
+    es_index.index_document(doc)
 
 
 @api.route("/")
@@ -131,8 +56,7 @@ def list_documents(req, resp):
     req_tags = req.params.get_list("tag", [])
     sort_order = req.params.get("sort", "indexed_at:desc")
 
-    es_resp = es_search_documents(
-        index_name,
+    es_resp = es_index.search_documents(
         tags=req_tags,
         include_tag_aggs=True,
         sort_order=sort_order
@@ -158,13 +82,16 @@ def get_new_path(filename):
     while True:
         if not os.path.exists(new_path):
             return new_path
-        new_path = os.path.join(shard_dir, basename + "_" + secrets.token_hex(3) + ext)
+        new_path = os.path.join(
+            shard_dir,
+            basename + "_" + secrets.token_hex(3) + ext
+        )
 
 
 @api.route("/api/documents")
 async def documents_endpoint(req, resp):
     if req.method == "get":
-        es_resp = es_search_documents(index_name)
+        es_resp = es_index.search_documents()
         docs = [hit["_source"] for hit in es_resp["hits"]["hits"]]
         resp.media = docs
     elif req.method == "post":
@@ -222,7 +149,7 @@ async def documents_endpoint(req, resp):
                 os.unlink(new_path)
                 new_path = new_path.replace(".jpg", ".pdf")
 
-            es_index_document(doc)
+            es_index.index_document(doc)
 
             existing_documents = json.load(open(DOCSTORE_DB))
             existing_documents.append(doc)
@@ -239,7 +166,7 @@ async def documents_endpoint(req, resp):
 async def get_document(req, resp, *, doc_id):
     if req.method == "get":
         try:
-            es_resp = es.get(index=index_name, doc_type="documents", id=doc_id)
+            es_resp = es_index.get(doc_id)
         except elasticsearch.exceptions.NotFoundError:
             resp.status_code == api.status_codes.HTTP_404
         else:
