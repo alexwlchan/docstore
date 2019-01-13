@@ -153,7 +153,7 @@ async def documents_endpoint(req, resp):
 
             existing_documents = json.load(open(DOCSTORE_DB))
             existing_documents.append(doc)
-            json_string = json.dumps(existing_documents)
+            json_string = json.dumps(existing_documents, indent=2, sort_keys=True)
             open(DOCSTORE_DB, "w").write(json_string)
 
         process_data(data)
