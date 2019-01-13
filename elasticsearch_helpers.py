@@ -12,6 +12,7 @@ class DocumentIndex:
     def __init__(self):
         self.index_name = "documents" + dt.datetime.now().isoformat().lower()
         self.es = elasticsearch.Elasticsearch()
+        self.page_size = 48
 
         self.es.indices.create(
             index=self.index_name,
@@ -39,17 +40,14 @@ class DocumentIndex:
             body=enriched_doc
         )
 
-    def search_documents(
-        self,
-        tags=None,
-        include_tag_aggs=False,
-        sort_order="indexed_at:desc"
-    ):
+    def search_documents(self, tags, include_tag_aggs, sort_order, page):
         field, order = sort_order.split(":")
         body = {
             "sort": [
                 {field: {"order": order}}
-            ]
+            ],
+            "from": (page - 1) * self.page_size,
+            "size": self.page_size,
         }
 
         if include_tag_aggs:

@@ -54,13 +54,16 @@ for doc in existing_documents:
 @api.route("/")
 def list_documents(req, resp):
     req_tags = req.params.get_list("tag", [])
+    page = int(req.params.get("page", default=1))
     sort_order = req.params.get("sort", "indexed_at:desc")
 
     es_resp = es_index.search_documents(
         tags=req_tags,
         include_tag_aggs=True,
-        sort_order=sort_order
+        sort_order=sort_order,
+        page=page
     )
+
     resp.content = api.template(
         "document_list.html",
         documents=es_resp["hits"],
@@ -69,7 +72,9 @@ def list_documents(req, resp):
             b["key"]: b["doc_count"]
             for b in es_resp["aggregations"]["tags"]["buckets"]
         },
-        sort_order=sort_order
+        sort_order=sort_order,
+        current_page=page,
+        page_size=es_index.page_size
     )
 
 
@@ -90,11 +95,7 @@ def get_new_path(filename):
 
 @api.route("/api/documents")
 async def documents_endpoint(req, resp):
-    if req.method == "get":
-        es_resp = es_index.search_documents()
-        docs = [hit["_source"] for hit in es_resp["hits"]["hits"]]
-        resp.media = docs
-    elif req.method == "post":
+    if req.method == "post":
         data = await req.media()
 
         doc_id = str(uuid.uuid4())
