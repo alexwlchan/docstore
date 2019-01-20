@@ -135,6 +135,10 @@
               {% endif %}
               {% if tag.count(":") < loop.previtem.count(":") %}</ul>{% endif %}
               {% if tag.count(":") == loop.previtem.count(":") and tag.count(":") > 0 and tag.rsplit(":", 1)[0] != loop.previtem.rsplit(":", 1)[0] %}</ul><li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>{% endif %}
+            {% else %}
+              {% if tag.count(":") > 0 %}
+              <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
+              {% endif %}
             {% endif %}
             <li>{% if tag not in req_tags %}<a href="#" onclick="script:gotoTag('{{ tag }}')">{{ tag }}</a>{% else %}{{ tag }}{% endif %} ({{ all_tags[tag] }})</li>
 
