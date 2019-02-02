@@ -2,11 +2,13 @@
 # -*- encoding: utf-8
 
 import datetime as dt
+import errno
 import json
 import os
 import secrets
 import subprocess
 import uuid
+import webbrowser
 
 import elasticsearch
 from PIL import Image
@@ -190,4 +192,13 @@ def trigger_reindex(req, resp):
 
 
 if __name__ == "__main__":
-    api.run(port=8072)
+    port = 8072
+
+    try:
+        api.run(port=port)
+    except OSError as err:
+        if err.errno == errno.EADDRINUSE:
+            print("Server is already running!")
+            webbrowser.open("http://localhost:%s" % port)
+        else:
+            raise
