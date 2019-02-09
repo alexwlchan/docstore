@@ -95,6 +95,19 @@ def get_new_path(filename):
         )
 
 
+def create_pdf_thumbnail(pdf_path):
+    subprocess.check_call([
+        "docker", "run", "--rm",
+        "--volume", "%s:/files" % os.path.dirname(pdf_path),
+        "alexwlchan/imagemagick",
+        "convert",
+        "/files/%s[0]" % os.path.basename(pdf_path),
+        "/files/%s" % os.path.basename(pdf_path).replace(".pdf", ".jpg")
+    ])
+
+    return pdf_path.replace(".pdf", ".jpg")
+
+
 @api.route("/api/documents")
 async def documents_endpoint(req, resp):
     if req.method == "post":
@@ -128,15 +141,7 @@ async def documents_endpoint(req, resp):
 
             _, ext = os.path.splitext(path)
             if ext == ".pdf":
-                subprocess.check_call([
-                    "docker", "run", "--rm",
-                    "--volume", "%s:/files" % os.path.dirname(new_path),
-                    "alexwlchan/imagemagick",
-                    "convert",
-                    "/files/%s[0]" % filename,
-                    "/files/%s" % filename.replace(".pdf", ".jpg")
-                ])
-                new_path = new_path.replace(".pdf", ".jpg")
+                new_path = create_pdf_thumbnail(new_path)
 
             try:
                 im = Image.open(new_path)

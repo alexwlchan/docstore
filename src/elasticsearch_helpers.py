@@ -4,6 +4,7 @@
 import copy
 import datetime as dt
 
+import attr
 import elasticsearch
 
 
