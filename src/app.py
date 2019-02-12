@@ -6,6 +6,7 @@ import errno
 import json
 import os
 import secrets
+import shutil
 import subprocess
 import uuid
 import webbrowser
@@ -96,43 +97,19 @@ def get_new_path(filename):
 
 
 def create_pdf_thumbnail(path):
-    thumb_path = path.replace(DOCSTORE_DIR, DOCSTORE_THUMBS)
+    thumb_id = str(uuid.uuid4())
+    thumb_path = os.path.join(DOCSTORE_THUMBS, thumb_id[0], thumb_id + ".jpg")
+    os.makedirs(os.path.dirname(thumb_path), exist_ok=True)
 
-    try:
-        out_path = thumb_path.replace(DOCSTORE_ROOT + "/", "")
-        out_path = out_path.replace(".pdf", ".jpg").replace(".PDF", ".jpg")
-        subprocess.check_call([
-            "docker", "run", "--rm",
-            "--volume", "%s:/data" % DOCSTORE_ROOT,
-            "--workdir", "/data",
-            "alexwlchan/imagemagick",
-            "convert",
-            "%s[0]" % path.replace(DOCSTORE_ROOT + "/", ""),
-            out_path
-        ])
+    subprocess.check_call([
+        "docker", "run", "--rm",
+        "--volume", "%s:/data" % DOCSTORE_ROOT,
+        "preview-generator",
+        path.replace(DOCSTORE_ROOT + "/", ""),
+        thumb_path.replace(DOCSTORE_ROOT + "/", "")
+    ])
 
-        out_path = os.path.join(DOCSTORE_ROOT, out_path)
-
-        im = Image.open(out_path)
-        im.thumbnail((60, 60))
-        im.save(out_path)
-
-        os.rename(out_path, thumb_path)
-    except subprocess.CalledProcessError:
-        subprocess.check_call([
-            "docker", "run", "--rm",
-            "--volume", "%s:/data" % DOCSTORE_ROOT,
-            "preview-generator",
-            path.replace(DOCSTORE_ROOT + "/", ""),
-            thumb_path.replace(DOCSTORE_ROOT + "/", "")
-        ])
-
-    return thumb_path
-
-
-if __name__ == "__main__":
-    import sys
-    create_pdf_thumbnail(sys.argv[1])
+    return thumb_path.replace(DOCSTORE_THUMBS + "/", "")
 
 
 @api.route("/api/documents")
@@ -166,35 +143,7 @@ async def documents_endpoint(req, resp):
                 except KeyError:
                     pass
 
-            thumb_path = new_path.replace(DOCSTORE_DIR, DOCSTORE_THUMBS)
-            os.makedirs(os.path.dirname(thumb_path), exist_ok=True)
-
-
-            if ext.lower() == ".pdf":
-                thumb_path = os.path.join(
-                    os.path.dirname(new_path),
-                    create_pdf_thumbnail(new_path)
-                )
-                os.rename(
-                    thumb_path,
-                    thumb_path.replace(DOCSTORE_DIR, DOCSTORE_THUMBS).replace("_thumb", "")
-                )
-                doc["has_thumbnail"] = True
-
-            else:
-                try:
-                    im = Image.open(new_path)
-                except OSError:
-                    pass
-                else:
-                    im.thumbnail((60, 60))
-
-                    im.save(thumb_path)
-                    doc["has_thumbnail"] = True
-
-            if ext == ".pdf":
-                os.unlink(new_path)
-                new_path = new_path.replace(".jpg", ".pdf")
+            doc["thumbnail_path"] = create_pdf_thumbnail(new_path)
 
             es_index.index_document(doc)
 
@@ -212,14 +161,14 @@ async def documents_endpoint(req, resp):
         resp.status_code = api.status_codes.HTTP_405
 
 
-# if __name__ == "__main__":
-#     port = 8072
-#
-#     try:
-#         api.run(port=port)
-#     except OSError as err:
-#         if err.errno == errno.EADDRINUSE:
-#             print("Server is already running!")
-#             webbrowser.open("http://localhost:%s" % port)
-#         else:
-#             raise
+if __name__ == "__main__":
+    port = 8072
+
+    try:
+        api.run(port=port)
+    except OSError as err:
+        if err.errno == errno.EADDRINUSE:
+            print("Server is already running!")
+            webbrowser.open("http://localhost:%s" % port)
+        else:
+            raise
