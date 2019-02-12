@@ -15,8 +15,8 @@ thumbnail_path = sys.argv[2]
 
 thumbnail = preview_manager.get_jpeg_preview(
     pdf_path,
-    height=60,
-    width=60
+    height=400,
+    width=400
 )
 
 assert pdf_path != thumbnail_path

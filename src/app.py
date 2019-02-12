@@ -161,6 +161,33 @@ async def documents_endpoint(req, resp):
         resp.status_code = api.status_codes.HTTP_405
 
 
+@api.route("/api/rebuild_thumbnails")
+async def rebuild_thumbnails(req, resp):
+    if req.method != "post":
+        resp.status_code = api.status_codes.HTTP_405
+        return
+
+    @api.background.task
+    def rebuild_all_thumbnails():
+        for doc in existing_documents:
+            try:
+                os.unlink(doc["thumbnail_path"])
+            except (FileNotFoundError, KeyError):
+                pass
+
+            print(f"Recreating thumbnail for {doc['filename']}")
+            doc["thumbnail_path"] = create_pdf_thumbnail(
+                os.path.join(DOCSTORE_DIR, doc["filename"][0], doc["filename"])
+            )
+
+            es_index.index_document(doc)
+
+            json_string = json.dumps(existing_documents, indent=2, sort_keys=True)
+            open(DOCSTORE_DB, "w").write(json_string)
+
+    rebuild_all_thumbnails()
+
+
 if __name__ == "__main__":
     port = 8072
 
