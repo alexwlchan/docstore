@@ -170,32 +170,6 @@ async def documents_endpoint(req, resp):
         resp.status_code = api.status_codes.HTTP_405
 
 
-@api.route("/api/documents/{doc_id}")
-async def get_document(req, resp, *, doc_id):
-    if req.method == "get":
-        try:
-            es_resp = es_index.get(doc_id)
-        except elasticsearch.exceptions.NotFoundError:
-            resp.status_code == api.status_codes.HTTP_404
-        else:
-            resp.media = es_resp["_source"]
-    else:
-        resp.status_code == api.status_codes.HTTP_405
-
-
-@api.route("/api/trigger_reindex")
-def trigger_reindex(req, resp):
-
-    @api.background.task
-    def run_reindex():
-        for doc in get_existing_documents():
-            es_index.index_document(doc)
-
-    run_reindex()
-
-    resp.media = {"success": True}
-
-
 if __name__ == "__main__":
     port = 8072
 
