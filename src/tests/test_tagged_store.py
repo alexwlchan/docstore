@@ -53,7 +53,7 @@ def test_root_path_properties():
 
 def test_gets_empty_documents_on_startup():
     store = TaggedDocumentStore("/foo")
-    assert store.documents == []
+    assert store.documents == {}
 
 
 def test_can_store_a_document(store):
@@ -62,7 +62,7 @@ def test_can_store_a_document(store):
         "tags": ["foo", "bar"]
     }
     store.index_document(doc)
-    assert doc in store.documents
+    assert doc in store.documents.values()
 
 
 def test_documents_are_saved_to_disk(store):
@@ -73,7 +73,7 @@ def test_documents_are_saved_to_disk(store):
     store.index_document(doc)
 
     new_store = TaggedDocumentStore(root=store.root)
-    assert doc in new_store.documents
+    assert store.documents == new_store.documents
 
 
 def test_can_search_documents(store):
@@ -88,3 +88,28 @@ def test_can_search_documents(store):
     assert store.search_documents(query=["foo"]) == [doc1, doc2]
     assert store.search_documents(query=["baz"]) == [doc2]
     assert store.search_documents(query=[]) == [doc1, doc2, doc3]
+
+
+@pytest.mark.parametrize('doc', [object, None, 1, "foo"])
+def test_indexing_a_non_taggeddocument_is_typeerror(store, doc):
+    with pytest.raises(TypeError):
+        store.index_document(doc)
+
+
+def test_assigns_uuid_to_stored_document(store):
+    doc = {"id": "1", "color": "red"}
+    store.index_document(doc)
+
+    assert "_id" in doc
+
+
+def test_can_update_document_by_uuid(store):
+    doc = {"id": "1", "color": "blue"}
+    store.index_document(doc)
+
+    doc_new = {"id": "1", "color": "red"}
+    store.index_document(doc_new, doc_id=doc["_id"])
+
+    assert len(store.documents) == 1
+    assert doc not in store.documents.values()
+    assert doc_new in store.documents.values()

@@ -49,9 +49,12 @@ class TaggedDocumentStore:
         try:
             existing = json.load(open(self.db_path))
         except FileNotFoundError:
-            existing = []
+            existing = {}
 
-        self.documents = [TaggedDocument(doc) for doc in existing]
+        self.documents = {
+            doc_id: TaggedDocument(doc)
+            for doc_id, doc in existing.items()
+        }
 
     @property
     def db_path(self):
@@ -65,8 +68,22 @@ class TaggedDocumentStore:
     def thumbs_dir(self):
         return os.path.join(self.root, "thumbnails")
 
-    def index_document(self, doc):
-        new_documents = self.documents + [TaggedDocument(doc)]
+    def index_document(self, doc, doc_id=None):
+        if isinstance(doc, dict):
+            doc = TaggedDocument(doc)
+
+        if not isinstance(doc, TaggedDocument):
+            raise TypeError("doc=%r is %s, expected TaggedDocument" % (doc, type(doc)))
+
+        if doc_id is None:
+            try:
+                doc_id = doc.data["_id"]
+            except KeyError:
+                doc_id = str(uuid.uuid4())
+                doc.data["_id"] = doc_id
+
+        new_documents = self.documents.copy()
+        new_documents[doc_id] = doc
 
         json_string = json.dumps(
             new_documents,
@@ -82,11 +99,13 @@ class TaggedDocumentStore:
 
         os.rename(tmp_path, self.db_path)
 
+        # We deliberately don't write to the in-memory database until it's been
+        # persisted to disk.
         self.documents = new_documents
 
     def search_documents(self, query):
         return [
             doc
-            for doc in self.documents
+            for doc in self.documents.values()
             if doc.matches_tag_query(query)
         ]
