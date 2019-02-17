@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import collections
 import datetime as dt
 import errno
 import json
@@ -11,12 +12,13 @@ import subprocess
 import uuid
 import webbrowser
 
+import attr
 import elasticsearch
 from PIL import Image
 import responder
 
 import date_helpers
-import elasticsearch_helpers
+from tagged_store import TaggedDocumentStore
 
 
 api = responder.API()
@@ -30,50 +32,51 @@ api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
 api.jinja_env.filters["shard"] = shard
 
 
-es_index = elasticsearch_helpers.DocumentIndex()
-
-
 DOCSTORE_ROOT = os.path.join(os.environ["HOME"], "Documents", "docstore")
 
-DOCSTORE_DB = os.path.join(DOCSTORE_ROOT, "documents.json")
-DOCSTORE_DIR = os.path.join(DOCSTORE_ROOT, "files")
-DOCSTORE_THUMBS = os.path.join(DOCSTORE_ROOT, "thumbnails")
+PAGESIZE = 48
+
+store = TaggedDocumentStore(DOCSTORE_ROOT)
 
 
-def get_existing_documents():
-    try:
-        return json.load(open(DOCSTORE_DB))
-    except FileNotFoundError:
-        return []
-
-
-existing_documents = get_existing_documents()
-
-
-for doc in existing_documents:
-    es_index.index_document(doc)
+@attr.s
+class SearchResponse:
+    documents = attr.ib()
+    tags = attr.ib()
+    total = attr.ib()
 
 
 @api.route("/")
 def list_documents(req, resp):
-    req_tags = req.params.get_list("tag", [])
+    tag_query = req.params.get_list("tag", [])
     page = int(req.params.get("page", default=1))
     sort_order = req.params.get("sort", "indexed_at:desc")
 
-    es_resp = es_index.search_documents(
-        tags=req_tags,
-        include_tag_aggs=True,
-        sort_order=sort_order,
-        page=page
+    all_documents = store.search_documents(query=tag_query)
+
+    documents_per_page = [
+        doc.data
+        for doc in all_documents[(page - 1) * PAGESIZE:page * PAGESIZE]
+    ]
+
+    tags = collections.defaultdict(int)
+    for doc in all_documents:
+        for t in doc.tags:
+            tags[t] += 1
+
+    search_response = SearchResponse(
+        documents=documents_per_page,
+        tags=tags,
+        total=len(all_documents)
     )
 
     resp.content = api.template(
         "document_list.html",
-        req_tags=req_tags,
-        search_response=es_resp,
+        tag_query=tag_query,
+        search_response=search_response,
         sort_order=sort_order,
         current_page=page,
-        page_size=es_index.page_size
+        page_size=PAGESIZE
     )
 
 

@@ -112,9 +112,9 @@
         <hr>
       </p>
 
-      {% if req_tags %}
+      {% if tag_query %}
       <p>Filtering to documents with
-        {% for t in req_tags %}<button type="button" class="filter_tag btn btn-dark" onclick="script:removeTag('{{ t }}')">{{ t }}</button>{% endfor %}
+        {% for t in tag_query %}<button type="button" class="filter_tag btn btn-dark" onclick="script:removeTag('{{ t }}')">{{ t }}</button>{% endfor %}
       </p>
       {% endif %}
 
@@ -142,7 +142,7 @@
               <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
               {% endif %}
             {% endif %}
-            <li>{% if tag not in req_tags %}<a href="#" onclick="script:gotoTag('{{ tag }}')">{{ tag }}</a>{% else %}{{ tag }}{% endif %} ({{ search_response.tags[tag] }})</li>
+            <li>{% if tag not in tag_query %}<a href="#" onclick="script:gotoTag('{{ tag }}')">{{ tag }}</a>{% else %}{{ tag }}{% endif %} ({{ search_response.tags[tag] }})</li>
 
             {% if loop.last %}
               {% for i in range(tag.count(":")) %}</ul>{% endfor %}
@@ -190,7 +190,6 @@
         </thead>
         {% for doc in search_response.documents %}
 
-        {% set title = doc.title %}
         {% set tags = doc.tags %}
 
         <tr>
@@ -199,12 +198,12 @@
               <img src="http://localhost:8062/thumbnails/{{ doc.thumbnail_path }}">
             {% endif %}
           </td>
-          <td><a href="http://localhost:8062/files/{{ doc.filename | shard }}" target="_blank">{{ doc.name }}</a>
+          <td><a href="http://localhost:8062/files/{{ doc.filename | shard }}" target="_blank">{{ doc.title }}</a>
 
           {% if tags %}
           <p class="tags">
             {% for t in tags|sort %}
-            <button type="button" class="btn btn-light tag" {% if t in req_tags %}disabled{% else %}onclick="script:gotoTag('{{ t }}')"{% endif %}>{{ t }}</button>
+            <button type="button" class="btn btn-light tag" {% if t in tag_query %}disabled{% else %}onclick="script:gotoTag('{{ t }}')"{% endif %}>{{ t }}</button>
             {% endfor %}
           </p>
           {% endif %}
