@@ -4,6 +4,7 @@ import os
 import subprocess
 
 import mock
+import pytest
 
 import index_helpers
 from tagged_store import TaggedDocument, TaggedDocumentStore
@@ -50,3 +51,25 @@ def test_removes_old_thumbnail_first(store, monkeypatch):
     patched_create_thumbnail(monkeypatch, store=store, doc=doc)
     assert not os.path.exists(thumb_path)
     assert doc.data["thumbnail_path"] != "1/100.jpg"
+
+
+def test_indexing_non_pdf_is_error(store):
+    user_data = {"path": "foo.jpg"}
+    with pytest.raises(ValueError):
+        index_helpers.index_pdf_document(store, user_data=user_data)
+
+
+def test_copies_pdf_to_store(store):
+    user_data = {"path": "tests/snakes.pdf"}
+    doc = index_helpers.index_pdf_document(store, user_data=user_data)
+
+    assert os.path.exists(os.path.join(store.files_dir, doc.id[0], doc.id + ".pdf"))
+    assert doc.data["pdf_path"] == os.path.join(doc.id[0], doc.id + ".pdf")
+
+
+def test_pdf_path_is_saved_to_store(store):
+    user_data = {"path": "tests/snakes.pdf"}
+    doc = index_helpers.index_pdf_document(store, user_data=user_data)
+
+    new_store = TaggedDocumentStore(store.root)
+    assert "pdf_path" in new_store.documents[doc.id].data
