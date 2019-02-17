@@ -1,9 +1,0 @@
-version: "3"
-
-services:
-  nginx:
-    image: "nginx:alpine"
-    ports:
-      - "8062:80"
-    volumes:
-      - "/Users/alexwlchan/Documents/docstore:/usr/share/nginx/html"
