@@ -7,7 +7,7 @@ import attr
 
 @attr.s
 class SearchOptions:
-    tag_query = attr.ib()
+    tag_query = attr.ib(default=())
     page = attr.ib(default=1)
     page_size = attr.ib(default=48)
     sort_order = attr.ib(default=("indexed_at", "desc"))
@@ -27,6 +27,12 @@ def search_store(store, options):
     for doc in all_documents:
         for t in doc.tags:
             tags[t] += 1
+
+    sort_field, sort_order = options.sort_order
+    all_documents.sort(
+        key=lambda doc: doc.data.get(sort_field, ""),
+        reverse=(sort_order == "desc")
+    )
 
     lower_page = options.page_size * (options.page - 1)
     upper_page = options.page_size * options.page

@@ -162,12 +162,12 @@
             <th style="width: 60px;"></th>
 
             <th>
-            {% if search_options.sort_order == ("name", "asc") %}
-            <a href="#" onclick="script:setSortOrder('name:desc')">Name &Uarr;</a>
+            {% if search_options.sort_order == ("title", "asc") %}
+            <a href="#" onclick="script:setSortOrder('title:desc')">Name &Uarr;</a>
             {% else %}
-            <a href="#" onclick="script:setSortOrder('name:asc')">
+            <a href="#" onclick="script:setSortOrder('title:asc')">
               Name
-              {% if search_options.sort_order == ("name", "desc") %}
+              {% if search_options.sort_order == ("title", "desc") %}
                 &Darr;
               {% endif %}
             </a>

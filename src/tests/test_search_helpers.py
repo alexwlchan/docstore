@@ -63,3 +63,24 @@ def test_gets_tag_aggregation_based_on_query(store):
     assert [doc["id"] for doc in resp.documents] == [1, 4, 7, 10, 13, 16]
     assert resp.tags == {"foo": 5, "bar": 6, "baz": 1}
     assert resp.total == 6
+
+
+def test_respects_sort_order(store):
+    docA = {"id": "a", "name": "apple"}
+    docB = {"id": "b", "name": "banana"}
+    docC = {"id": "c", "name": "cabbage"}
+    docD = {"id": "d", "name": "damson"}
+
+    store.index_document(docA)
+    store.index_document(docC)
+    store.index_document(docD)
+    store.index_document(docB)
+
+    options = SearchOptions(sort_order=("name", "asc"))
+    resp = search_store(store, options)
+    assert resp.documents == [docA, docB, docC, docD]
+
+    options = SearchOptions(sort_order=("name", "desc"))
+    resp = search_store(store, options)
+    assert resp.documents == [docD, docC, docB, docA]
+

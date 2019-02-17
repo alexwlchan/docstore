@@ -47,7 +47,7 @@ def list_documents(req, resp):
     search_options = search_helpers.SearchOptions(
         tag_query=tag_query,
         page=int(page),
-        sort_order=sort_order.split(":")
+        sort_order=tuple(sort_order.split(":"))
     )
 
     search_response = search_helpers.search_store(store, options=search_options)
