@@ -6,6 +6,7 @@ import errno
 import json
 import os
 import secrets
+import shutil
 import subprocess
 import uuid
 import webbrowser
@@ -95,17 +96,20 @@ def get_new_path(filename):
         )
 
 
-def create_pdf_thumbnail(pdf_path):
+def create_pdf_thumbnail(path):
+    thumb_id = str(uuid.uuid4())
+    thumb_path = os.path.join(DOCSTORE_THUMBS, thumb_id[0], thumb_id + ".jpg")
+    os.makedirs(os.path.dirname(thumb_path), exist_ok=True)
+
     subprocess.check_call([
         "docker", "run", "--rm",
-        "--volume", "%s:/files" % os.path.dirname(pdf_path),
-        "alexwlchan/imagemagick",
-        "convert",
-        "/files/%s[0]" % os.path.basename(pdf_path),
-        "/files/%s" % os.path.basename(pdf_path).replace(".pdf", ".jpg")
+        "--volume", "%s:/data" % DOCSTORE_ROOT,
+        "preview-generator",
+        path.replace(DOCSTORE_ROOT + "/", ""),
+        thumb_path.replace(DOCSTORE_ROOT + "/", "")
     ])
 
-    return pdf_path.replace(".pdf", ".jpg")
+    return thumb_path.replace(DOCSTORE_THUMBS + "/", "")
 
 
 @api.route("/api/documents")
@@ -120,9 +124,12 @@ async def documents_endpoint(req, resp):
             path = data["path"]
             filename = os.path.basename(path)
 
+            _, ext = os.path.splitext(path)
+            assert ext.lower() == ".pdf"
+
             new_path = get_new_path(filename)
             assert not os.path.exists(new_path)
-            os.rename(path, new_path)
+            shutil.copyfile(path, new_path)
 
             doc = {
                 "id": doc_id,
@@ -136,26 +143,7 @@ async def documents_endpoint(req, resp):
                 except KeyError:
                     pass
 
-            thumb_path = new_path.replace(DOCSTORE_DIR, DOCSTORE_THUMBS)
-            os.makedirs(os.path.dirname(thumb_path), exist_ok=True)
-
-            _, ext = os.path.splitext(path)
-            if ext == ".pdf":
-                new_path = create_pdf_thumbnail(new_path)
-
-            try:
-                im = Image.open(new_path)
-            except OSError:
-                pass
-            else:
-                im.thumbnail((60, 60))
-
-                im.save(thumb_path)
-                doc["has_thumbnail"] = True
-
-            if ext == ".pdf":
-                os.unlink(new_path)
-                new_path = new_path.replace(".jpg", ".pdf")
+            doc["thumbnail_path"] = create_pdf_thumbnail(new_path)
 
             es_index.index_document(doc)
 
@@ -164,36 +152,40 @@ async def documents_endpoint(req, resp):
             json_string = json.dumps(existing_documents, indent=2, sort_keys=True)
             open(DOCSTORE_DB, "w").write(json_string)
 
+            # Don't delete the original document until it's successfully indexed!
+            os.unlink(path)
+
         process_data(data)
         resp.media = {"success": True, "id": doc_id}
     else:
         resp.status_code = api.status_codes.HTTP_405
 
 
-@api.route("/api/documents/{doc_id}")
-async def get_document(req, resp, *, doc_id):
-    if req.method == "get":
-        try:
-            es_resp = es_index.get(doc_id)
-        except elasticsearch.exceptions.NotFoundError:
-            resp.status_code == api.status_codes.HTTP_404
-        else:
-            resp.media = es_resp["_source"]
-    else:
-        resp.status_code == api.status_codes.HTTP_405
-
-
-@api.route("/api/trigger_reindex")
-def trigger_reindex(req, resp):
+@api.route("/api/rebuild_thumbnails")
+async def rebuild_thumbnails(req, resp):
+    if req.method != "post":
+        resp.status_code = api.status_codes.HTTP_405
+        return
 
     @api.background.task
-    def run_reindex():
-        for doc in get_existing_documents():
+    def rebuild_all_thumbnails():
+        for doc in existing_documents:
+            try:
+                os.unlink(doc["thumbnail_path"])
+            except (FileNotFoundError, KeyError):
+                pass
+
+            print(f"Recreating thumbnail for {doc['filename']}")
+            doc["thumbnail_path"] = create_pdf_thumbnail(
+                os.path.join(DOCSTORE_DIR, doc["filename"][0], doc["filename"])
+            )
+
             es_index.index_document(doc)
 
-    run_reindex()
+            json_string = json.dumps(existing_documents, indent=2, sort_keys=True)
+            open(DOCSTORE_DB, "w").write(json_string)
 
-    resp.media = {"success": True}
+    rebuild_all_thumbnails()
 
 
 if __name__ == "__main__":

@@ -39,6 +39,8 @@
 
       td.thumbnail img {
         border: 0.25px solid #eee;
+        max-width:  62px;
+        max-height: 62px;
       }
 
       th a {
@@ -178,7 +180,7 @@
             {% else %}
             <a href="#" onclick="script:setSortOrder('indexed_at:desc')">
               Date saved
-              {% if sort_order == "indexed_at:desc" %}
+              {% if sort_order == "indexed_at:asc" %}
                 &Uarr;
               {% endif %}
             </a>
@@ -193,8 +195,8 @@
 
         <tr>
           <td class="thumbnail">
-            {% if hit._source.has_thumbnail %}
-              <img src="http://localhost:8062/thumbnails/{{ hit._source.filename | shard }}">
+            {% if hit._source.thumbnail_path %}
+              <img src="http://localhost:8062/thumbnails/{{ hit._source.thumbnail_path }}">
             {% endif %}
           </td>
           <td><a href="http://localhost:8062/files/{{ hit._source.filename | shard }}" target="_blank">{{ hit._source.name }}</a>
