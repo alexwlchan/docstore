@@ -3,6 +3,7 @@
 
 import errno
 import os
+import sys
 import webbrowser
 
 import responder
@@ -16,17 +17,7 @@ from tagged_store import TaggedDocumentStore
 api = responder.API()
 
 
-def shard(filename):
-    return os.path.join(filename[0].lower(), filename)
-
-
 api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
-api.jinja_env.filters["shard"] = shard
-
-
-DOCSTORE_ROOT = os.path.join(os.environ["HOME"], "Documents", "docstore")
-
-store = TaggedDocumentStore(DOCSTORE_ROOT)
 
 
 @api.route("/")
@@ -67,6 +58,13 @@ async def documents_endpoint(req, resp):
 
 if __name__ == "__main__":
     port = 8072
+
+    try:
+        root = os.path.normpath(sys.argv[1])
+    except IndexError:
+        root = os.path.join(os.environ["HOME"], "Documents", "docstore")
+
+    store = TaggedDocumentStore(root)
 
     try:
         api.run(port=port)
