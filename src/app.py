@@ -69,12 +69,8 @@ def list_documents(req, resp):
 
     resp.content = api.template(
         "document_list.html",
-        documents=es_resp["hits"],
         req_tags=req_tags,
-        all_tags={
-            b["key"]: b["doc_count"]
-            for b in es_resp["aggregations"]["tags"]["buckets"]
-        },
+        search_response=es_resp,
         sort_order=sort_order,
         current_page=page,
         page_size=es_index.page_size

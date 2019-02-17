@@ -10,6 +10,7 @@ apispec==1.0.0b6          # via responder
 apistar==0.6.0            # via responder
 asgiref==2.3.2            # via responder
 async-timeout==3.0.1      # via asgiref
+attrs==18.2.0
 certifi==2018.11.29       # via requests
 chardet==3.0.4            # via requests, responder
 click==7.0                # via apistar, uvicorn

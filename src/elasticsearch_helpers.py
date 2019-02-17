@@ -4,7 +4,16 @@
 import copy
 import datetime as dt
 
+import attr
 import elasticsearch
+
+
+@attr.s
+class SearchResponse:
+    query = attr.ib()
+    documents = attr.ib()
+    tags = attr.ib()
+    total = attr.ib()
 
 
 class DocumentIndex:
@@ -72,15 +81,18 @@ class DocumentIndex:
                 "bool": {"filter": es_filter}
             }
 
-        return self.es.search(
+        resp = self.es.search(
             index=self.index_name,
             doc_type=self.index_name,
             body=body
         )
 
-    def get_document(self, doc_id):
-        return self.es.get(
-            index=self.index_name,
-            doc_type=self.index_name,
-            id=doc_id
+        return SearchResponse(
+            query=tags,
+            documents=[h["_source"] for h in resp["hits"]["hits"]],
+            tags={
+                bucket["key"]: bucket["doc_count"]
+                for bucket in resp["aggregations"]["tags"]["buckets"]
+            },
+            total=resp["hits"]["total"]
         )
