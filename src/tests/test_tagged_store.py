@@ -1,15 +1,8 @@
 # -*- encoding: utf-8
 
-import tempfile
-
 import pytest
 
 from tagged_store import TaggedDocument, TaggedDocumentStore
-
-
-@pytest.fixture
-def store():
-    return TaggedDocumentStore(root=tempfile.mkdtemp())
 
 
 def test_tagged_document_equality():
@@ -84,18 +77,9 @@ def test_documents_are_saved_to_disk(store):
 
 
 def test_can_search_documents(store):
-    doc1 = {
-        "id": "1",
-        "tags": ["foo", "bar"]
-    }
-    doc2 = {
-        "id": "2",
-        "tags": ["foo", "baz"]
-    }
-    doc3 = {
-        "id": "3",
-        "tags": []
-    }
+    doc1 = {"id": "1", "tags": ["foo", "bar"]}
+    doc2 = {"id": "2", "tags": ["foo", "baz"]}
+    doc3 = {"id": "3", "tags": []}
 
     store.index_document(doc1)
     store.index_document(doc2)
