@@ -195,10 +195,10 @@
         <tr>
           <td class="thumbnail">
             {% if doc.thumbnail_path %}
-              <img src="http://localhost:8062/thumbnails/{{ doc.thumbnail_path }}">
+              <img src="http://localhost:{{ nginx_port }}/thumbnails/{{ doc.thumbnail_path }}">
             {% endif %}
           </td>
-          <td><a href="http://localhost:8062/files/{{ doc.pdf_path }}" target="_blank">{{ doc.title }}</a>
+          <td><a href="http://localhost:{{ nginx_port }}/files/{{ doc.pdf_path }}" target="_blank">{{ doc.title }}</a>
 
           {% if tags %}
           <p class="tags">

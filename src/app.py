@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import contextlib
 import errno
 import os
+import subprocess
 import sys
 import webbrowser
 
@@ -14,8 +16,11 @@ import search_helpers
 from tagged_store import TaggedDocumentStore
 
 
-api = responder.API()
+APP_PORT = 8072
+NGINX_PORT = 8073
 
+
+api = responder.API()
 
 api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
 
@@ -37,7 +42,8 @@ def list_documents(req, resp):
     resp.content = api.template(
         "document_list.html",
         search_options=search_options,
-        search_response=search_response
+        search_response=search_response,
+        nginx_port=NGINX_PORT
     )
 
 
@@ -56,9 +62,18 @@ async def documents_endpoint(req, resp):
         resp.status_code = api.status_codes.HTTP_405
 
 
-if __name__ == "__main__":
-    port = 8072
+@contextlib.contextmanager
+def run_nginx(root, nginx_port):
+    proc = subprocess.Popen([
+        "docker", "run", "--rm",
+        "--volume", "%s:/usr/share/nginx/html" % root,
+        "--publish", "%s:80" % nginx_port,
+        "nginx:alpine",
+    ])
+    yield
 
+
+if __name__ == "__main__":
     try:
         root = os.path.normpath(sys.argv[1])
     except IndexError:
@@ -66,11 +81,12 @@ if __name__ == "__main__":
 
     store = TaggedDocumentStore(root)
 
-    try:
-        api.run(port=port)
-    except OSError as err:
-        if err.errno == errno.EADDRINUSE:
-            print("Server is already running!")
-            webbrowser.open("http://localhost:%s" % port)
-        else:
-            raise
+    with run_nginx(root=root, nginx_port=NGINX_PORT):
+        try:
+            api.run(port=APP_PORT)
+        except OSError as err:
+            if err.errno == errno.EADDRINUSE:
+                print("Server is already running!")
+                webbrowser.open("http://localhost:%d" % APP_PORT)
+            else:
+                raise
