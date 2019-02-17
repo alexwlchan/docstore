@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import filecmp
 import os
 import shutil
 import subprocess
@@ -41,7 +42,16 @@ def index_pdf_document(store, user_data):
     shutil.copyfile(path, complete_pdf_path)
     doc.data["pdf_path"] = pdf_path
 
+    # Store a copy before we create the thumbnail, so if the thumbnail creation
+    # fails for some reason, we still have the document in the database.
     store.index_document(doc)
+
+    create_thumbnail(store=store, doc=doc)
+
+    # Once it's stored, we can clean up the original document.
+    if not filecmp.cmp(path, complete_pdf_path):
+        raise RuntimeError("PDF copy failed for %r!" % path)
+    os.unlink(path)
 
     return doc
 
