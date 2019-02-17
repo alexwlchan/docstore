@@ -1,11 +1,6 @@
 # -*- encoding: utf-8
 
-import tempfile
-
-import pytest
-
 from search_helpers import search_store, SearchOptions, SearchResponse
-from tagged_store import TaggedDocumentStore
 
 
 def test_search_store_all(store):
