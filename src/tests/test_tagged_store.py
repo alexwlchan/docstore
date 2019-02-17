@@ -9,7 +9,11 @@ def test_tagged_document_equality():
     d1 = TaggedDocument({"id": "1"})
     assert d1 == d1
     assert d1 == {"id": "1"}
-    assert d1 == TaggedDocument({"id": "1", "_id": d1.id})
+    assert d1 == TaggedDocument({
+        "id": "1",
+        "_id": d1.id,
+        "_date_created": d1.date_created
+    })
 
 
 def test_tagged_document_inequality():

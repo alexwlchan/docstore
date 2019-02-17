@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import datetime as dt
 import json
 import os
 import uuid
@@ -16,6 +17,9 @@ class TaggedDocument:
         if "_id" not in data:
             data["_id"] = str(uuid.uuid4())
 
+        if "_date_created" not in data:
+            data["_date_created"] = dt.datetime.now().isoformat()
+
         self.data = data
         self.tags = set(data.get("tags", []))
 
@@ -23,13 +27,17 @@ class TaggedDocument:
     def id(self):
         return self.data["_id"]
 
+    @property
+    def date_created(self):
+        return self.data["_date_created"]
+
     def __eq__(self, other):
         if isinstance(other, TaggedDocument):
             return self.data == other.data
         elif isinstance(other, dict):
             return (
                 self.data == other or
-                {k: v for k, v in self.data.items() if k != "_id"} == other
+                {k: v for k, v in self.data.items() if not k.startswith("_")} == other
             )
         else:
             return NotImplemented
