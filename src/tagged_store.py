@@ -83,3 +83,10 @@ class TaggedDocumentStore:
         os.rename(tmp_path, self.db_path)
 
         self.documents = new_documents
+
+    def search_documents(self, query):
+        return [
+            doc
+            for doc in self.documents
+            if doc.matches_tag_query(query)
+        ]

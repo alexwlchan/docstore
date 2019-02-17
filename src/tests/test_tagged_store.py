@@ -81,3 +81,26 @@ def test_documents_are_saved_to_disk(store):
 
     new_store = TaggedDocumentStore(root=store.root)
     assert doc in new_store.documents
+
+
+def test_can_search_documents(store):
+    doc1 = {
+        "id": "1",
+        "tags": ["foo", "bar"]
+    }
+    doc2 = {
+        "id": "2",
+        "tags": ["foo", "baz"]
+    }
+    doc3 = {
+        "id": "3",
+        "tags": []
+    }
+
+    store.index_document(doc1)
+    store.index_document(doc2)
+    store.index_document(doc3)
+
+    assert store.search_documents(query=["foo"]) == [doc1, doc2]
+    assert store.search_documents(query=["baz"]) == [doc2]
+    assert store.search_documents(query=[]) == [doc1, doc2, doc3]
