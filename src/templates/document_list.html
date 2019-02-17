@@ -175,12 +175,12 @@
             </th>
 
             <th>
-            {% if search_options.sort_order == ("indexed_at", "desc") %}
-            <a href="#" onclick="script:setSortOrder('indexed_at:asc')">Date saved &Darr;</a>
+            {% if search_options.sort_order == ("_date_created", "desc") %}
+            <a href="#" onclick="script:setSortOrder('_date_created:asc')">Date saved &Darr;</a>
             {% else %}
-            <a href="#" onclick="script:setSortOrder('indexed_at:desc')">
+            <a href="#" onclick="script:setSortOrder('_date_created:desc')">
               Date saved
-              {% if search_options.sort_order == ("indexed_at", "asc") %}
+              {% if search_options.sort_order == ("_date_created", "asc") %}
                 &Uarr;
               {% endif %}
             </a>
