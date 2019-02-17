@@ -18,6 +18,7 @@ from PIL import Image
 import responder
 
 import date_helpers
+import search_helpers
 from tagged_store import TaggedDocumentStore
 
 
@@ -34,49 +35,27 @@ api.jinja_env.filters["shard"] = shard
 
 DOCSTORE_ROOT = os.path.join(os.environ["HOME"], "Documents", "docstore")
 
-PAGESIZE = 48
-
 store = TaggedDocumentStore(DOCSTORE_ROOT)
-
-
-@attr.s
-class SearchResponse:
-    documents = attr.ib()
-    tags = attr.ib()
-    total = attr.ib()
 
 
 @api.route("/")
 def list_documents(req, resp):
     tag_query = req.params.get_list("tag", [])
-    page = int(req.params.get("page", default=1))
+    page = req.params.get("page", default=1)
     sort_order = req.params.get("sort", "indexed_at:desc")
 
-    all_documents = store.search_documents(query=tag_query)
-
-    documents_per_page = [
-        doc.data
-        for doc in all_documents[(page - 1) * PAGESIZE:page * PAGESIZE]
-    ]
-
-    tags = collections.defaultdict(int)
-    for doc in all_documents:
-        for t in doc.tags:
-            tags[t] += 1
-
-    search_response = SearchResponse(
-        documents=documents_per_page,
-        tags=tags,
-        total=len(all_documents)
+    search_options = search_helpers.SearchOptions(
+        tag_query=tag_query,
+        page=int(page),
+        sort_order=sort_order.split(":")
     )
+
+    search_response = search_helpers.search_store(store, options=search_options)
 
     resp.content = api.template(
         "document_list.html",
-        tag_query=tag_query,
-        search_response=search_response,
-        sort_order=sort_order,
-        current_page=page,
-        page_size=PAGESIZE
+        search_options=search_options,
+        search_response=search_response
     )
 
 
