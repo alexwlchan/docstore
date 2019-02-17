@@ -112,13 +112,13 @@
         <hr>
       </p>
 
-      {% if req_tags %}
+      {% if search_options.tag_query %}
       <p>Filtering to documents with
-        {% for t in req_tags %}<button type="button" class="filter_tag btn btn-dark" onclick="script:removeTag('{{ t }}')">{{ t }}</button>{% endfor %}
+        {% for t in search_options.tag_query %}<button type="button" class="filter_tag btn btn-dark" onclick="script:removeTag('{{ t }}')">{{ t }}</button>{% endfor %}
       </p>
       {% endif %}
 
-      {% if all_tags %}
+      {% if search_response.tags %}
       <p>
         <a class="btn btn-light" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
           View all tags
@@ -127,7 +127,7 @@
       <div class="collapse" id="collapseExample">
         <div class="card card-body">
           <ul style="margin-bottom: 0;">
-          {% for tag in all_tags|sort %}
+          {% for tag in search_response.tags|sort %}
             {% if not loop.first %}
               {% if tag.count(":") > loop.previtem.count(":") %}
                 {% if tag.startswith(loop.previtem) %}<ul>
@@ -142,7 +142,7 @@
               <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
               {% endif %}
             {% endif %}
-            <li>{% if tag not in req_tags %}<a href="#" onclick="script:gotoTag('{{ tag }}')">{{ tag }}</a>{% else %}{{ tag }}{% endif %} ({{ all_tags[tag] }})</li>
+            <li>{% if tag not in search_options.tag_query %}<a href="#" onclick="script:gotoTag('{{ tag }}')">{{ tag }}</a>{% else %}{{ tag }}{% endif %} ({{ search_response.tags[tag] }})</li>
 
             {% if loop.last %}
               {% for i in range(tag.count(":")) %}</ul>{% endfor %}
@@ -155,19 +155,19 @@
 
       <p></p>
 
-      {% if documents.hits %}
+      {% if search_response.documents %}
       <table class="table">
         <thead class="thead-light">
           <tr>
             <th style="width: 60px;"></th>
 
             <th>
-            {% if sort_order == "name:asc" %}
-            <a href="#" onclick="script:setSortOrder('name:desc')">Name &Uarr;</a>
+            {% if search_options.sort_order == ("title", "asc") %}
+            <a href="#" onclick="script:setSortOrder('title:desc')">Name &Uarr;</a>
             {% else %}
-            <a href="#" onclick="script:setSortOrder('name:asc')">
+            <a href="#" onclick="script:setSortOrder('title:asc')">
               Name
-              {% if sort_order == "name:desc" %}
+              {% if search_options.sort_order == ("title", "desc") %}
                 &Darr;
               {% endif %}
             </a>
@@ -175,12 +175,12 @@
             </th>
 
             <th>
-            {% if sort_order == "indexed_at:desc" %}
-            <a href="#" onclick="script:setSortOrder('indexed_at:asc')">Date saved &Darr;</a>
+            {% if search_options.sort_order == ("_date_created", "desc") %}
+            <a href="#" onclick="script:setSortOrder('_date_created:asc')">Date saved &Darr;</a>
             {% else %}
-            <a href="#" onclick="script:setSortOrder('indexed_at:desc')">
+            <a href="#" onclick="script:setSortOrder('_date_created:desc')">
               Date saved
-              {% if sort_order == "indexed_at:asc" %}
+              {% if search_options.sort_order == ("_date_created", "asc") %}
                 &Uarr;
               {% endif %}
             </a>
@@ -188,29 +188,28 @@
             </th>
           </tr>
         </thead>
-        {% for hit in documents.hits %}
+        {% for doc in search_response.documents %}
 
-        {% set title = hit._source.title %}
-        {% set tags = hit._source.tags %}
+        {% set tags = doc.tags %}
 
         <tr>
           <td class="thumbnail">
-            {% if hit._source.thumbnail_path %}
-              <img src="http://localhost:8062/thumbnails/{{ hit._source.thumbnail_path }}">
+            {% if doc.thumbnail_path %}
+              <img src="http://localhost:{{ nginx_port }}/thumbnails/{{ doc.thumbnail_path }}">
             {% endif %}
           </td>
-          <td><a href="http://localhost:8062/files/{{ hit._source.filename | shard }}" target="_blank">{{ hit._source.name }}</a>
+          <td><a href="http://localhost:{{ nginx_port }}/files/{{ doc.pdf_path }}" target="_blank">{{ doc.title }}</a>
 
           {% if tags %}
           <p class="tags">
             {% for t in tags|sort %}
-            <button type="button" class="btn btn-light tag" {% if t in req_tags %}disabled{% else %}onclick="script:gotoTag('{{ t }}')"{% endif %}>{{ t }}</button>
+            <button type="button" class="btn btn-light tag" {% if t in search_options.tag_query %}disabled{% else %}onclick="script:gotoTag('{{ t }}')"{% endif %}>{{ t }}</button>
             {% endfor %}
           </p>
           {% endif %}
 
           </td>
-          <td>{% if hit._source.indexed_at %}{{ hit._source.indexed_at | since_now_date_str }}{% endif %}</td>
+          <td>{% if doc._date_created %}{{ doc._date_created | since_now_date_str }}{% endif %}</td>
         </tr>
         {% endfor %}
       </table>
@@ -218,27 +217,27 @@
       No documents found!
       {% endif %}
 
-      {% if documents.total > page_size %}
+      {% if search_response.total > search_options.page_size %}
       <nav aria-label="Page navigation">
         <ul class="pagination justify-content-center">
-          <li class="page-item{% if current_page == 1 %} disabled{% endif %}">
-            <a class="page-link" href="#" aria-label="Previous"{% if current_page > 1 %} onclick="script:setPageNumber({{ current_page - 1}})"{% endif %}>
+          <li class="page-item{% if search_options.page == 1 %} disabled{% endif %}">
+            <a class="page-link" href="#" aria-label="Previous"{% if search_options.page > 1 %} onclick="script:setPageNumber({{ search_options.page - 1}})"{% endif %}>
               <span aria-hidden="true">&laquo;</span>
               <span class="sr-only">Previous</span>
             </a>
           </li>
-          {% set total_pages = (documents.total / page_size) | round(0, "ceil") | int %}
+          {% set total_pages = (search_response.total / search_options.page_size) | round(0, "ceil") | int %}
           {% for page in range(1, total_pages + 1) %}
-            <li class="page-item{% if page == current_page %} active{% endif %}">
-              {% if page == current_page %}
+            <li class="page-item{% if page == search_options.page %} active{% endif %}">
+              {% if page == search_options.page %}
               <span class="page-link" style="pointer-events: none;">{{ page }}</span>
               {% else %}
               <a class="page-link" href="#" onclick="script:setPageNumber({{ page }})">{{ page }}</a>
               {% endif %}
             </li>
           {% endfor %}
-          <li class="page-item{% if current_page == total_pages %} disabled{% endif %}">
-            <a class="page-link" href="#" aria-label="Next"{% if current_page < total_pages %} onclick="script:setPageNumber({{ current_page + 1}})"{% endif %}>
+          <li class="page-item{% if search_options.page == total_pages %} disabled{% endif %}">
+            <a class="page-link" href="#" aria-label="Next"{% if search_options.page < total_pages %} onclick="script:setPageNumber({{ search_options.page + 1}})"{% endif %}>
               <span aria-hidden="true">&raquo;</span>
               <span class="sr-only">Next</span>
             </a>

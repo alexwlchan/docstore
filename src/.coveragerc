@@ -1,0 +1,11 @@
+[run]
+branch = True
+include =
+    *.py
+omit =
+    **/.virtualenvs/**/*.py
+    /usr/local/Cellar/**/*.py
+
+[report]
+show_missing = true
+fail_under = 100
