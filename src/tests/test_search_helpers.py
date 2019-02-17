@@ -78,4 +78,3 @@ def test_respects_sort_order(store):
     options = SearchOptions(sort_order=("name", "desc"))
     resp = search_store(store, options)
     assert resp.documents == [docD, docC, docB, docA]
-

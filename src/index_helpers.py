@@ -16,12 +16,16 @@ def create_thumbnail(store, doc):
 
     pdf_path = doc.data["pdf_path"]
     thumb_path = os.path.join(doc.id[0], doc.id + ".jpg")
+
+    absolute_thumb_path = os.path.join(store.thumbs_dir, thumb_path)
+    os.makedirs(os.path.dirname(absolute_thumb_path), exist_ok=True)
+
     subprocess.check_call([
         "docker", "run", "--rm",
         "--volume", "%s:/data" % store.root,
         "preview-generator",
         os.path.join(store.files_dir, pdf_path).replace(store.root + "/", ""),
-        os.path.join(store.thumbs_dir, thumb_path).replace(store.root + "/", ""),
+        absolute_thumb_path.replace(store.root + "/", ""),
     ])
 
     doc.data["thumbnail_path"] = thumb_path
@@ -54,4 +58,3 @@ def index_pdf_document(store, user_data):
     os.unlink(path)
 
     return doc
-

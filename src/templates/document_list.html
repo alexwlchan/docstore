@@ -198,7 +198,7 @@
               <img src="http://localhost:8062/thumbnails/{{ doc.thumbnail_path }}">
             {% endif %}
           </td>
-          <td><a href="http://localhost:8062/files/{{ doc.filename | shard }}" target="_blank">{{ doc.title }}</a>
+          <td><a href="http://localhost:8062/files/{{ doc.pdf_path }}" target="_blank">{{ doc.title }}</a>
 
           {% if tags %}
           <p class="tags">
@@ -209,7 +209,7 @@
           {% endif %}
 
           </td>
-          <td>{% if doc.indexed_at %}{{ doc.indexed_at | since_now_date_str }}{% endif %}</td>
+          <td>{% if doc._date_created %}{{ doc._date_created | since_now_date_str }}{% endif %}</td>
         </tr>
         {% endfor %}
       </table>

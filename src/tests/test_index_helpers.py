@@ -4,7 +4,6 @@ import os
 import subprocess
 import tempfile
 
-import mock
 import pytest
 
 import index_helpers
@@ -101,7 +100,7 @@ def test_creates_thumbnail_when_indexing(store, pdf_path, monkeypatch):
 
 def test_cleans_up_original_pdf(store, pdf_path, monkeypatch):
     user_data = {"path": pdf_path}
-    doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
+    index_pdf_document(monkeypatch, store=store, user_data=user_data)
 
     assert not os.path.exists(pdf_path)
 
