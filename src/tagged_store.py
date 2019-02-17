@@ -28,6 +28,9 @@ class TaggedDocument:
         # Dicts are unhashable; the same is true for TaggedDocument
         raise TypeError("unhashable type: %r" % type(self).__name__)
 
+    def matches_tag_query(self, query):
+        return all(q in self.tags for q in query)
+
 
 class TaggedDocumentEncoder(json.JSONEncoder):
     def default(self, obj):

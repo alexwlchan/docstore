@@ -36,6 +36,21 @@ def test_cant_put_tagged_document_in_set():
         set([d1])
 
 
+@pytest.mark.parametrize('data, query, expected_result', [
+    ({"id": "1"}, [], True),
+    ({"id": "2"}, ["foo"], False),
+    ({"id": "3"}, ["foo", "bar"], False),
+    ({"id": "4", "tags": []}, [], True),
+    ({"id": "5", "tags": ["foo"]}, [], True),
+    ({"id": "6", "tags": ["foo"]}, ["foo"], True),
+    ({"id": "7", "tags": ["foo"]}, ["foo", "bar"], False),
+    ({"id": "8", "tags": ["foo"]}, ["bar"], False),
+])
+def test_can_match_tag_query(data, query, expected_result):
+    doc = TaggedDocument(data)
+    assert doc.matches_tag_query(query) == expected_result
+
+
 def test_root_path_properties():
     store = TaggedDocumentStore("/foo")
     assert store.db_path == "/foo/documents.json"
