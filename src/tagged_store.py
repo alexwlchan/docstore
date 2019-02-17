@@ -13,14 +13,24 @@ class TaggedDocument:
     tags = attr.ib()
 
     def __init__(self, data):
+        if "_id" not in data:
+            data["_id"] = str(uuid.uuid4())
+
         self.data = data
         self.tags = set(data.get("tags", []))
+
+    @property
+    def id(self):
+        return self.data["_id"]
 
     def __eq__(self, other):
         if isinstance(other, TaggedDocument):
             return self.data == other.data
         elif isinstance(other, dict):
-            return self.data == other
+            return (
+                self.data == other or
+                {k: v for k, v in self.data.items() if k != "_id"} == other
+            )
         else:
             return NotImplemented
 
@@ -68,22 +78,15 @@ class TaggedDocumentStore:
     def thumbs_dir(self):
         return os.path.join(self.root, "thumbnails")
 
-    def index_document(self, doc, doc_id=None):
+    def index_document(self, doc):
         if isinstance(doc, dict):
             doc = TaggedDocument(doc)
 
         if not isinstance(doc, TaggedDocument):
             raise TypeError("doc=%r is %s, expected TaggedDocument" % (doc, type(doc)))
 
-        if doc_id is None:
-            try:
-                doc_id = doc.data["_id"]
-            except KeyError:
-                doc_id = str(uuid.uuid4())
-                doc.data["_id"] = doc_id
-
         new_documents = self.documents.copy()
-        new_documents[doc_id] = doc
+        new_documents[doc.id] = doc
 
         json_string = json.dumps(
             new_documents,

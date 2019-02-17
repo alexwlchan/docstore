@@ -9,7 +9,7 @@ def test_tagged_document_equality():
     d1 = TaggedDocument({"id": "1"})
     assert d1 == d1
     assert d1 == {"id": "1"}
-    assert d1 == TaggedDocument({"id": "1"})
+    assert d1 == TaggedDocument({"id": "1", "_id": d1.id})
 
 
 def test_tagged_document_inequality():
@@ -107,8 +107,8 @@ def test_can_update_document_by_uuid(store):
     doc = {"id": "1", "color": "blue"}
     store.index_document(doc)
 
-    doc_new = {"id": "1", "color": "red"}
-    store.index_document(doc_new, doc_id=doc["_id"])
+    doc_new = {"_id": doc["_id"], "id": "1", "color": "red"}
+    store.index_document(doc_new)
 
     assert len(store.documents) == 1
     assert doc not in store.documents.values()
