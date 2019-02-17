@@ -1,6 +1,7 @@
 # -*- encoding: utf-8
 
 import filecmp
+import hashlib
 import os
 import shutil
 import subprocess
@@ -45,6 +46,14 @@ def index_pdf_document(store, user_data):
     os.makedirs(os.path.dirname(complete_pdf_path), exist_ok=True)
     shutil.copyfile(path, complete_pdf_path)
     doc.data["pdf_path"] = pdf_path
+
+    # Add a SHA256 hash of the PDF.  This allows integrity checking later
+    # and makes it easy to detect duplicates.
+    # Note: this slurps the entire PDF in at once.  Fine for small files;
+    # might be worth revisiting if I ever get something unusually large.
+    h = hashlib.sha256()
+    h.update(open(path, "rb").read())
+    doc.data["sha256_hash"] = h.hexdigest()
 
     # Store a copy before we create the thumbnail, so if the thumbnail creation
     # fails for some reason, we still have the document in the database.

@@ -98,6 +98,17 @@ def test_creates_thumbnail_when_indexing(store, pdf_path, monkeypatch):
     assert "thumbnail_path" in doc.data
 
 
+def test_adds_sha256_hash_of_document(store, pdf_path, monkeypatch):
+    user_data = {"path": pdf_path}
+    doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
+
+    # sha256(b"hello world")
+    assert (
+        doc.data["sha256_hash"] ==
+        "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+    )
+
+
 def test_cleans_up_original_pdf(store, pdf_path, monkeypatch):
     user_data = {"path": pdf_path}
     index_pdf_document(monkeypatch, store=store, user_data=user_data)
