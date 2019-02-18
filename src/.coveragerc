@@ -6,6 +6,7 @@ omit =
     **/.virtualenvs/**/*.py
     /usr/local/Cellar/**/*.py
     **/python3.6/**/*.py
+    /opt/python/**/*.py
 
 [report]
 show_missing = true
