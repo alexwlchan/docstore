@@ -2,7 +2,6 @@
 
 import os
 import subprocess
-import tempfile
 
 import pytest
 
@@ -30,13 +29,6 @@ def index_pdf_document(monkeypatch, store, user_data):
     with monkeypatch.context() as m:
         m.setattr(subprocess, "check_call", mock_subprocess)
         return index_helpers.index_pdf_document(store=store, user_data=user_data)
-
-
-@pytest.fixture
-def pdf_path():
-    path = os.path.join(tempfile.mkdtemp(), "foo.pdf")
-    open(path, "wb").write(b"hello world")
-    return path
 
 
 def test_create_thumbnail(store, monkeypatch):
@@ -75,54 +67,55 @@ def test_indexing_non_pdf_is_error(store, monkeypatch):
         index_helpers.index_pdf_document(store, user_data=user_data)
 
 
-def test_copies_pdf_to_store(store, pdf_path, monkeypatch):
-    user_data = {"path": pdf_path}
+def test_copies_pdf_to_store(store, monkeypatch):
+    user_data = {"path": "foo.pdf", "file": b"hello world"}
     doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
 
     assert os.path.exists(os.path.join(store.files_dir, doc.id[0], doc.id + ".pdf"))
     assert doc.data["pdf_path"] == os.path.join(doc.id[0], doc.id + ".pdf")
 
 
-def test_pdf_path_is_saved_to_store(store, pdf_path, monkeypatch):
-    user_data = {"path": pdf_path}
+def test_pdf_path_is_saved_to_store(store, monkeypatch):
+    user_data = {"path": "foo.pdf", "file": b"hello world"}
     doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
 
     new_store = TaggedDocumentStore(store.root)
     assert "pdf_path" in new_store.documents[doc.id].data
 
 
-def test_creates_thumbnail_when_indexing(store, pdf_path, monkeypatch):
-    user_data = {"path": pdf_path}
+def test_creates_thumbnail_when_indexing(store, monkeypatch):
+    user_data = {"path": "foo.pdf", "file": b"hello world"}
     doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
 
     assert "thumbnail_path" in doc.data
 
 
-def test_adds_sha256_hash_of_document(store, pdf_path, monkeypatch):
-    user_data = {"path": pdf_path}
+def test_adds_sha256_hash_of_document(store, monkeypatch):
+    user_data = {"path": "foo.pdf", "file": b"hello world"}
     doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
 
     # sha256(b"hello world")
     assert (
-        doc.data["sha256_hash"] ==
+        doc.data["sha256_checksum"] ==
         "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
     )
 
 
-def test_cleans_up_original_pdf(store, pdf_path, monkeypatch):
-    user_data = {"path": pdf_path}
-    index_pdf_document(monkeypatch, store=store, user_data=user_data)
+def test_leaves_correct_checksum_unmodified(store, monkeypatch):
+    user_data = {
+        "path": "foo.pdf",
+        "file": b"hello world",
 
-    assert not os.path.exists(pdf_path)
+        # sha256(b"hello world")
+        "sha256_checksum": "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+    }
+    doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
+
+    assert doc.data["sha256_checksum"] == user_data["sha256_checksum"]
 
 
-def test_does_not_delete_original_if_copy_corrupts_file(store, pdf_path, monkeypatch):
-    user_data = {"path": pdf_path}
+def test_raises_error_if_checksum_mismatch(store, monkeypatch):
+    user_data = {"path": "foo.pdf", "file": b"hello world", "sha256_checksum": "123"}
 
-    def mock_subprocess(cmd):
-        open(pdf_path, "wb").write(b"ooh, different contents!")
-
-    with monkeypatch.context() as m:
-        m.setattr(subprocess, "check_call", mock_subprocess)
-        with pytest.raises(RuntimeError, match="PDF copy failed"):
-            return index_helpers.index_pdf_document(store=store, user_data=user_data)
+    with pytest.raises(RuntimeError, match="Incorrect SHA256 hash on upload"):
+        index_pdf_document(monkeypatch, store=store, user_data=user_data)

@@ -1,9 +1,7 @@
 # -*- encoding: utf-8
 
-import filecmp
 import hashlib
 import os
-import shutil
 import subprocess
 
 from tagged_store import TaggedDocument
@@ -44,7 +42,7 @@ def index_pdf_document(store, user_data):
     pdf_path = os.path.join(doc.id[0], doc.id + ".pdf")
     complete_pdf_path = os.path.join(store.files_dir, pdf_path)
     os.makedirs(os.path.dirname(complete_pdf_path), exist_ok=True)
-    shutil.copyfile(path, complete_pdf_path)
+    open(complete_pdf_path, "wb").write(user_data.pop("file"))
     doc.data["pdf_path"] = pdf_path
 
     # Add a SHA256 hash of the PDF.  This allows integrity checking later
@@ -52,18 +50,17 @@ def index_pdf_document(store, user_data):
     # Note: this slurps the entire PDF in at once.  Fine for small files;
     # might be worth revisiting if I ever get something unusually large.
     h = hashlib.sha256()
-    h.update(open(path, "rb").read())
-    doc.data["sha256_hash"] = h.hexdigest()
+    h.update(open(complete_pdf_path, "rb").read())
+    try:
+        if doc.data["sha256_checksum"] != h.hexdigest():
+            raise RuntimeError("Incorrect SHA256 hash on upload!")
+    except KeyError:
+        doc.data["sha256_checksum"] = h.hexdigest()
 
     # Store a copy before we create the thumbnail, so if the thumbnail creation
     # fails for some reason, we still have the document in the database.
     store.index_document(doc)
 
     create_thumbnail(store=store, doc=doc)
-
-    # Once it's stored, we can clean up the original document.
-    if not filecmp.cmp(path, complete_pdf_path):
-        raise RuntimeError("PDF copy failed for %r!" % path)
-    os.unlink(path)
 
     return doc

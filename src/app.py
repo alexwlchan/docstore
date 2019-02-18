@@ -50,10 +50,17 @@ def list_documents(req, resp):
 @api.route("/api/documents")
 async def documents_endpoint(req, resp):
     if req.method == "post":
-        user_data = await req.media()
+        user_data = await req.media(format="files")
 
         @api.background.task
         def process_data(user_data):
+
+            # We can't store 'bytes' in JSON without providing an encoding, so
+            # turn them into str instances first.
+            for k, v in user_data.items():
+                if k != "file" and isinstance(v, bytes):
+                    user_data[k] = v.decode("utf8")
+
             index_pdf_document(store=store, user_data=user_data)
 
         process_data(user_data)
@@ -64,7 +71,7 @@ async def documents_endpoint(req, resp):
 
 @contextlib.contextmanager
 def run_nginx(root, nginx_port):
-    proc = subprocess.Popen([
+    subprocess.Popen([
         "docker", "run", "--rm",
         "--volume", "%s:/usr/share/nginx/html" % root,
         "--publish", "%s:80" % nginx_port,
