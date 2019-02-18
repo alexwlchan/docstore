@@ -1,0 +1,7 @@
+-rrequirements.txt
+
+flake8
+coverage
+mock
+pytest-cov
+pytest

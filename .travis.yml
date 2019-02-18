@@ -12,7 +12,8 @@ cache:
 
 install:
   - pip install --upgrade pip
-  - pip install flake8
+  - pip install -r test_requirements.txt
 
 script:
   - flake8 --max-complexity 10 --ignore=E501,W504
+  - cd src && coverage run -m py.test tests/*.py && coverage report
