@@ -29,7 +29,7 @@ api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
 def list_documents(req, resp):
     tag_query = req.params.get_list("tag", [])
     page = req.params.get("page", default=1)
-    sort_order = req.params.get("sort", "indexed_at:desc")
+    sort_order = req.params.get("sort", "_date_created:desc")
 
     search_options = search_helpers.SearchOptions(
         tag_query=tag_query,
