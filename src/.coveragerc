@@ -5,6 +5,7 @@ include =
 omit =
     **/.virtualenvs/**/*.py
     /usr/local/Cellar/**/*.py
+    **/python3.6/**/*.py
 
 [report]
 show_missing = true
