@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
-import contextlib
 import errno
 import os
-import subprocess
 import sys
 import webbrowser
 
 from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
 import responder
+from whitenoise import WhiteNoise
 
 import date_helpers
 from exceptions import UserError
@@ -19,7 +18,6 @@ from tagged_store import TaggedDocumentStore
 
 
 APP_PORT = 8072
-NGINX_PORT = 8073
 
 
 def create_api(store):
@@ -27,6 +25,14 @@ def create_api(store):
 
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
 
+    # Add routes for serving the static files/thumbnails
+    whitenoise_files = WhiteNoise(application=api._default_wsgi_app)
+    whitenoise_files.add_files(store.files_dir)
+    api.mount("/files", whitenoise_files)
+
+    whitenoise_thumbs = WhiteNoise(application=api._default_wsgi_app)
+    whitenoise_thumbs.add_files(store.thumbs_dir)
+    api.mount("/thumbnails", whitenoise_thumbs)
 
     @api.route("/")
     def list_documents(req, resp):
@@ -45,10 +51,8 @@ def create_api(store):
         resp.content = api.template(
             "document_list.html",
             search_options=search_options,
-            search_response=search_response,
-            nginx_port=NGINX_PORT
+            search_response=search_response
         )
-
 
     def prepare_upload_data(user_data):
         prepared_data = {}
@@ -76,7 +80,6 @@ def create_api(store):
             prepared_data["user_data"] = {k: v.decode("utf8") for k, v in user_data.items()}
 
         return prepared_data
-
 
     @api.route("/upload")
     async def upload_document(req, resp):
@@ -111,17 +114,6 @@ def create_api(store):
     return api
 
 
-@contextlib.contextmanager
-def run_nginx(root, nginx_port):
-    subprocess.Popen([
-        "docker", "run", "--rm",
-        "--volume", "%s:/usr/share/nginx/html" % root,
-        "--publish", "%s:80" % nginx_port,
-        "nginx:alpine",
-    ])
-    yield
-
-
 if __name__ == "__main__":
     try:
         root = os.path.normpath(sys.argv[1])
@@ -131,12 +123,11 @@ if __name__ == "__main__":
     store = TaggedDocumentStore(root)
     api = create_api(store)
 
-    with run_nginx(root=root, nginx_port=NGINX_PORT):
-        try:
-            api.run(port=APP_PORT)
-        except OSError as err:
-            if err.errno == errno.EADDRINUSE:
-                print("Server is already running!")
-                webbrowser.open("http://localhost:%d" % APP_PORT)
-            else:
-                raise
+    try:
+        api.run(port=APP_PORT)
+    except OSError as err:
+        if err.errno == errno.EADDRINUSE:
+            print("Server is already running!")
+            webbrowser.open("http://localhost:%d" % APP_PORT)
+        else:
+            raise

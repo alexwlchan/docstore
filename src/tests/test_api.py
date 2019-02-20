@@ -6,6 +6,7 @@ import io
 import pytest
 
 import api as service
+import index_helpers
 
 
 @pytest.fixture()
@@ -17,7 +18,7 @@ def api(store, monkeypatch):
         def __call__(self, cmd):
             self.calls.append(cmd)
 
-    service.subprocess.check_call = MockSubprocess()
+    index_helpers.subprocess.check_call = MockSubprocess()
     return service.create_api(store)
 
 
@@ -114,4 +115,4 @@ def test_extra_keys_are_kept_in_store(api, store):
 def test_calls_create_thumbnail(api, store):
     resp = api.requests.post("/upload", files={"file": io.BytesIO()})
     assert resp.status_code == 200
-    assert len(service.subprocess.check_call.calls) == 1
+    assert len(index_helpers.subprocess.check_call.calls) == 1

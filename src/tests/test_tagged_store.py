@@ -1,5 +1,8 @@
 # -*- encoding: utf-8
 
+import os
+import tempfile
+
 import pytest
 
 from tagged_store import TaggedDocument, TaggedDocumentStore
@@ -49,14 +52,14 @@ def test_can_match_tag_query(data, query, expected_result):
 
 
 def test_root_path_properties():
-    store = TaggedDocumentStore("/foo")
-    assert store.db_path == "/foo/documents.json"
-    assert store.files_dir == "/foo/files"
-    assert store.thumbs_dir == "/foo/thumbnails"
+    root = tempfile.mkdtemp()
+    store = TaggedDocumentStore(root)
+    assert store.db_path == os.path.join(root, "documents.json")
+    assert store.files_dir == os.path.join(root, "files")
+    assert store.thumbs_dir == os.path.join(root, "thumbnails")
 
 
-def test_gets_empty_documents_on_startup():
-    store = TaggedDocumentStore("/foo")
+def test_gets_empty_documents_on_startup(store):
     assert store.documents == {}
 
 
@@ -117,3 +120,10 @@ def test_can_update_document_by_uuid(store):
     assert len(store.documents) == 1
     assert doc not in store.documents.values()
     assert doc_new in store.documents.values()
+
+
+def test_creates_necessary_directories(store):
+    root = tempfile.mkdtemp()
+    store = TaggedDocumentStore(root=root)
+    assert os.path.exists(store.files_dir)
+    assert os.path.exists(store.thumbs_dir)

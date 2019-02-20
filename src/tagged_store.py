@@ -69,6 +69,9 @@ class TaggedDocumentStore:
         except FileNotFoundError:
             existing = {}
 
+        os.makedirs(self.files_dir, exist_ok=True)
+        os.makedirs(self.thumbs_dir, exist_ok=True)
+
         self.documents = {
             doc_id: TaggedDocument(doc)
             for doc_id, doc in existing.items()
