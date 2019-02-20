@@ -4,6 +4,7 @@ import hashlib
 import os
 import subprocess
 
+from exceptions import UserError
 from tagged_store import TaggedDocument
 
 
@@ -32,11 +33,6 @@ def create_thumbnail(store, doc):
 
 
 def index_pdf_document(store, user_data):
-    path = user_data["path"]
-    _, ext = os.path.splitext(path)
-    if not ext.lower() == ".pdf":
-        raise ValueError("path=%r does not point to a PDF!" % path)
-
     doc = TaggedDocument(user_data)
 
     pdf_path = os.path.join(doc.id[0], doc.id + ".pdf")
@@ -53,14 +49,12 @@ def index_pdf_document(store, user_data):
     h.update(open(complete_pdf_path, "rb").read())
     try:
         if doc.data["sha256_checksum"] != h.hexdigest():
-            raise RuntimeError("Incorrect SHA256 hash on upload!")
+            raise UserError(
+                "Incorrect SHA256 hash on upload!  Got %s, calculated %s." %
+                (doc.data['sha256_checksum'], h.hexdigest())
+            )
     except KeyError:
         doc.data["sha256_checksum"] = h.hexdigest()
 
-    # Store a copy before we create the thumbnail, so if the thumbnail creation
-    # fails for some reason, we still have the document in the database.
     store.index_document(doc)
-
-    create_thumbnail(store=store, doc=doc)
-
     return doc

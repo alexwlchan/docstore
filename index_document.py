@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import os
+
 import click
 import requests
 
@@ -13,17 +15,17 @@ import requests
 @click.option("--title", prompt="What is the title?", default="")
 def main(path, title, tags):
     data = {
-        "path": path
+        "filename": os.path.basename(path)
     }
 
     if title.strip():
         data["title"] = title.strip()
 
     if tags.split():
-        data["tags"] = tags.split()
+        data["tags"] = tags
 
     resp = requests.post(
-        "http://localhost:8072/api/documents",
+        "http://localhost:8072/upload",
         data=data,
         files={"file": open(path, "rb")}
     )

@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+
 class DocstoreException(Exception):
     """A base class for all exceptions raised by docstore."""
 

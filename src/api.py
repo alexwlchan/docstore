@@ -13,7 +13,7 @@ import responder
 
 import date_helpers
 from exceptions import UserError
-from index_helpers import index_pdf_document
+from index_helpers import create_thumbnail, index_pdf_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
 
@@ -64,10 +64,15 @@ def prepare_upload_data(user_data):
         except KeyError:
             pass
 
+    try:
+        prepared_data["tags"] = prepared_data["tags"].split()
+    except KeyError:
+        pass
+
     # Any remaining keys we put into a special "user_data" array so they're
     # still saved, but don't conflict with other parameters we might add later.
     if user_data:
-        prepared_data["user_data"] = {k: v.encode("utf8") for k, v in user_data.items()}
+        prepared_data["user_data"] = {k: v.decode("utf8") for k, v in user_data.items()}
 
     return prepared_data
 
@@ -75,7 +80,6 @@ def prepare_upload_data(user_data):
 @api.route("/upload")
 async def upload_document(req, resp):
     if req.method == "post":
-        resp.media = {"success": True}
 
         # This catches the error that gets thrown if the user doesn't include
         # any files in their upload.
@@ -88,38 +92,18 @@ async def upload_document(req, resp):
 
         try:
             prepared_data = prepare_upload_data(user_data)
+            doc = index_pdf_document(store=api.store, user_data=prepared_data)
         except UserError as err:
             resp.media = {"error": str(err)}
             resp.status_code = api.status_codes.HTTP_400
             return
 
-        index_pdf_document(store=api.store, user_data=prepared_data)
+        @api.background.task
+        def create_doc_thumbnail(doc):
+            create_thumbnail(store=api.store, doc=doc)
 
-    else:
-        resp.status_code = api.status_codes.HTTP_405
-
-
-@api.route("/api/documents")
-async def documents_endpoint(req, resp):
-    if req.method == "post":
-        user_data = await req.media(format="files")
-
-        # @api.background.task
-        def process_data(user_data):
-            print(user_data)
-
-            # We can't store 'bytes' in JSON without providing an encoding, so
-            # turn them into str instances first.
-            for k, v in user_data.items():
-                if k != "file" and isinstance(v, bytes):
-                    user_data[k] = v.decode("utf8")
-
-            index_pdf_document(store=store, user_data=user_data)
-
-            # make thumbnail creation a thing
-
-        process_data(user_data)
-        resp.media = {"success": True}
+        create_doc_thumbnail(doc)
+        resp.media = {"id": doc.id}
     else:
         resp.status_code = api.status_codes.HTTP_405
 

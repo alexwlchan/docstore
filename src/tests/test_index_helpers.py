@@ -5,6 +5,7 @@ import subprocess
 
 import pytest
 
+from exceptions import UserError
 import index_helpers
 from tagged_store import TaggedDocument, TaggedDocumentStore
 
@@ -20,15 +21,6 @@ def create_thumbnail(monkeypatch, store, doc):
     with monkeypatch.context() as m:
         m.setattr(subprocess, "check_call", mock_subprocess)
         return index_helpers.create_thumbnail(store, doc)
-
-
-def index_pdf_document(monkeypatch, store, user_data):
-    def mock_subprocess(cmd):
-        pass
-
-    with monkeypatch.context() as m:
-        m.setattr(subprocess, "check_call", mock_subprocess)
-        return index_helpers.index_pdf_document(store=store, user_data=user_data)
 
 
 def test_create_thumbnail(store, monkeypatch):
@@ -61,15 +53,9 @@ def test_removes_old_thumbnail_first(store, monkeypatch):
     assert doc.data["thumbnail_path"] != "1/100.jpg"
 
 
-def test_indexing_non_pdf_is_error(store, monkeypatch):
-    user_data = {"path": "foo.jpg"}
-    with pytest.raises(ValueError):
-        index_helpers.index_pdf_document(store, user_data=user_data)
-
-
 def test_copies_pdf_to_store(store, monkeypatch):
     user_data = {"path": "foo.pdf", "file": b"hello world"}
-    doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
+    doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     assert os.path.exists(os.path.join(store.files_dir, doc.id[0], doc.id + ".pdf"))
     assert doc.data["pdf_path"] == os.path.join(doc.id[0], doc.id + ".pdf")
@@ -77,22 +63,15 @@ def test_copies_pdf_to_store(store, monkeypatch):
 
 def test_pdf_path_is_saved_to_store(store, monkeypatch):
     user_data = {"path": "foo.pdf", "file": b"hello world"}
-    doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
+    doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     new_store = TaggedDocumentStore(store.root)
     assert "pdf_path" in new_store.documents[doc.id].data
 
 
-def test_creates_thumbnail_when_indexing(store, monkeypatch):
-    user_data = {"path": "foo.pdf", "file": b"hello world"}
-    doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
-
-    assert "thumbnail_path" in doc.data
-
-
 def test_adds_sha256_hash_of_document(store, monkeypatch):
     user_data = {"path": "foo.pdf", "file": b"hello world"}
-    doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
+    doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     # sha256(b"hello world")
     assert (
@@ -109,7 +88,7 @@ def test_leaves_correct_checksum_unmodified(store, monkeypatch):
         # sha256(b"hello world")
         "sha256_checksum": "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
     }
-    doc = index_pdf_document(monkeypatch, store=store, user_data=user_data)
+    doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     assert doc.data["sha256_checksum"] == user_data["sha256_checksum"]
 
@@ -117,5 +96,5 @@ def test_leaves_correct_checksum_unmodified(store, monkeypatch):
 def test_raises_error_if_checksum_mismatch(store, monkeypatch):
     user_data = {"path": "foo.pdf", "file": b"hello world", "sha256_checksum": "123"}
 
-    with pytest.raises(RuntimeError, match="Incorrect SHA256 hash on upload"):
-        index_pdf_document(monkeypatch, store=store, user_data=user_data)
+    with pytest.raises(UserError, match="Incorrect SHA256 hash on upload"):
+        index_helpers.index_pdf_document(store=store, user_data=user_data)

@@ -5,7 +5,6 @@ import tempfile
 
 import pytest
 
-import api as service
 from tagged_store import TaggedDocumentStore
 
 
@@ -14,9 +13,3 @@ def store():
     root = tempfile.mkdtemp()
     yield TaggedDocumentStore(root=root)
     shutil.rmtree(root)
-
-
-@pytest.fixture()
-def api(store):
-    service.api.store = store
-    return service.api
