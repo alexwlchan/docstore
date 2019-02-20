@@ -47,13 +47,22 @@ def list_documents(req, resp):
     )
 
 
+@api.route("/upload")
+async def upload_document(req, resp):
+    if req.method == "post":
+        resp.media = {"success": True}
+    else:
+        resp.status_code = api.status_codes.HTTP_405
+
+
 @api.route("/api/documents")
 async def documents_endpoint(req, resp):
     if req.method == "post":
         user_data = await req.media(format="files")
 
-        @api.background.task
+        # @api.background.task
         def process_data(user_data):
+            print(user_data)
 
             # We can't store 'bytes' in JSON without providing an encoding, so
             # turn them into str instances first.
@@ -62,6 +71,8 @@ async def documents_endpoint(req, resp):
                     user_data[k] = v.decode("utf8")
 
             index_pdf_document(store=store, user_data=user_data)
+
+            # make thumbnail creation a thing
 
         process_data(user_data)
         resp.media = {"success": True}
