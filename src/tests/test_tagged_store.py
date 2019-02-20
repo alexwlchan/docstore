@@ -1,5 +1,8 @@
 # -*- encoding: utf-8
 
+import os
+import tempfile
+
 import pytest
 
 from tagged_store import TaggedDocument, TaggedDocumentStore
@@ -8,12 +11,7 @@ from tagged_store import TaggedDocument, TaggedDocumentStore
 def test_tagged_document_equality():
     d1 = TaggedDocument({"id": "1"})
     assert d1 == d1
-    assert d1 == {"id": "1"}
-    assert d1 == TaggedDocument({
-        "id": "1",
-        "_id": d1.id,
-        "_date_created": d1.date_created
-    })
+    assert d1 == {"id": "1", "date_created": d1.date_created}
 
 
 def test_tagged_document_inequality():
@@ -48,15 +46,55 @@ def test_can_match_tag_query(data, query, expected_result):
     assert doc.matches_tag_query(query) == expected_result
 
 
+def test_can_read_values():
+    doc = TaggedDocument({"id": "1"})
+    assert doc["id"] == "1"
+    with pytest.raises(KeyError, match="foo"):
+        doc["foo"]
+
+
+def test_can_set_values():
+    doc = TaggedDocument({"id": "1"})
+    doc["foo"] = "bar"
+    assert doc.data["foo"] == "bar"
+
+
+def test_creates_id_if_not_assigned():
+    doc1 = TaggedDocument(data={})
+    assert "id" in doc1.data
+    doc2 = TaggedDocument(doc1)
+    assert doc1 == doc2
+
+
+def test_can_delete_value():
+    doc = TaggedDocument({"foo": "bar"})
+    del doc["foo"]
+    with pytest.raises(KeyError, match="foo"):
+        doc["foo"]
+
+
+def test_doc_has_length():
+    doc = TaggedDocument(data={})
+    assert len(doc) == 2  # ID and created date
+    doc["foo"] = "bar"
+    doc["bar"] = "baz"
+    assert len(doc) == 4
+
+
+def test_can_iterate_over_doc():
+    doc = TaggedDocument(data={})
+    assert list(iter(doc)) == list(iter(doc.data))
+
+
 def test_root_path_properties():
-    store = TaggedDocumentStore("/foo")
-    assert store.db_path == "/foo/documents.json"
-    assert store.files_dir == "/foo/files"
-    assert store.thumbs_dir == "/foo/thumbnails"
+    root = tempfile.mkdtemp()
+    store = TaggedDocumentStore(root)
+    assert store.db_path == os.path.join(root, "documents.json")
+    assert store.files_dir == os.path.join(root, "files")
+    assert store.thumbnails_dir == os.path.join(root, "thumbnails")
 
 
-def test_gets_empty_documents_on_startup():
-    store = TaggedDocumentStore("/foo")
+def test_gets_empty_documents_on_startup(store):
     assert store.documents == {}
 
 
@@ -104,16 +142,23 @@ def test_assigns_uuid_to_stored_document(store):
     doc = {"id": "1", "color": "red"}
     store.index_document(doc)
 
-    assert "_id" in doc
+    assert "id" in doc
 
 
 def test_can_update_document_by_uuid(store):
-    doc = {"id": "1", "color": "blue"}
+    doc = {"color": "blue"}
     store.index_document(doc)
 
-    doc_new = {"_id": doc["_id"], "id": "1", "color": "red"}
+    doc_new = {"id": doc["id"], "color": "red"}
     store.index_document(doc_new)
 
     assert len(store.documents) == 1
     assert doc not in store.documents.values()
     assert doc_new in store.documents.values()
+
+
+def test_creates_necessary_directories(store):
+    root = tempfile.mkdtemp()
+    store = TaggedDocumentStore(root=root)
+    assert os.path.exists(store.files_dir)
+    assert os.path.exists(store.thumbnails_dir)

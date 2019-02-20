@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import os
+
 import click
 import requests
 
@@ -12,17 +14,21 @@ import requests
 )
 @click.option("--title", prompt="What is the title?", default="")
 def main(path, title, tags):
-    json = {
-        "path": path
+    data = {
+        "filename": os.path.basename(path)
     }
 
     if title.strip():
-        json["title"] = title.strip()
+        data["title"] = title.strip()
 
     if tags.split():
-        json["tags"] = tags.split()
+        data["tags"] = tags
 
-    resp = requests.post("http://localhost:8072/api/documents", json=json)
+    resp = requests.post(
+        "http://localhost:8072/upload",
+        data=data,
+        files={"file": open(path, "rb")}
+    )
     resp.raise_for_status()
     print(resp.json())
 

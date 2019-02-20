@@ -31,10 +31,8 @@ jinja2==2.10
 markupsafe==1.1.0
 marshmallow==2.17.0
 mccabe==0.6.1             # via flake8
-mock==2.0.0
 more-itertools==6.0.0     # via pytest
 parse==1.9.0
-pbr==5.1.2                # via mock
 pillow==5.4.1
 pluggy==0.8.1             # via pytest
 promise==2.2.1

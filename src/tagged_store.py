@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+from collections.abc import MutableMapping
 import datetime as dt
 import json
 import os
@@ -9,36 +10,51 @@ import attr
 
 
 @attr.s(init=False, cmp=False)
-class TaggedDocument:
+class TaggedDocument(MutableMapping):
     data = attr.ib()
     tags = attr.ib()
 
     def __init__(self, data):
-        if "_id" not in data:
-            data["_id"] = str(uuid.uuid4())
+        if "id" not in data:
+            data["id"] = str(uuid.uuid4())
 
-        if "_date_created" not in data:
-            data["_date_created"] = dt.datetime.now().isoformat()
+        if "date_created" not in data:
+            data["date_created"] = dt.datetime.now().isoformat()
 
         self.data = data
-        self.tags = set(data.get("tags", []))
+
+    @property
+    def tags(self):
+        return set(self.data.get("tags", []))
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __setitem__(self, key, value):
+        self.data[key] = value
+
+    def __delitem__(self, key):
+        del self.data[key]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __iter__(self):
+        return iter(self.data)
 
     @property
     def id(self):
-        return self.data["_id"]
+        return self.data["id"]
 
     @property
     def date_created(self):
-        return self.data["_date_created"]
+        return self.data["date_created"]
 
     def __eq__(self, other):
         if isinstance(other, TaggedDocument):
             return self.data == other.data
         elif isinstance(other, dict):
-            return (
-                self.data == other or
-                {k: v for k, v in self.data.items() if not k.startswith("_")} == other
-            )
+            return self.data == other
         else:
             return NotImplemented
 
@@ -69,9 +85,12 @@ class TaggedDocumentStore:
         except FileNotFoundError:
             existing = {}
 
+        os.makedirs(self.files_dir, exist_ok=True)
+        os.makedirs(self.thumbnails_dir, exist_ok=True)
+
         self.documents = {
-            doc_id: TaggedDocument(doc)
-            for doc_id, doc in existing.items()
+            docid: TaggedDocument(doc)
+            for docid, doc in existing.items()
         }
 
     @property
@@ -83,7 +102,7 @@ class TaggedDocumentStore:
         return os.path.join(self.root, "files")
 
     @property
-    def thumbs_dir(self):
+    def thumbnails_dir(self):
         return os.path.join(self.root, "thumbnails")
 
     def index_document(self, doc):

@@ -30,17 +30,15 @@ def search_store(store, options):
 
     sort_field, sort_order = options.sort_order
     all_documents.sort(
-        key=lambda doc: doc.data.get(sort_field, ""),
+        key=lambda doc: doc.get(sort_field, ""),
         reverse=(sort_order == "desc")
     )
 
     lower_page = options.page_size * (options.page - 1)
     upper_page = options.page_size * options.page
 
-    documents_in_page = [doc.data for doc in all_documents[lower_page:upper_page]]
-
     return SearchResponse(
-        documents=documents_in_page,
+        documents=all_documents[lower_page:upper_page],
         tags=tags,
         total=len(all_documents)
     )
