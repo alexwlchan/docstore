@@ -21,11 +21,7 @@ POST /upload
 {
   "file": "<Body of PDF file to store>",
   "title": "My great document",
-  "tags": [
-    "tag1",
-    "tag2",
-    "tag3"
-  ],
+  "tags": "tag1 tag2 tag3",
   "filename": "Document1.pdf",
   "sha256_checksum": "<SHA256 checksum of PDF>"
 }
