@@ -11,12 +11,7 @@ from tagged_store import TaggedDocument, TaggedDocumentStore
 def test_tagged_document_equality():
     d1 = TaggedDocument({"id": "1"})
     assert d1 == d1
-    assert d1 == {"id": "1"}
-    assert d1 == TaggedDocument({
-        "id": "1",
-        "_id": d1.id,
-        "_date_created": d1.date_created
-    })
+    assert d1 == {"id": "1", "date_created": d1.date_created}
 
 
 def test_tagged_document_inequality():
@@ -56,7 +51,7 @@ def test_root_path_properties():
     store = TaggedDocumentStore(root)
     assert store.db_path == os.path.join(root, "documents.json")
     assert store.files_dir == os.path.join(root, "files")
-    assert store.thumbs_dir == os.path.join(root, "thumbnails")
+    assert store.thumbnails_dir == os.path.join(root, "thumbnails")
 
 
 def test_gets_empty_documents_on_startup(store):
@@ -107,14 +102,14 @@ def test_assigns_uuid_to_stored_document(store):
     doc = {"id": "1", "color": "red"}
     store.index_document(doc)
 
-    assert "_id" in doc
+    assert "id" in doc
 
 
 def test_can_update_document_by_uuid(store):
     doc = {"id": "1", "color": "blue"}
     store.index_document(doc)
 
-    doc_new = {"_id": doc["_id"], "id": "1", "color": "red"}
+    doc_new = {"id": doc["id"], "id": "1", "color": "red"}
     store.index_document(doc_new)
 
     assert len(store.documents) == 1
@@ -126,4 +121,4 @@ def test_creates_necessary_directories(store):
     root = tempfile.mkdtemp()
     store = TaggedDocumentStore(root=root)
     assert os.path.exists(store.files_dir)
-    assert os.path.exists(store.thumbs_dir)
+    assert os.path.exists(store.thumbnails_dir)

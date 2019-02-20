@@ -31,14 +31,14 @@ def create_api(store):
     api.mount("/files", whitenoise_files)
 
     whitenoise_thumbs = WhiteNoise(application=api._default_wsgi_app)
-    whitenoise_thumbs.add_files(store.thumbs_dir)
+    whitenoise_thumbs.add_files(store.thumbnails_dir)
     api.mount("/thumbnails", whitenoise_thumbs)
 
     @api.route("/")
     def list_documents(req, resp):
         tag_query = req.params.get_list("tag", [])
         page = req.params.get("page", default=1)
-        sort_order = req.params.get("sort", "_date_created:desc")
+        sort_order = req.params.get("sort", "date_created:desc")
 
         search_options = search_helpers.SearchOptions(
             tag_query=tag_query,

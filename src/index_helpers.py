@@ -10,14 +10,14 @@ from tagged_store import TaggedDocument
 
 def create_thumbnail(store, doc):
     try:
-        os.unlink(os.path.join(store.thumbs_dir, doc.data["thumbnail_path"]))
+        os.unlink(os.path.join(store.thumbnails_dir, doc.data["thumbnail_path"]))
     except KeyError:
         pass
 
     pdf_path = doc.data["pdf_path"]
     thumb_path = os.path.join(doc.id[0], doc.id + ".jpg")
 
-    absolute_thumb_path = os.path.join(store.thumbs_dir, thumb_path)
+    absolute_thumb_path = os.path.join(store.thumbnails_dir, thumb_path)
     os.makedirs(os.path.dirname(absolute_thumb_path), exist_ok=True)
 
     subprocess.check_call([

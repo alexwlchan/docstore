@@ -24,13 +24,13 @@ def create_thumbnail(monkeypatch, store, doc):
 
 
 def test_create_thumbnail(store, monkeypatch):
-    doc = TaggedDocument({"id": 1, "pdf_path": "1/100.pdf"})
+    doc = TaggedDocument({"id": "1", "pdf_path": "1/100.pdf"})
     create_thumbnail(monkeypatch, store=store, doc=doc)
     assert "thumbnail_path" in doc.data
 
 
 def test_thumbnail_data_is_saved(store, monkeypatch):
-    doc = TaggedDocument({"id": 1, "pdf_path": "1/100.pdf"})
+    doc = TaggedDocument({"id": "1", "pdf_path": "1/100.pdf"})
     create_thumbnail(monkeypatch, store=store, doc=doc)
 
     new_store = TaggedDocumentStore(store.root)
@@ -39,12 +39,12 @@ def test_thumbnail_data_is_saved(store, monkeypatch):
 
 def test_removes_old_thumbnail_first(store, monkeypatch):
     doc = TaggedDocument({
-        "id": 1,
+        "id": "1",
         "pdf_path": "1/100.pdf",
         "thumbnail_path": "1/100.jpg"
     })
 
-    thumb_path = os.path.join(store.thumbs_dir, doc.data["thumbnail_path"])
+    thumb_path = os.path.join(store.thumbnails_dir, doc.data["thumbnail_path"])
     os.makedirs(os.path.dirname(thumb_path))
     open(thumb_path, "wb").write(b"hello world")
 

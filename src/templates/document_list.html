@@ -175,12 +175,12 @@
             </th>
 
             <th>
-            {% if search_options.sort_order == ("_date_created", "desc") %}
-            <a href="#" onclick="script:setSortOrder('_date_created:asc')">Date saved &Darr;</a>
+            {% if search_options.sort_order == ("date_created", "desc") %}
+            <a href="#" onclick="script:setSortOrder('date_created:asc')">Date saved &Darr;</a>
             {% else %}
-            <a href="#" onclick="script:setSortOrder('_date_created:desc')">
+            <a href="#" onclick="script:setSortOrder('date_created:desc')">
               Date saved
-              {% if search_options.sort_order == ("_date_created", "asc") %}
+              {% if search_options.sort_order == ("date_created", "asc") %}
                 &Uarr;
               {% endif %}
             </a>
@@ -209,7 +209,7 @@
           {% endif %}
 
           </td>
-          <td>{% if doc._date_created %}{{ doc._date_created | since_now_date_str }}{% endif %}</td>
+          <td>{% if doc.date_created %}{{ doc.date_created | since_now_date_str }}{% endif %}</td>
         </tr>
         {% endfor %}
       </table>
