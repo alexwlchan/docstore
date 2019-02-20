@@ -12,17 +12,21 @@ import requests
 )
 @click.option("--title", prompt="What is the title?", default="")
 def main(path, title, tags):
-    json = {
+    data = {
         "path": path
     }
 
     if title.strip():
-        json["title"] = title.strip()
+        data["title"] = title.strip()
 
     if tags.split():
-        json["tags"] = tags.split()
+        data["tags"] = tags.split()
 
-    resp = requests.post("http://localhost:8072/api/documents", json=json)
+    resp = requests.post(
+        "http://localhost:8072/api/documents",
+        data=data,
+        files={"file": open(path, "rb")}
+    )
     resp.raise_for_status()
     print(resp.json())
 
