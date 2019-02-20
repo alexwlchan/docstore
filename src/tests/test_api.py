@@ -60,7 +60,7 @@ def test_uploading_file_with_wrong_name_is_400(api):
 ])
 def test_can_upload_without_all_parameters(api, data):
     resp = api.requests.post("/upload", files={"file": io.BytesIO()}, data=data)
-    assert resp.status_code == 200
+    assert resp.status_code == 201
 
 
 def test_incorrect_checksum_is_400(api):
@@ -80,7 +80,7 @@ def test_stores_document_in_store(api, store):
         "sha256_checksum": hashlib.sha256().hexdigest(),
     }
     resp = api.requests.post("/upload", files={"file": io.BytesIO()}, data=data)
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     assert list(resp.json().keys()) == ["id"]
 
     doc_id = resp.json()["id"]
@@ -101,7 +101,7 @@ def test_extra_keys_are_kept_in_store(api, store):
         "key2": "value2"
     }
     resp = api.requests.post("/upload", files={"file": io.BytesIO()}, data=data)
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     assert list(resp.json().keys()) == ["id"]
 
     doc_id = resp.json()["id"]
@@ -114,5 +114,5 @@ def test_extra_keys_are_kept_in_store(api, store):
 
 def test_calls_create_thumbnail(api, store):
     resp = api.requests.post("/upload", files={"file": io.BytesIO()})
-    assert resp.status_code == 200
+    assert resp.status_code == 201
     assert len(index_helpers.subprocess.check_call.calls) == 1

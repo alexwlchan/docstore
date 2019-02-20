@@ -107,6 +107,7 @@ def create_api(store):
                 create_thumbnail(store=store, doc=doc)
 
             create_doc_thumbnail(doc)
+            resp.status_code = api.status_codes.HTTP_201
             resp.media = {"id": doc.id}
         else:
             resp.status_code = api.status_codes.HTTP_405
