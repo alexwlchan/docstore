@@ -18,8 +18,7 @@ def api(store, monkeypatch):
             self.calls.append(cmd)
 
     service.subprocess.check_call = MockSubprocess()
-    service.api.store = store
-    return service.api
+    return service.create_api(store)
 
 
 def test_non_post_to_upload_is_405(api):
