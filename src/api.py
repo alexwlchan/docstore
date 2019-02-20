@@ -8,9 +8,11 @@ import subprocess
 import sys
 import webbrowser
 
+from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
 import responder
 
 import date_helpers
+from exceptions import UserError
 from index_helpers import index_pdf_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
@@ -47,10 +49,34 @@ def list_documents(req, resp):
     )
 
 
+def process_upload_data(user_data):
+    try:
+        upload_file = user_data["file"]
+    except KeyError:
+        raise UserError("Unable to find multipart upload 'file'!")
+
+
 @api.route("/upload")
 async def upload_document(req, resp):
     if req.method == "post":
         resp.media = {"success": True}
+
+        # This catches the error that gets thrown if the user doesn't include
+        # any files in their upload.
+        try:
+            user_data = await req.media(format="files")
+        except NonMultipartContentTypeException as err:
+            resp.media = {"error": str(err)}
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
+        try:
+            process_upload_data(user_data)
+        except UserError as err:
+            resp.media = {"error": str(err)}
+            resp.status_code = api.status_codes.HTTP_400
+            return
+
     else:
         resp.status_code = api.status_codes.HTTP_405
 
