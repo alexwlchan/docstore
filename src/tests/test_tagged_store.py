@@ -146,10 +146,10 @@ def test_assigns_uuid_to_stored_document(store):
 
 
 def test_can_update_document_by_uuid(store):
-    doc = {"id": "1", "color": "blue"}
+    doc = {"color": "blue"}
     store.index_document(doc)
 
-    doc_new = {"id": doc["id"], "id": "1", "color": "red"}
+    doc_new = {"id": doc["id"], "color": "red"}
     store.index_document(doc_new)
 
     assert len(store.documents) == 1
