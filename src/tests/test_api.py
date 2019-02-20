@@ -116,3 +116,17 @@ def test_calls_create_thumbnail(api, store):
     resp = api.requests.post("/upload", files={"file": io.BytesIO()})
     assert resp.status_code == 201
     assert len(index_helpers.subprocess.check_call.calls) == 1
+
+
+def test_get_view_endpoint(api):
+    resp = api.requests.get("/")
+    assert resp.status_code == 200
+
+    data = {
+        "title": "Hello world"
+    }
+    api.requests.post("/upload", files={"file": io.BytesIO()}, data=data)
+
+    resp = api.requests.get("/")
+    assert resp.status_code == 200
+    assert data["title"] in resp.text

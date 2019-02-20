@@ -115,7 +115,7 @@ def create_api(store):
     return api
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     try:
         root = os.path.normpath(sys.argv[1])
     except IndexError:
