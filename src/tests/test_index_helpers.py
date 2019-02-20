@@ -26,7 +26,7 @@ def create_thumbnail(monkeypatch, store, doc):
 def test_create_thumbnail(store, monkeypatch):
     doc = TaggedDocument({"id": "1", "pdf_path": "1/100.pdf"})
     create_thumbnail(monkeypatch, store=store, doc=doc)
-    assert "thumbnail_path" in doc.data
+    assert "thumbnail_path" in doc
 
 
 def test_thumbnail_data_is_saved(store, monkeypatch):
@@ -34,7 +34,7 @@ def test_thumbnail_data_is_saved(store, monkeypatch):
     create_thumbnail(monkeypatch, store=store, doc=doc)
 
     new_store = TaggedDocumentStore(store.root)
-    assert "thumbnail_path" in new_store.documents[doc.id].data
+    assert "thumbnail_path" in new_store.documents[doc.id]
 
 
 def test_removes_old_thumbnail_first(store, monkeypatch):
@@ -44,13 +44,13 @@ def test_removes_old_thumbnail_first(store, monkeypatch):
         "thumbnail_path": "1/100.jpg"
     })
 
-    thumb_path = os.path.join(store.thumbnails_dir, doc.data["thumbnail_path"])
+    thumb_path = os.path.join(store.thumbnails_dir, doc["thumbnail_path"])
     os.makedirs(os.path.dirname(thumb_path))
     open(thumb_path, "wb").write(b"hello world")
 
     create_thumbnail(monkeypatch, store=store, doc=doc)
     assert not os.path.exists(thumb_path)
-    assert doc.data["thumbnail_path"] != "1/100.jpg"
+    assert doc["thumbnail_path"] != "1/100.jpg"
 
 
 def test_copies_pdf_to_store(store, monkeypatch):
@@ -58,7 +58,7 @@ def test_copies_pdf_to_store(store, monkeypatch):
     doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     assert os.path.exists(os.path.join(store.files_dir, doc.id[0], doc.id + ".pdf"))
-    assert doc.data["pdf_path"] == os.path.join(doc.id[0], doc.id + ".pdf")
+    assert doc["pdf_path"] == os.path.join(doc.id[0], doc.id + ".pdf")
 
 
 def test_pdf_path_is_saved_to_store(store, monkeypatch):
@@ -66,7 +66,7 @@ def test_pdf_path_is_saved_to_store(store, monkeypatch):
     doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     new_store = TaggedDocumentStore(store.root)
-    assert "pdf_path" in new_store.documents[doc.id].data
+    assert "pdf_path" in new_store.documents[doc.id]
 
 
 def test_adds_sha256_hash_of_document(store, monkeypatch):
@@ -75,7 +75,7 @@ def test_adds_sha256_hash_of_document(store, monkeypatch):
 
     # sha256(b"hello world")
     assert (
-        doc.data["sha256_checksum"] ==
+        doc["sha256_checksum"] ==
         "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
     )
 
@@ -90,7 +90,7 @@ def test_leaves_correct_checksum_unmodified(store, monkeypatch):
     }
     doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
-    assert doc.data["sha256_checksum"] == user_data["sha256_checksum"]
+    assert doc["sha256_checksum"] == user_data["sha256_checksum"]
 
 
 def test_raises_error_if_checksum_mismatch(store, monkeypatch):

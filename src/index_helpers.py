@@ -10,11 +10,11 @@ from tagged_store import TaggedDocument
 
 def create_thumbnail(store, doc):
     try:
-        os.unlink(os.path.join(store.thumbnails_dir, doc.data["thumbnail_path"]))
+        os.unlink(os.path.join(store.thumbnails_dir, doc["thumbnail_path"]))
     except KeyError:
         pass
 
-    pdf_path = doc.data["pdf_path"]
+    pdf_path = doc["pdf_path"]
     thumb_path = os.path.join(doc.id[0], doc.id + ".jpg")
 
     absolute_thumb_path = os.path.join(store.thumbnails_dir, thumb_path)
@@ -28,7 +28,7 @@ def create_thumbnail(store, doc):
         absolute_thumb_path.replace(store.root + "/", ""),
     ])
 
-    doc.data["thumbnail_path"] = thumb_path
+    doc["thumbnail_path"] = thumb_path
     store.index_document(doc)
 
 
@@ -39,7 +39,7 @@ def index_pdf_document(store, user_data):
     complete_pdf_path = os.path.join(store.files_dir, pdf_path)
     os.makedirs(os.path.dirname(complete_pdf_path), exist_ok=True)
     open(complete_pdf_path, "wb").write(user_data.pop("file"))
-    doc.data["pdf_path"] = pdf_path
+    doc["pdf_path"] = pdf_path
 
     # Add a SHA256 hash of the PDF.  This allows integrity checking later
     # and makes it easy to detect duplicates.
@@ -48,13 +48,13 @@ def index_pdf_document(store, user_data):
     h = hashlib.sha256()
     h.update(open(complete_pdf_path, "rb").read())
     try:
-        if doc.data["sha256_checksum"] != h.hexdigest():
+        if doc["sha256_checksum"] != h.hexdigest():
             raise UserError(
                 "Incorrect SHA256 hash on upload!  Got %s, calculated %s." %
-                (doc.data['sha256_checksum'], h.hexdigest())
+                (doc['sha256_checksum'], h.hexdigest())
             )
     except KeyError:
-        doc.data["sha256_checksum"] = h.hexdigest()
+        doc["sha256_checksum"] = h.hexdigest()
 
     store.index_document(doc)
     return doc

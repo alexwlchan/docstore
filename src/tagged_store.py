@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+from collections.abc import MutableMapping
 import datetime as dt
 import json
 import os
@@ -9,7 +10,7 @@ import attr
 
 
 @attr.s(init=False, cmp=False)
-class TaggedDocument:
+class TaggedDocument(MutableMapping):
     data = attr.ib()
     tags = attr.ib()
 
@@ -21,7 +22,25 @@ class TaggedDocument:
             data["date_created"] = dt.datetime.now().isoformat()
 
         self.data = data
-        self.tags = set(data.get("tags", []))
+
+    @property
+    def tags(self):
+        return set(self.data.get("tags", []))
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def __setitem__(self, key, value):
+        self.data[key] = value
+
+    def __delitem__(self, key):
+        del self.data[key]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __iter__(self):
+        return iter(self.data)
 
     @property
     def id(self):

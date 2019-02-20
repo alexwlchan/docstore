@@ -84,7 +84,7 @@ def test_stores_document_in_store(api, store):
     assert list(resp.json().keys()) == ["id"]
 
     docid = resp.json()["id"]
-    stored_doc = store.documents[docid].data
+    stored_doc = store.documents[docid]
     assert stored_doc["title"] == data["title"]
     assert stored_doc["tags"] == data["tags"].split()
     assert stored_doc["filename"] == data["filename"]
@@ -105,7 +105,7 @@ def test_extra_keys_are_kept_in_store(api, store):
     assert list(resp.json().keys()) == ["id"]
 
     docid = resp.json()["id"]
-    stored_doc = store.documents[docid].data
+    stored_doc = store.documents[docid]
     assert stored_doc["user_data"] == {
         "key1": "value1",
         "key2": "value2",

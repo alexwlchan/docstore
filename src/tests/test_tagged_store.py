@@ -46,6 +46,46 @@ def test_can_match_tag_query(data, query, expected_result):
     assert doc.matches_tag_query(query) == expected_result
 
 
+def test_can_read_values():
+    doc = TaggedDocument({"id": "1"})
+    assert doc["id"] == "1"
+    with pytest.raises(KeyError, match="foo"):
+        doc["foo"]
+
+
+def test_can_set_values():
+    doc = TaggedDocument({"id": "1"})
+    doc["foo"] = "bar"
+    assert doc.data["foo"] == "bar"
+
+
+def test_creates_id_if_not_assigned():
+    doc1 = TaggedDocument(data={})
+    assert "id" in doc1.data
+    doc2 = TaggedDocument(doc1)
+    assert doc1 == doc2
+
+
+def test_can_delete_value():
+    doc = TaggedDocument({"foo": "bar"})
+    del doc["foo"]
+    with pytest.raises(KeyError, match="foo"):
+        doc["foo"]
+
+
+def test_doc_has_length():
+    doc = TaggedDocument(data={})
+    assert len(doc) == 2  # ID and created date
+    doc["foo"] = "bar"
+    doc["bar"] = "baz"
+    assert len(doc) == 4
+
+
+def test_can_iterate_over_doc():
+    doc = TaggedDocument(data={})
+    assert list(iter(doc)) == list(iter(doc.data))
+
+
 def test_root_path_properties():
     root = tempfile.mkdtemp()
     store = TaggedDocumentStore(root)
