@@ -49,11 +49,27 @@ def list_documents(req, resp):
     )
 
 
-def process_upload_data(user_data):
+def prepare_upload_data(user_data):
+    prepared_data = {}
+
+    # Copy across all the keys the app knows about.
     try:
-        upload_file = user_data["file"]
+        prepared_data["file"] = user_data.pop("file")
     except KeyError:
         raise UserError("Unable to find multipart upload 'file'!")
+
+    for key in ("title", "tags", "filename", "sha256_checksum"):
+        try:
+            prepared_data[key] = user_data.pop(key).decode("utf8")
+        except KeyError:
+            pass
+
+    # Any remaining keys we put into a special "user_data" array so they're
+    # still saved, but don't conflict with other parameters we might add later.
+    if user_data:
+        prepared_data["user_data"] = {k: v.encode("utf8") for k, v in user_data.items()}
+
+    return prepared_data
 
 
 @api.route("/upload")
@@ -71,11 +87,13 @@ async def upload_document(req, resp):
             return
 
         try:
-            process_upload_data(user_data)
+            prepared_data = prepare_upload_data(user_data)
         except UserError as err:
             resp.media = {"error": str(err)}
             resp.status_code = api.status_codes.HTTP_400
             return
+
+        index_pdf_document(store=api.store, user_data=prepared_data)
 
     else:
         resp.status_code = api.status_codes.HTTP_405
@@ -123,7 +141,7 @@ if __name__ == "__main__":
     except IndexError:
         root = os.path.join(os.environ["HOME"], "Documents", "docstore")
 
-    store = TaggedDocumentStore(root)
+    api.store = TaggedDocumentStore(root)
 
     with run_nginx(root=root, nginx_port=NGINX_PORT):
         try:
