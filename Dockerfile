@@ -3,6 +3,7 @@ FROM python:3-jessie as docstore
 RUN apt-get update
 RUN apt-get install --yes libimage-exiftool-perl libmagickwand-dev poppler-utils
 
+RUN pip3 install --upgrade pip
 RUN pip3 install preview-generator
 
 COPY requirements.txt /

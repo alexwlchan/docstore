@@ -10,43 +10,24 @@ import index_helpers
 from tagged_store import TaggedDocument, TaggedDocumentStore
 
 
-def create_thumbnail(monkeypatch, store, doc):
-    def mock_get_jpeg_preview(*args, **kwargs):
-        assert len(args) == 1
-        assert args[0].endswith("1/100.pdf")
-        assert kwargs == {"height": 400, "width": 400}
-
-        new_path = args[0].replace(".pdf", ".jpg")
-        os.makedirs(os.path.dirname(new_path), exist_ok=True)
-        open(new_path, "wb").write(b"thumbnail")
-        return new_path
-
-    with monkeypatch.context() as m:
-        m.setattr(
-            index_helpers.preview_manager,
-            "get_jpeg_preview",
-            mock_get_jpeg_preview)
-        return index_helpers.create_thumbnail(store, doc)
-
-
-def test_create_thumbnail(store, monkeypatch):
-    doc = TaggedDocument({"id": "1", "pdf_path": "1/100.pdf"})
-    create_thumbnail(monkeypatch, store=store, doc=doc)
+def test_create_thumbnail(store, pdf_path):
+    doc = TaggedDocument({"id": "1", "pdf_path": pdf_path})
+    index_helpers.create_thumbnail(store=store, doc=doc)
     assert "thumbnail_path" in doc
 
 
-def test_thumbnail_data_is_saved(store, monkeypatch):
-    doc = TaggedDocument({"id": "1", "pdf_path": "1/100.pdf"})
-    create_thumbnail(monkeypatch, store=store, doc=doc)
+def test_thumbnail_data_is_saved(store, pdf_path):
+    doc = TaggedDocument({"id": "1", "pdf_path": pdf_path})
+    index_helpers.create_thumbnail(store=store, doc=doc)
 
     new_store = TaggedDocumentStore(store.root)
     assert "thumbnail_path" in new_store.documents[doc.id]
 
 
-def test_removes_old_thumbnail_first(store, monkeypatch):
+def test_removes_old_thumbnail_first(store, pdf_path):
     doc = TaggedDocument({
         "id": "1",
-        "pdf_path": "1/100.pdf",
+        "pdf_path": pdf_path,
         "thumbnail_path": "1/100.jpg"
     })
 
@@ -54,29 +35,29 @@ def test_removes_old_thumbnail_first(store, monkeypatch):
     os.makedirs(os.path.dirname(thumb_path))
     open(thumb_path, "wb").write(b"hello world")
 
-    create_thumbnail(monkeypatch, store=store, doc=doc)
+    index_helpers.create_thumbnail(store=store, doc=doc)
     assert not os.path.exists(thumb_path)
     assert doc["thumbnail_path"] != "1/100.jpg"
 
 
-def test_copies_pdf_to_store(store, monkeypatch):
-    user_data = {"path": "foo.pdf", "file": b"hello world"}
+def test_copies_pdf_to_store(store, pdf_path):
+    user_data = {"path": pdf_path, "file": b"hello world"}
     doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     assert os.path.exists(os.path.join(store.files_dir, doc.id[0], doc.id + ".pdf"))
     assert doc["pdf_path"] == os.path.join(doc.id[0], doc.id + ".pdf")
 
 
-def test_pdf_path_is_saved_to_store(store, monkeypatch):
-    user_data = {"path": "foo.pdf", "file": b"hello world"}
+def test_pdf_path_is_saved_to_store(store, pdf_path):
+    user_data = {"path": pdf_path, "file": b"hello world"}
     doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     new_store = TaggedDocumentStore(store.root)
     assert "pdf_path" in new_store.documents[doc.id]
 
 
-def test_adds_sha256_hash_of_document(store, monkeypatch):
-    user_data = {"path": "foo.pdf", "file": b"hello world"}
+def test_adds_sha256_hash_of_document(store, pdf_path):
+    user_data = {"path": pdf_path, "file": b"hello world"}
     doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     # sha256(b"hello world")

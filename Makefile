@@ -11,3 +11,5 @@ test:
 	docker build --target=docstore_test --tag=docstore_test .
 	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT)/src docstore_test \
 		coverage run -m py.test tests
+	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT)/src docstore_test \
+		coverage report

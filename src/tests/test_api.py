@@ -11,23 +11,8 @@ import index_helpers
 
 
 @pytest.fixture()
-def api(store, monkeypatch):
-    def mock_get_jpeg_preview(*args, **kwargs):
-        assert len(args) == 1
-        assert args[0].endswith("1/100.pdf")
-        assert kwargs == {"height": 400, "width": 400}
-
-        new_path = args[0].replace(".pdf", ".jpg")
-        os.makedirs(os.path.dirname(new_path), exist_ok=True)
-        open(new_path, "wb").write(b"thumbnail")
-        return new_path
-
-    with monkeypatch.context() as m:
-        m.setattr(
-            index_helpers.preview_manager,
-            "get_jpeg_preview",
-            mock_get_jpeg_preview)
-        return service.create_api(store)
+def api(store):
+    return service.create_api(store)
 
 
 def test_non_post_to_upload_is_405(api):
@@ -125,7 +110,7 @@ def test_calls_create_thumbnail(api, store, pdf_file):
     assert resp.status_code == 201
 
     now = time.time()
-    while time.time() - now < 5:
+    while time.time() - now < 5:  # pragma: no cover
         docid = resp.json()["id"]
         stored_doc = store.documents[docid]
         if "thumbnail_path" in stored_doc.data:
