@@ -123,7 +123,7 @@ if __name__ == "__main__":  # pragma: no cover
     try:
         root = os.path.normpath(sys.argv[1])
     except IndexError:
-        root = os.path.join(os.environ["HOME"], "Documents", "docstore")
+        sys.exit("Usage: %s <ROOT>" % __file__)
 
     store = TaggedDocumentStore(root)
     api = create_api(store)
