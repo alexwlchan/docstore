@@ -7,7 +7,6 @@ import time
 import pytest
 
 import api as service
-import index_helpers
 
 
 @pytest.fixture()
