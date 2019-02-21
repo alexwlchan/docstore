@@ -17,9 +17,6 @@ import search_helpers
 from tagged_store import TaggedDocumentStore
 
 
-APP_PORT = 8072
-
-
 def create_api(store):
     api = responder.API()
 
@@ -124,11 +121,4 @@ if __name__ == "__main__":  # pragma: no cover
     store = TaggedDocumentStore(root)
     api = create_api(store)
 
-    try:
-        api.run(port=APP_PORT)
-    except OSError as err:
-        if err.errno == errno.EADDRINUSE:
-            print("Server is already running!")
-            webbrowser.open("http://localhost:%d" % APP_PORT)
-        else:
-            raise
+    api.run()
