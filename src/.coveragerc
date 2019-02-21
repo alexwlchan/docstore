@@ -4,7 +4,7 @@ include =
     *.py
 omit =
     **/.virtualenvs/**/*.py
-    /usr/local/Cellar/**/*.py
+    /usr/local/**/*.py
     **/python3.6/**/*.py
     /opt/python/**/*.py
 

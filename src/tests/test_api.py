@@ -2,23 +2,15 @@
 
 import hashlib
 import io
+import time
 
 import pytest
 
 import api as service
-import index_helpers
 
 
 @pytest.fixture()
-def api(store, monkeypatch):
-    class MockSubprocess:
-        def __init__(self):
-            self.calls = []
-
-        def __call__(self, cmd):
-            self.calls.append(cmd)
-
-    index_helpers.subprocess.check_call = MockSubprocess()
+def api(store):
     return service.create_api(store)
 
 
@@ -112,10 +104,18 @@ def test_extra_keys_are_kept_in_store(api, store):
     }
 
 
-def test_calls_create_thumbnail(api, store):
-    resp = api.requests.post("/upload", files={"file": io.BytesIO()})
+def test_calls_create_thumbnail(api, store, pdf_file):
+    resp = api.requests.post("/upload", files={"file": pdf_file})
     assert resp.status_code == 201
-    assert len(index_helpers.subprocess.check_call.calls) == 1
+
+    now = time.time()
+    while time.time() - now < 5:  # pragma: no cover
+        docid = resp.json()["id"]
+        stored_doc = store.documents[docid]
+        if "thumbnail_path" in stored_doc.data:
+            break
+
+    assert "thumbnail_path" in stored_doc.data
 
 
 def test_get_view_endpoint(api):
