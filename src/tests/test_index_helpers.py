@@ -84,3 +84,14 @@ def test_raises_error_if_checksum_mismatch(store):
 
     with pytest.raises(UserError, match="Incorrect SHA256 hash on upload"):
         index_helpers.index_document(store=store, user_data=user_data)
+
+
+@pytest.mark.parametrize('filename,extension', [
+    ("bridge.jpg", ".jpg"),
+    ("cluster.png", ".png"),
+    ("snakes.pdf", ".pdf"),
+])
+def test_detects_correct_extension(store, filename, extension):
+    user_data = {"file": open(os.path.join("tests", filename), "rb").read()}
+    doc = index_helpers.index_document(store=store, user_data=user_data)
+    assert doc["file_identifier"].endswith(extension)
