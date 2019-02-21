@@ -44,35 +44,44 @@ def test_uploading_file_with_wrong_name_is_400(api):
     }
 
 
+def pdf_hash():
+    h = hashlib.sha256()
+    h.update(open("tests/snakes.pdf", "rb").read())
+    return h.hexdigest()
+
+
 @pytest.mark.parametrize('data', [
     {},
     {"title": "Hello world"},
     {"tags": ["foo"]},
     {"filename": "foo.pdf"},
-    {"sha256_checksum": hashlib.sha256().hexdigest()},
+    {"sha256_checksum": pdf_hash()},
 ])
-def test_can_upload_without_all_parameters(api, data):
-    resp = api.requests.post("/upload", files={"file": io.BytesIO()}, data=data)
+def test_can_upload_without_all_parameters(api, data, pdf_file):
+    resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
     assert resp.status_code == 201
 
 
-def test_incorrect_checksum_is_400(api):
+def test_incorrect_checksum_is_400(api, pdf_file):
     resp = api.requests.post(
         "/upload",
-        files={"file": io.BytesIO()},
+        files={"file": pdf_file},
         data={"sha256_checksum": "123...abc"}
     )
     assert resp.status_code == 400
 
 
-def test_stores_document_in_store(api, store):
+def test_stores_document_in_store(api, store, pdf_file):
+    h = hashlib.sha256()
+    h.update(open("tests/snakes.pdf", "rb").read())
+
     data = {
         "title": "Hello world",
         "tags": "foo bar baz",
         "filename": "foo.pdf",
-        "sha256_checksum": hashlib.sha256().hexdigest(),
+        "sha256_checksum": h.hexdigest(),
     }
-    resp = api.requests.post("/upload", files={"file": io.BytesIO()}, data=data)
+    resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
     assert resp.status_code == 201
     assert list(resp.json().keys()) == ["id"]
 
@@ -84,16 +93,15 @@ def test_stores_document_in_store(api, store):
     assert stored_doc["sha256_checksum"] == data["sha256_checksum"]
 
 
-def test_extra_keys_are_kept_in_store(api, store):
+def test_extra_keys_are_kept_in_store(api, store, pdf_file):
     data = {
         "title": "Hello world",
         "tags": "foo bar baz",
         "filename": "foo.pdf",
-        "sha256_checksum": hashlib.sha256().hexdigest(),
         "key1": "value1",
         "key2": "value2"
     }
-    resp = api.requests.post("/upload", files={"file": io.BytesIO()}, data=data)
+    resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
     assert resp.status_code == 201
     assert list(resp.json().keys()) == ["id"]
 

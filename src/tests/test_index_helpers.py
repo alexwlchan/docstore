@@ -39,20 +39,12 @@ def test_removes_old_thumbnail_first(store, file_identifier):
     assert doc["thumbnail_identifier"] != "1/100.jpg"
 
 
-def test_copies_pdf_to_store(store, file_identifier):
-    user_data = {"path": file_identifier, "file": b"hello world"}
+def test_copies_pdf_to_store(store, file_identifier, pdf_file):
+    user_data = {"path": file_identifier, "file": pdf_file.read()}
     doc = index_helpers.index_document(store=store, user_data=user_data)
 
-    assert os.path.exists(os.path.join(store.files_dir, doc.id[0], doc.id + ".pdf"))
     assert doc["file_identifier"] == os.path.join(doc.id[0], doc.id + ".pdf")
-
-
-def test_file_identifier_is_saved_to_store(store, file_identifier):
-    user_data = {"path": file_identifier, "file": b"hello world"}
-    doc = index_helpers.index_document(store=store, user_data=user_data)
-
-    new_store = TaggedDocumentStore(store.root)
-    assert "file_identifier" in new_store.documents[doc.id]
+    assert os.path.exists(os.path.join(store.files_dir, doc["file_identifier"]))
 
 
 def test_adds_sha256_hash_of_document(store, file_identifier):

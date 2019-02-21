@@ -1,8 +1,8 @@
 # -*- encoding: utf-8
 
+import os
 import shutil
 
-import os
 import pytest
 
 from tagged_store import TaggedDocumentStore

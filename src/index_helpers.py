@@ -1,10 +1,12 @@
 # -*- encoding: utf-8
 
 import hashlib
+import mimetypes
 import os
 import shutil
 import tempfile
 
+import magic
 from preview_generator.manager import PreviewManager
 
 from exceptions import UserError
@@ -43,10 +45,21 @@ def create_thumbnail(store, doc):
 def index_document(store, user_data):
     doc = TaggedDocument(user_data)
 
-    file_identifier = os.path.join(doc.id[0], doc.id + ".pdf")
+    file_data = user_data.pop("file")
+
+    # Guess an appropriate file extension based on the data.  Note that mimetypes
+    # will suggest ".jpe" for JPEG images, so replace it with the more common
+    # extension by hand.
+    guessed_mimetype = magic.from_buffer(file_data, mime=True)
+    if guessed_mimetype == "image/jpeg":
+        extension = ".jpg"
+    else:
+        extension = mimetypes.guess_extension(guessed_mimetype)
+
+    file_identifier = os.path.join(doc.id[0], doc.id + extension)
     complete_file_identifier = os.path.join(store.files_dir, file_identifier)
     os.makedirs(os.path.dirname(complete_file_identifier), exist_ok=True)
-    open(complete_file_identifier, "wb").write(user_data.pop("file"))
+    open(complete_file_identifier, "wb").write(file_data)
     doc["file_identifier"] = file_identifier
 
     # Add a SHA256 hash of the PDF.  This allows integrity checking later
