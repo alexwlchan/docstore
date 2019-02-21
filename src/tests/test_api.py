@@ -134,10 +134,7 @@ def test_get_view_endpoint(api, pdf_file):
 
 
 def test_can_view_file_and_thumbnail(api, pdf_file, file_identifier):
-    data = {
-        "title": "Hello world"
-    }
-    api.requests.post("/upload", files={"file": pdf_file}, data=data)
+    api.requests.post("/upload", files={"file": pdf_file})
     time.sleep(2)
 
     resp = api.requests.get("/")
