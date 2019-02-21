@@ -66,7 +66,7 @@ def test_adds_sha256_hash_of_document(store, file_identifier):
     )
 
 
-def test_leaves_correct_checksum_unmodified(store, monkeypatch):
+def test_leaves_correct_checksum_unmodified(store):
     user_data = {
         "path": "foo.pdf",
         "file": b"hello world",
@@ -79,7 +79,7 @@ def test_leaves_correct_checksum_unmodified(store, monkeypatch):
     assert doc["sha256_checksum"] == user_data["sha256_checksum"]
 
 
-def test_raises_error_if_checksum_mismatch(store, monkeypatch):
+def test_raises_error_if_checksum_mismatch(store):
     user_data = {"path": "foo.pdf", "file": b"hello world", "sha256_checksum": "123"}
 
     with pytest.raises(UserError, match="Incorrect SHA256 hash on upload"):
