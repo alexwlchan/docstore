@@ -1,14 +1,8 @@
-language: "python"
-
-python: "3.6"
+language: "sh"
 
 branches:
   only:
     - "master"
-
-cache:
-  directories:
-    - $HOME/.cache/pip
 
 script:
   - make lint
