@@ -39,25 +39,17 @@ def test_removes_old_thumbnail_first(store, file_identifier):
     assert doc["thumbnail_identifier"] != "1/100.jpg"
 
 
-def test_copies_pdf_to_store(store, file_identifier):
-    user_data = {"path": file_identifier, "file": b"hello world"}
-    doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
+def test_copies_pdf_to_store(store, file_identifier, pdf_file):
+    user_data = {"path": file_identifier, "file": pdf_file.read()}
+    doc = index_helpers.index_document(store=store, user_data=user_data)
 
-    assert os.path.exists(os.path.join(store.files_dir, doc.id[0], doc.id + ".pdf"))
     assert doc["file_identifier"] == os.path.join(doc.id[0], doc.id + ".pdf")
-
-
-def test_file_identifier_is_saved_to_store(store, file_identifier):
-    user_data = {"path": file_identifier, "file": b"hello world"}
-    doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
-
-    new_store = TaggedDocumentStore(store.root)
-    assert "file_identifier" in new_store.documents[doc.id]
+    assert os.path.exists(os.path.join(store.files_dir, doc["file_identifier"]))
 
 
 def test_adds_sha256_hash_of_document(store, file_identifier):
     user_data = {"path": file_identifier, "file": b"hello world"}
-    doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
+    doc = index_helpers.index_document(store=store, user_data=user_data)
 
     # sha256(b"hello world")
     assert (
@@ -66,7 +58,7 @@ def test_adds_sha256_hash_of_document(store, file_identifier):
     )
 
 
-def test_leaves_correct_checksum_unmodified(store, monkeypatch):
+def test_leaves_correct_checksum_unmodified(store):
     user_data = {
         "path": "foo.pdf",
         "file": b"hello world",
@@ -74,13 +66,24 @@ def test_leaves_correct_checksum_unmodified(store, monkeypatch):
         # sha256(b"hello world")
         "sha256_checksum": "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
     }
-    doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
+    doc = index_helpers.index_document(store=store, user_data=user_data)
 
     assert doc["sha256_checksum"] == user_data["sha256_checksum"]
 
 
-def test_raises_error_if_checksum_mismatch(store, monkeypatch):
+def test_raises_error_if_checksum_mismatch(store):
     user_data = {"path": "foo.pdf", "file": b"hello world", "sha256_checksum": "123"}
 
     with pytest.raises(UserError, match="Incorrect SHA256 hash on upload"):
-        index_helpers.index_pdf_document(store=store, user_data=user_data)
+        index_helpers.index_document(store=store, user_data=user_data)
+
+
+@pytest.mark.parametrize('filename,extension', [
+    ("bridge.jpg", ".jpg"),
+    ("cluster.png", ".png"),
+    ("snakes.pdf", ".pdf"),
+])
+def test_detects_correct_extension(store, filename, extension):
+    user_data = {"file": open(os.path.join("tests", filename), "rb").read()}
+    doc = index_helpers.index_document(store=store, user_data=user_data)
+    assert doc["file_identifier"].endswith(extension)
