@@ -76,6 +76,14 @@ def create_api(store):
 
         return prepared_data
 
+    @api.route("/documents/{document_id}")
+    def individual_document(req, resp, *, document_id):
+        try:
+            resp.media = store.documents[document_id].data
+        except KeyError:
+            resp.media = {"error": "Document %s not found!" % document_id}
+            resp.status_code = api.status_codes.HTTP_404
+
     @api.route("/upload")
     async def upload_document(req, resp):
         if req.method == "post":

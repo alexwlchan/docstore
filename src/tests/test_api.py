@@ -175,3 +175,21 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path):
 
     img_resp = api.requests.get(img_src)
     assert img_resp.status_code == 200
+
+
+def test_can_lookup_document(api, pdf_file):
+    data = {
+        "title": "Hello world"
+    }
+    resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
+
+    doc_id = resp.json()["id"]
+
+    resp = api.requests.get(f"/documents/{doc_id}")
+    assert resp.status_code == 200
+    assert data["title"] == resp.json()["title"]
+
+
+def test_lookup_missing_document_is_404(api):
+    resp = api.requests.get("/documents/doesnotexist")
+    assert resp.status_code == 404
