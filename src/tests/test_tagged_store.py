@@ -1,7 +1,6 @@
 # -*- encoding: utf-8
 
 import os
-import tempfile
 
 import pytest
 
@@ -86,8 +85,8 @@ def test_can_iterate_over_doc():
     assert list(iter(doc)) == list(iter(doc.data))
 
 
-def test_root_path_properties():
-    root = tempfile.mkdtemp()
+def test_root_path_properties(tmpdir):
+    root = str(tmpdir)
     store = TaggedDocumentStore(root)
     assert store.db_path == os.path.join(root, "documents.json")
     assert store.files_dir == os.path.join(root, "files")
@@ -157,8 +156,7 @@ def test_can_update_document_by_uuid(store):
     assert doc_new in store.documents.values()
 
 
-def test_creates_necessary_directories(store):
-    root = tempfile.mkdtemp()
-    store = TaggedDocumentStore(root=root)
+def test_creates_necessary_directories(store, tmpdir):
+    store = TaggedDocumentStore(root=str(tmpdir))
     assert os.path.exists(store.files_dir)
     assert os.path.exists(store.thumbnails_dir)

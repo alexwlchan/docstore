@@ -1,7 +1,6 @@
 # -*- encoding: utf-8
 
 import shutil
-import tempfile
 
 import os
 import pytest
@@ -10,14 +9,8 @@ from tagged_store import TaggedDocumentStore
 
 
 @pytest.fixture
-def store():
-    root = tempfile.mkdtemp()
-    yield TaggedDocumentStore(root=root)
-
-    try:
-        shutil.rmtree(root)
-    except Exception:
-        pass
+def store(tmpdir):
+    return TaggedDocumentStore(root=str(tmpdir))
 
 
 @pytest.fixture
