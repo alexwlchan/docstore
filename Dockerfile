@@ -1,4 +1,4 @@
-FROM python:3-jessie
+FROM python:3-jessie as docstore
 
 RUN apt-get update
 RUN apt-get install --yes libimage-exiftool-perl libmagickwand-dev poppler-utils
@@ -17,3 +17,10 @@ ENV PORT 8072
 EXPOSE 8072
 
 CMD ["python3", "api.py", "/documents"]
+
+
+
+FROM docstore as docstore_test
+
+COPY test_requirements.txt /
+RUN pip3 install -r /test_requirements.txt

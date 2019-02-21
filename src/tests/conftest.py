@@ -13,3 +13,8 @@ def store():
     root = tempfile.mkdtemp()
     yield TaggedDocumentStore(root=root)
     shutil.rmtree(root)
+
+
+@pytest.fixture
+def pdf_file():
+    return open("tests/snakes.pdf", "rb")

@@ -11,15 +11,21 @@ from tagged_store import TaggedDocument, TaggedDocumentStore
 
 
 def create_thumbnail(monkeypatch, store, doc):
-    def mock_subprocess(cmd):
-        assert cmd == [
-            "docker", "run", "--rm", "--volume", "%s:/data" % store.root,
-            "preview-generator",
-            "files/1/100.pdf", "thumbnails/%s/%s.jpg" % (doc.id[0], doc.id),
-        ]
+    def mock_get_jpeg_preview(*args, **kwargs):
+        assert len(args) == 1
+        assert args[0].endswith("1/100.pdf")
+        assert kwargs == {"height": 400, "width": 400}
+
+        new_path = args[0].replace(".pdf", ".jpg")
+        os.makedirs(os.path.dirname(new_path), exist_ok=True)
+        open(new_path, "wb").write(b"thumbnail")
+        return new_path
 
     with monkeypatch.context() as m:
-        m.setattr(subprocess, "check_call", mock_subprocess)
+        m.setattr(
+            index_helpers.preview_manager,
+            "get_jpeg_preview",
+            mock_get_jpeg_preview)
         return index_helpers.create_thumbnail(store, doc)
 
 
