@@ -47,5 +47,9 @@ For the latter, the body of the response will include an explanation, for exampl
 ```http
 POST /upload
 400 Bad Request
-The SHA256 checksum (123…abc) does not match the checksum of the uploaded document (456…def).
+{
+  "error": "The SHA256 checksum (123…abc) does not match the checksum of the uploaded document (456…def)."
+}
 ```
+
+If you'd rather not do this yourself, the `index_document.py` script in the root of the repository can also do this for you.
