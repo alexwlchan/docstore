@@ -9,24 +9,24 @@ import index_helpers
 from tagged_store import TaggedDocument, TaggedDocumentStore
 
 
-def test_create_thumbnail(store, pdf_path):
-    doc = TaggedDocument({"id": "1", "pdf_path": pdf_path})
+def test_create_thumbnail(store, file_path):
+    doc = TaggedDocument({"id": "1", "file_path": file_path})
     index_helpers.create_thumbnail(store=store, doc=doc)
     assert "thumbnail_path" in doc
 
 
-def test_thumbnail_data_is_saved(store, pdf_path):
-    doc = TaggedDocument({"id": "1", "pdf_path": pdf_path})
+def test_thumbnail_data_is_saved(store, file_path):
+    doc = TaggedDocument({"id": "1", "file_path": file_path})
     index_helpers.create_thumbnail(store=store, doc=doc)
 
     new_store = TaggedDocumentStore(store.root)
     assert "thumbnail_path" in new_store.documents[doc.id]
 
 
-def test_removes_old_thumbnail_first(store, pdf_path):
+def test_removes_old_thumbnail_first(store, file_path):
     doc = TaggedDocument({
         "id": "1",
-        "pdf_path": pdf_path,
+        "file_path": file_path,
         "thumbnail_path": "1/100.jpg"
     })
 
@@ -39,24 +39,24 @@ def test_removes_old_thumbnail_first(store, pdf_path):
     assert doc["thumbnail_path"] != "1/100.jpg"
 
 
-def test_copies_pdf_to_store(store, pdf_path):
-    user_data = {"path": pdf_path, "file": b"hello world"}
+def test_copies_pdf_to_store(store, file_path):
+    user_data = {"path": file_path, "file": b"hello world"}
     doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     assert os.path.exists(os.path.join(store.files_dir, doc.id[0], doc.id + ".pdf"))
-    assert doc["pdf_path"] == os.path.join(doc.id[0], doc.id + ".pdf")
+    assert doc["file_path"] == os.path.join(doc.id[0], doc.id + ".pdf")
 
 
-def test_pdf_path_is_saved_to_store(store, pdf_path):
-    user_data = {"path": pdf_path, "file": b"hello world"}
+def test_file_path_is_saved_to_store(store, file_path):
+    user_data = {"path": file_path, "file": b"hello world"}
     doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     new_store = TaggedDocumentStore(store.root)
-    assert "pdf_path" in new_store.documents[doc.id]
+    assert "file_path" in new_store.documents[doc.id]
 
 
-def test_adds_sha256_hash_of_document(store, pdf_path):
-    user_data = {"path": pdf_path, "file": b"hello world"}
+def test_adds_sha256_hash_of_document(store, file_path):
+    user_data = {"path": file_path, "file": b"hello world"}
     doc = index_helpers.index_pdf_document(store=store, user_data=user_data)
 
     # sha256(b"hello world")

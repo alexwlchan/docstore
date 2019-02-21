@@ -133,7 +133,7 @@ def test_get_view_endpoint(api, pdf_file):
     assert data["title"] in resp.text
 
 
-def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path):
+def test_can_view_file_and_thumbnail(api, pdf_file, file_path):
     data = {
         "title": "Hello world"
     }

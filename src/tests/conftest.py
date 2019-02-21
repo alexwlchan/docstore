@@ -19,7 +19,7 @@ def pdf_file():
 
 
 @pytest.fixture
-def pdf_path(store):
+def file_path(store):
     p = os.path.join(store.files_dir, "s/snakes.pdf")
     os.makedirs(os.path.dirname(p), exist_ok=True)
     shutil.copyfile("tests/snakes.pdf", p)

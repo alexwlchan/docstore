@@ -20,15 +20,15 @@ def create_thumbnail(store, doc):
     except KeyError:
         pass
 
-    pdf_path = doc["pdf_path"]
-    absolute_pdf_path = os.path.join(store.files_dir, pdf_path)
+    file_path = doc["file_path"]
+    absolute_file_path = os.path.join(store.files_dir, file_path)
     thumb_path = os.path.join(doc.id[0], doc.id + ".jpg")
 
     absolute_thumb_path = os.path.join(store.thumbnails_dir, thumb_path)
     os.makedirs(os.path.dirname(absolute_thumb_path), exist_ok=True)
 
     thumbnail = preview_manager.get_jpeg_preview(
-        absolute_pdf_path,
+        absolute_file_path,
         height=400,
         width=400
     )
@@ -43,18 +43,18 @@ def create_thumbnail(store, doc):
 def index_pdf_document(store, user_data):
     doc = TaggedDocument(user_data)
 
-    pdf_path = os.path.join(doc.id[0], doc.id + ".pdf")
-    complete_pdf_path = os.path.join(store.files_dir, pdf_path)
-    os.makedirs(os.path.dirname(complete_pdf_path), exist_ok=True)
-    open(complete_pdf_path, "wb").write(user_data.pop("file"))
-    doc["pdf_path"] = pdf_path
+    file_path = os.path.join(doc.id[0], doc.id + ".pdf")
+    complete_file_path = os.path.join(store.files_dir, file_path)
+    os.makedirs(os.path.dirname(complete_file_path), exist_ok=True)
+    open(complete_file_path, "wb").write(user_data.pop("file"))
+    doc["file_path"] = file_path
 
     # Add a SHA256 hash of the PDF.  This allows integrity checking later
     # and makes it easy to detect duplicates.
     # Note: this slurps the entire PDF in at once.  Fine for small files;
     # might be worth revisiting if I ever get something unusually large.
     h = hashlib.sha256()
-    h.update(open(complete_pdf_path, "rb").read())
+    h.update(open(complete_file_path, "rb").read())
     try:
         if doc["sha256_checksum"] != h.hexdigest():
             raise UserError(

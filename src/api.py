@@ -114,8 +114,8 @@ def create_api(store):
                 )
 
             whitenoise_files.add_file_to_dictionary(
-                url="/" + doc["pdf_path"],
-                path=os.path.join(store.files_dir, doc["pdf_path"])
+                url="/" + doc["file_path"],
+                path=os.path.join(store.files_dir, doc["file_path"])
             )
 
             create_doc_thumbnail(doc)

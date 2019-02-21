@@ -36,7 +36,7 @@ def main(path, title, tags):
     resp = requests.get(f"http://localhost:8072/documents/{doc_id}")
     resp.raise_for_status()
 
-    url = os.path.join("http://localhost:8072/files", resp.json()["pdf_path"])
+    url = os.path.join("http://localhost:8072/files", resp.json()["file_path"])
     resp = requests.get(url, stream=True)
     resp.raise_for_status()
     stored_data = resp.raw.read()
