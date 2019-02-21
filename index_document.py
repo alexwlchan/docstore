@@ -32,6 +32,19 @@ def main(path, title, tags):
     resp.raise_for_status()
     print(resp.json())
 
+    doc_id = resp.json()["id"]
+    resp = requests.get(f"http://localhost:8072/documents/{doc_id}")
+    resp.raise_for_status()
+
+    url = os.path.join("http://localhost:8072/files", resp.json()["pdf_path"])
+    resp = requests.get(url, stream=True)
+    resp.raise_for_status()
+    stored_data = resp.raw.read()
+    original_pdf = open(path, "rb").read()
+
+    if stored_data == original_pdf:
+        os.unlink(path)
+
 
 if __name__ == "__main__":
     main()

@@ -160,9 +160,9 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path):
     assert len(thumbnails_img) == 1
     img_src = thumbnails_img[0].attrs["src"]
 
-    pdf_resp = api.requests.get(pdf_href)
+    pdf_resp = api.requests.get(pdf_href, stream=True)
     assert pdf_resp.status_code == 200
-    # TODO: Check what comes back is actually the PDF we uploaded!
+    assert pdf_resp.raw.read() == open("tests/snakes.pdf", "rb").read()
 
     now = time.time()
     while time.time() - now < 3:  # pragma: no cover
@@ -175,3 +175,21 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path):
 
     img_resp = api.requests.get(img_src)
     assert img_resp.status_code == 200
+
+
+def test_can_lookup_document(api, pdf_file):
+    data = {
+        "title": "Hello world"
+    }
+    resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
+
+    doc_id = resp.json()["id"]
+
+    resp = api.requests.get(f"/documents/{doc_id}")
+    assert resp.status_code == 200
+    assert data["title"] == resp.json()["title"]
+
+
+def test_lookup_missing_document_is_404(api):
+    resp = api.requests.get("/documents/doesnotexist")
+    assert resp.status_code == 404
