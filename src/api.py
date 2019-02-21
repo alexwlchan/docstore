@@ -100,6 +100,15 @@ def create_api(store):
             @api.background.task
             def create_doc_thumbnail(doc):
                 create_thumbnail(store=store, doc=doc)
+                whitenoise_thumbs.add_file_to_dictionary(
+                    url="/" + doc["thumbnail_path"],
+                    path=os.path.join(store.thumbnails_dir, doc["thumbnail_path"])
+                )
+
+            whitenoise_files.add_file_to_dictionary(
+                url="/" + doc["pdf_path"],
+                path=os.path.join(store.files_dir, doc["pdf_path"])
+            )
 
             create_doc_thumbnail(doc)
             resp.status_code = api.status_codes.HTTP_201

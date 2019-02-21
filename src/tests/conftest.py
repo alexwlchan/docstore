@@ -13,7 +13,11 @@ from tagged_store import TaggedDocumentStore
 def store():
     root = tempfile.mkdtemp()
     yield TaggedDocumentStore(root=root)
-    shutil.rmtree(root)
+
+    try:
+        shutil.rmtree(root)
+    except Exception:
+        pass
 
 
 @pytest.fixture
@@ -22,8 +26,8 @@ def pdf_file():
 
 
 @pytest.fixture
-def pdf_path(store, pdf_file):
+def pdf_path(store):
     p = os.path.join(store.files_dir, "s/snakes.pdf")
     os.makedirs(os.path.dirname(p), exist_ok=True)
-    open(p, "wb").write(pdf_file.read())
+    shutil.copyfile("tests/snakes.pdf", p)
     return "s/snakes.pdf"
