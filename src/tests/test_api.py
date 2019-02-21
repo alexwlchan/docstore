@@ -113,10 +113,10 @@ def test_calls_create_thumbnail(api, store, pdf_file):
     while time.time() - now < 5:  # pragma: no cover
         docid = resp.json()["id"]
         stored_doc = store.documents[docid]
-        if "thumbnail_path" in stored_doc.data:
+        if "thumbnail_identifier" in stored_doc.data:
             break
 
-    assert "thumbnail_path" in stored_doc.data
+    assert "thumbnail_identifier" in stored_doc.data
 
 
 def test_get_view_endpoint(api, pdf_file):
@@ -133,7 +133,7 @@ def test_get_view_endpoint(api, pdf_file):
     assert data["title"] in resp.text
 
 
-def test_can_view_file_and_thumbnail(api, pdf_file, file_path):
+def test_can_view_file_and_thumbnail(api, pdf_file, file_identifier):
     data = {
         "title": "Hello world"
     }

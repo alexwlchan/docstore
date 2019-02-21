@@ -109,13 +109,13 @@ def create_api(store):
             def create_doc_thumbnail(doc):
                 create_thumbnail(store=store, doc=doc)
                 whitenoise_thumbs.add_file_to_dictionary(
-                    url="/" + doc["thumbnail_path"],
-                    path=os.path.join(store.thumbnails_dir, doc["thumbnail_path"])
+                    url="/" + doc["thumbnail_identifier"],
+                    path=os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"])
                 )
 
             whitenoise_files.add_file_to_dictionary(
-                url="/" + doc["file_path"],
-                path=os.path.join(store.files_dir, doc["file_path"])
+                url="/" + doc["file_identifier"],
+                path=os.path.join(store.files_dir, doc["file_identifier"])
             )
 
             create_doc_thumbnail(doc)

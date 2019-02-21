@@ -194,11 +194,11 @@
 
         <tr>
           <td class="thumbnail">
-            {% if doc.thumbnail_path %}
-              <img src="/thumbnails/{{ doc.thumbnail_path }}">
+            {% if doc.thumbnail_identifier %}
+              <img src="/thumbnails/{{ doc.thumbnail_identifier }}">
             {% endif %}
           </td>
-          <td><a href="/files/{{ doc.file_path }}" target="_blank">{{ doc.title }}</a>
+          <td><a href="/files/{{ doc.file_identifier }}" target="_blank">{{ doc.title }}</a>
 
           {% if tags %}
           <p class="tags">
