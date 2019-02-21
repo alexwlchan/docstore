@@ -4,6 +4,7 @@ import hashlib
 import io
 import time
 
+import bs4
 import pytest
 
 import api as service
@@ -118,15 +119,59 @@ def test_calls_create_thumbnail(api, store, pdf_file):
     assert "thumbnail_path" in stored_doc.data
 
 
-def test_get_view_endpoint(api):
+def test_get_view_endpoint(api, pdf_file):
     resp = api.requests.get("/")
     assert resp.status_code == 200
 
     data = {
         "title": "Hello world"
     }
-    api.requests.post("/upload", files={"file": io.BytesIO()}, data=data)
+    api.requests.post("/upload", files={"file": pdf_file}, data=data)
 
     resp = api.requests.get("/")
     assert resp.status_code == 200
     assert data["title"] in resp.text
+
+
+def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path):
+    data = {
+        "title": "Hello world"
+    }
+    api.requests.post("/upload", files={"file": pdf_file}, data=data)
+    time.sleep(2)
+
+    resp = api.requests.get("/")
+    assert resp.status_code == 200
+
+    soup = bs4.BeautifulSoup(resp.text, "html.parser")
+
+    all_links = soup.find_all("a", attrs={"target": "_blank"})
+    pdf_links = [
+        link.attrs["href"]
+        for link in all_links
+        if link.attrs.get("href", "").endswith(".pdf")
+    ]
+    assert len(pdf_links) == 1
+    pdf_href = pdf_links[0]
+
+    thumbnails_td = soup.find_all("td", attrs={"class": "thumbnail"})
+    assert len(thumbnails_td) == 1
+    thumbnails_img = thumbnails_td[0].find_all("img")
+    assert len(thumbnails_img) == 1
+    img_src = thumbnails_img[0].attrs["src"]
+
+    pdf_resp = api.requests.get(pdf_href)
+    assert pdf_resp.status_code == 200
+    # TODO: Check what comes back is actually the PDF we uploaded!
+
+    now = time.time()
+    while time.time() - now < 3:  # pragma: no cover
+        try:
+            api.requests.get(img_src)
+        except TypeError:
+            pass
+        else:
+            break
+
+    img_resp = api.requests.get(img_src)
+    assert img_resp.status_code == 200
