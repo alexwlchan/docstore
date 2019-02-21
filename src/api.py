@@ -10,7 +10,7 @@ from whitenoise import WhiteNoise
 
 import date_helpers
 from exceptions import UserError
-from index_helpers import create_thumbnail, index_pdf_document
+from index_helpers import create_thumbnail, index_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
 
@@ -99,7 +99,7 @@ def create_api(store):
 
             try:
                 prepared_data = prepare_upload_data(user_data)
-                doc = index_pdf_document(store=store, user_data=prepared_data)
+                doc = index_document(store=store, user_data=prepared_data)
             except UserError as err:
                 resp.media = {"error": str(err)}
                 resp.status_code = api.status_codes.HTTP_400

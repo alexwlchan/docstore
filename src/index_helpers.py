@@ -40,7 +40,7 @@ def create_thumbnail(store, doc):
     store.index_document(doc)
 
 
-def index_pdf_document(store, user_data):
+def index_document(store, user_data):
     doc = TaggedDocument(user_data)
 
     file_identifier = os.path.join(doc.id[0], doc.id + ".pdf")
