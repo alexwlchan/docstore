@@ -3,7 +3,6 @@
 import hashlib
 import os
 import shutil
-import subprocess
 import tempfile
 
 from preview_generator.manager import PreviewManager

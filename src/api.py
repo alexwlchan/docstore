@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
-import errno
 import os
 import sys
-import webbrowser
 
 from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
 import responder

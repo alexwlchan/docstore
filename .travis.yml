@@ -15,5 +15,5 @@ install:
   - pip install -r test_requirements.txt
 
 script:
-  - flake8 --ignore=E501,W504
+  - make lint
   - cd src && coverage run -m py.test tests/*.py && coverage report
