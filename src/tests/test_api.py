@@ -160,9 +160,9 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path):
     assert len(thumbnails_img) == 1
     img_src = thumbnails_img[0].attrs["src"]
 
-    pdf_resp = api.requests.get(pdf_href)
+    pdf_resp = api.requests.get(pdf_href, stream=True)
     assert pdf_resp.status_code == 200
-    # TODO: Check what comes back is actually the PDF we uploaded!
+    assert pdf_resp.raw.read() == open("tests/snakes.pdf", "rb").read()
 
     now = time.time()
     while time.time() - now < 3:  # pragma: no cover
