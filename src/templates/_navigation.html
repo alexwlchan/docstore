@@ -1,0 +1,62 @@
+{% if search_options.tag_query %}
+<p class="tag_query">Filtering to documents with
+  <strong>{{ t }}</strong>
+  {% for t in search_options.tag_query %}
+    <span class="tag_query__tag">
+      <strong>{{ t }}</strong>
+      <a href="#" onclick="script:removeTag('{{ t }}')" class="text-danger">x</a>
+    </span>
+  {% endfor %}
+</p>
+{% endif %}
+
+{% if search_response.tags %}
+<div>
+  <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+    View all tags
+  </a>
+
+  <ul class="pagination float-right">
+    <li class="page-item{% if grid_view %} disabled{% endif %}">
+      <a class="page-link text-muted" href="#" onclick="script:setViewOption('grid')">
+        <span aria-hidden="true"><i class="fas fa-grip-horizontal"></i></span>
+        <span class="sr-only">Grid view</span>
+      </a>
+    </li>
+    <li class="page-item{% if not grid_view %} disabled{% endif %}">
+      <a class="page-link text-muted" href="#" onclick="script:setViewOption('table')">
+        <span aria-hidden="true"><i class="fas fa-list"></i></span>
+        <span class="sr-only">Table view</span>
+      </a>
+    </li>
+  </ul>
+</div>
+
+<div class="collapse" id="collapseExample">
+  <div class="card card-body">
+    <ul style="margin-bottom: 0;">
+    {% for tag in search_response.tags|sort %}
+      {% if not loop.first %}
+        {% if tag.count(":") > loop.previtem.count(":") %}
+          {% if tag.startswith(loop.previtem) %}<ul>
+          {% else %}
+          <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
+          {% endif %}
+        {% endif %}
+        {% if tag.count(":") < loop.previtem.count(":") %}</ul>{% endif %}
+        {% if tag.count(":") == loop.previtem.count(":") and tag.count(":") > 0 and tag.rsplit(":", 1)[0] != loop.previtem.rsplit(":", 1)[0] %}</ul><li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>{% endif %}
+      {% else %}
+        {% if tag.count(":") > 0 %}
+        <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
+        {% endif %}
+      {% endif %}
+      <li>{% if tag not in search_options.tag_query %}<a href="#" onclick="script:gotoTag('{{ tag }}')">{{ tag }}</a>{% else %}{{ tag }}{% endif %} ({{ search_response.tags[tag] }})</li>
+
+      {% if loop.last %}
+        {% for i in range(tag.count(":")) %}</ul>{% endfor %}
+      {% endif %}
+    {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %}

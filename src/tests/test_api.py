@@ -198,3 +198,21 @@ def test_can_lookup_document(api, pdf_file):
 def test_lookup_missing_document_is_404(api):
     resp = api.requests.get("/documents/doesnotexist")
     assert resp.status_code == 404
+
+
+def test_resolves_css(api):
+    resp = api.requests.get("/")
+    soup = bs4.BeautifulSoup(resp.text, "html.parser")
+
+    css_links = [
+        link.attrs["href"]
+        for link in soup.find_all("link", attrs={"rel": "stylesheet"})
+    ]
+
+    local_links = [link for link in css_links if not link.startswith("https://")]
+    assert len(local_links) == 1
+    css_link = local_links[0]
+
+    assert css_link.endswith(".css")
+    css_resp = api.requests.get(css_link)
+    assert css_resp.status_code == 200

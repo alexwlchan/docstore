@@ -5,6 +5,7 @@ import shutil
 
 import pytest
 
+import api as service
 from tagged_store import TaggedDocumentStore
 
 
@@ -24,3 +25,8 @@ def file_identifier(store):
     os.makedirs(os.path.dirname(p), exist_ok=True)
     shutil.copyfile("tests/snakes.pdf", p)
     return "s/snakes.pdf"
+
+
+@pytest.fixture()
+def api(store):
+    return service.create_api(store)
