@@ -17,11 +17,11 @@ from tagged_store import TaggedDocumentStore
 
 
 def create_api(store):
-    api = responder.API()
-
-    # Compile the CSS file when the API starts
+    # Compile the CSS file before the API starts
     css = scss.Compiler().compile_string(open("assets/style.scss").read())
     open("static/style.css", "w").write(css)
+
+    api = responder.API()
 
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
 
