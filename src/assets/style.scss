@@ -45,8 +45,14 @@ th a:hover {
 
 .tag_query__tag {
   margin-left: 0.4em;
-}
 
-.tag_query__tag a::before {
-  content: "[";
+  a {
+    &::before {
+      content: "[";
+    }
+
+    &::after {
+      content: "]";
+    }
+  }
 }
