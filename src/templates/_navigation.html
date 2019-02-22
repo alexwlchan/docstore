@@ -11,11 +11,27 @@
 {% endif %}
 
 {% if search_response.tags %}
-<p>
-  <a class="btn btn-light" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+<div>
+  <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
     View all tags
   </a>
-</p>
+
+  <ul class="pagination float-right">
+    <li class="page-item{% if grid_view %} disabled{% endif %}">
+      <a class="page-link text-muted" href="#" onclick="script:setViewOption('grid')">
+        <span aria-hidden="true"><i class="fas fa-grip-horizontal"></i></span>
+        <span class="sr-only">Grid view</span>
+      </a>
+    </li>
+    <li class="page-item{% if not grid_view %} disabled{% endif %}">
+      <a class="page-link text-muted" href="#" onclick="script:setViewOption('table')">
+        <span aria-hidden="true"><i class="fas fa-list"></i></span>
+        <span class="sr-only">Table view</span>
+      </a>
+    </li>
+  </ul>
+</div>
+
 <div class="collapse" id="collapseExample">
   <div class="card card-body">
     <ul style="margin-bottom: 0;">

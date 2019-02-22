@@ -10,13 +10,16 @@
         <hr>
       </p>
 
-      {% include "_tag_information.html" %}
+      {% include "_navigation.html" %}
 
       <p></p>
 
       {% if search_response.documents %}
-        {% include "_grid.html" %}
-        {% include "_table.html" %}
+        {% if grid_view %}
+          {% include "_grid.html" %}
+        {% else %}
+          {% include "_table.html" %}
+        {% endif %}
       {% else %}
         No documents found!
       {% endif %}

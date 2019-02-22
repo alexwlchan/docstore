@@ -39,6 +39,7 @@ def create_api(store):
         tag_query = req.params.get_list("tag", [])
         page = req.params.get("page", default=1)
         sort_order = req.params.get("sort", "date_created:desc")
+        grid_view = req.params.get("view", "table") == "grid"
 
         search_options = search_helpers.SearchOptions(
             tag_query=tag_query,
@@ -51,7 +52,8 @@ def create_api(store):
         resp.content = api.template(
             "document_list.html",
             search_options=search_options,
-            search_response=search_response
+            search_response=search_response,
+            grid_view=grid_view
         )
 
     def prepare_upload_data(user_data):
