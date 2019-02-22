@@ -6,6 +6,7 @@ import sys
 
 from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
 import responder
+import scss
 from whitenoise import WhiteNoise
 
 import date_helpers
@@ -17,6 +18,10 @@ from tagged_store import TaggedDocumentStore
 
 def create_api(store):
     api = responder.API()
+
+    # Compile the CSS file when the API starts
+    css = scss.Compiler().compile_string(open("assets/style.scss").read())
+    open("static/style.css", "w").write(css)
 
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
 
