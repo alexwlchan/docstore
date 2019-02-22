@@ -15,65 +15,10 @@
       <p></p>
 
       {% if search_response.documents %}
-      <table class="table">
-        <thead class="thead-light">
-          <tr>
-            <th style="width: 60px;"></th>
-
-            <th>
-            {% if search_options.sort_order == ("title", "asc") %}
-            <a href="#" onclick="script:setSortOrder('title:desc')">Name &Uarr;</a>
-            {% else %}
-            <a href="#" onclick="script:setSortOrder('title:asc')">
-              Name
-              {% if search_options.sort_order == ("title", "desc") %}
-                &Darr;
-              {% endif %}
-            </a>
-            {% endif %}
-            </th>
-
-            <th>
-            {% if search_options.sort_order == ("date_created", "desc") %}
-            <a href="#" onclick="script:setSortOrder('date_created:asc')">Date saved &Darr;</a>
-            {% else %}
-            <a href="#" onclick="script:setSortOrder('date_created:desc')">
-              Date saved
-              {% if search_options.sort_order == ("date_created", "asc") %}
-                &Uarr;
-              {% endif %}
-            </a>
-            {% endif %}
-            </th>
-          </tr>
-        </thead>
-        {% for doc in search_response.documents %}
-
-        {% set tags = doc.tags %}
-
-        <tr>
-          <td class="thumbnail">
-            {% if doc.thumbnail_identifier %}
-              <img src="/thumbnails/{{ doc.thumbnail_identifier }}">
-            {% endif %}
-          </td>
-          <td><a href="/files/{{ doc.file_identifier }}" target="_blank">{{ doc.title }}</a>
-
-          {% if tags %}
-          <p class="tags">
-            {% for t in tags|sort %}
-            <button type="button" class="btn btn-light tag" {% if t in search_options.tag_query %}disabled{% else %}onclick="script:gotoTag('{{ t }}')"{% endif %}>{{ t }}</button>
-            {% endfor %}
-          </p>
-          {% endif %}
-
-          </td>
-          <td>{% if doc.date_created %}{{ doc.date_created | since_now_date_str }}{% endif %}</td>
-        </tr>
-        {% endfor %}
-      </table>
+        {% include "_grid.html" %}
+        {% include "_table.html" %}
       {% else %}
-      No documents found!
+        No documents found!
       {% endif %}
 
       {% include "_pagination.html" %}
