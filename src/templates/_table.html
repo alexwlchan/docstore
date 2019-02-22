@@ -38,6 +38,8 @@
     <td class="thumbnail">
       {% if doc.thumbnail_identifier %}
         <img src="/thumbnails/{{ doc.thumbnail_identifier }}">
+      {% else %}
+        <img src="/static/placeholder.jpg">
       {% endif %}
     </td>
     <td><a href="/files/{{ doc.file_identifier }}" target="_blank">{{ doc.title }}</a>
