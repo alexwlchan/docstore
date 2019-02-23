@@ -1,8 +1,5 @@
 # -*- encoding: utf-8
 
-import subprocess
-import time
-
 from click.testing import CliRunner
 import pytest
 

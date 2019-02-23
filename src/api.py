@@ -2,7 +2,6 @@
 # -*- encoding: utf-8
 
 import os
-import sys
 
 import click
 from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
