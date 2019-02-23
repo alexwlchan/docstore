@@ -17,4 +17,4 @@ EXPOSE 8072
 COPY src /app
 WORKDIR /app
 
-CMD ["python3", "api.py", "/documents"]
+ENTRYPOINT ["python3", "api.py", "/documents"]

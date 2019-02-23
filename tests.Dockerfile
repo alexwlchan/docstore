@@ -12,6 +12,3 @@ COPY requirements.txt /
 RUN pip3 install -r /requirements.txt
 COPY test_requirements.txt /
 RUN pip3 install -r /test_requirements.txt
-
-COPY src /app
-WORKDIR /app

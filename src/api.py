@@ -4,6 +4,7 @@
 import os
 import sys
 
+import click
 from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
 import responder
 import scss
@@ -135,13 +136,17 @@ def create_api(store, display_title="Alex’s documents"):
     return api
 
 
-if __name__ == "__main__":  # pragma: no cover
-    try:
-        root = os.path.normpath(sys.argv[1])
-    except IndexError:
-        sys.exit("Usage: %s <ROOT>" % __file__)
+@click.command()
+@click.argument("root", required=True)
+@click.option("--title", default="Alex’s documents")
+def run_api(root, title):
+    root = os.path.normpath(root)
 
     store = TaggedDocumentStore(root)
-    api = create_api(store)
+    api = create_api(store, display_title=title)
 
     api.run()
+
+
+if __name__ == "__main__":  # pragma: no cover
+    run_api()
