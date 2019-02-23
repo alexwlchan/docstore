@@ -38,7 +38,7 @@ def test_grid_view(sess, store):
 
 def test_uses_display_title(store):
     resp = service.create_api(store).requests.get("/")
-    assert "Alex&rsquo;s documents" in resp.text
+    assert "Alex’s documents" in resp.text
 
     resp = service.create_api(store, display_title="Manuals").requests.get("/")
     assert "Manuals" in resp.text
