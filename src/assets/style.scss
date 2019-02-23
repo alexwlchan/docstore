@@ -69,3 +69,17 @@ th a:hover {
   margin-bottom: 0.25rem;
   font-size: 1rem;
 }
+
+.navbar {
+  margin-bottom: 1rem;
+  padding: 0;
+
+  .container {
+    padding-bottom: 0 !important;
+  }
+
+  ul {
+    margin-top:    0.5rem;
+    margin-bottom: 0.5rem;
+  }
+}
