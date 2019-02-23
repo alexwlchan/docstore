@@ -2,6 +2,7 @@
 # -*- encoding: utf-8
 
 import os
+import sys
 
 import click
 import requests
@@ -14,7 +15,8 @@ import requests
     "--tags", prompt="What is this document tagged with?", default=""
 )
 @click.option("--title", prompt="What is the title?", default="")
-def main(path, port, title, tags):
+@click.option("--cleanup", is_flag=True)
+def main(path, port, title, tags, cleanup):
     url = "http://localhost:%s" % port
 
     data = {
@@ -45,8 +47,13 @@ def main(path, port, title, tags):
     stored_data = resp.raw.read()
     original_data = open(path, "rb").read()
 
-    if stored_data == original_data:
-        os.unlink(path)
+    if stored_data != original_data:
+        sys.exit("Saved file does not match original file!")
+
+    if not cleanup:
+        click.confirm("File saved successfully.  Delete original file?")
+
+    os.unlink(path)
 
 
 if __name__ == "__main__":
