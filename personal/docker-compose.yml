@@ -1,0 +1,32 @@
+version: "2"
+
+services:
+
+  correspondence:
+    image: "docstore"
+    ports:
+      - "8072:8072"
+    environment:
+      - "PORT=8072"
+    entrypoint:
+      - python3
+      - api.py
+      - /documents
+      - --title=correspondence
+    volumes:
+      - ~/Documents/docstore/correspondence:/documents
+
+  manuals:
+    image: "docstore"
+    ports:
+      - "8082:8082"
+    environment:
+      - "PORT=8082"
+    entrypoint:
+      - python3
+      - api.py
+      - /documents
+      - --title=manuals
+    volumes:
+      - ~/Documents/docstore/manuals:/documents
+

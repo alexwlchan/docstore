@@ -2,8 +2,8 @@
 # -*- encoding: utf-8
 
 import os
-import sys
 
+import click
 from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
 import responder
 import scss
@@ -16,7 +16,7 @@ import search_helpers
 from tagged_store import TaggedDocumentStore
 
 
-def create_api(store):
+def create_api(store, display_title="Alex’s documents"):
     # Compile the CSS file before the API starts
     css = scss.Compiler().compile_string(open("assets/style.scss").read())
     open("static/style.css", "w").write(css)
@@ -53,7 +53,8 @@ def create_api(store):
             "document_list.html",
             search_options=search_options,
             search_response=search_response,
-            grid_view=grid_view
+            grid_view=grid_view,
+            title=display_title
         )
 
     def prepare_upload_data(user_data):
@@ -134,13 +135,17 @@ def create_api(store):
     return api
 
 
-if __name__ == "__main__":  # pragma: no cover
-    try:
-        root = os.path.normpath(sys.argv[1])
-    except IndexError:
-        sys.exit("Usage: %s <ROOT>" % __file__)
+@click.command()
+@click.argument("root", required=True)
+@click.option("--title", default="Alex’s documents")
+def run_api(root, title):
+    root = os.path.normpath(root)
 
     store = TaggedDocumentStore(root)
-    api = create_api(store)
+    api = create_api(store, display_title=title)
 
     api.run()
+
+
+if __name__ == "__main__":  # pragma: no cover
+    run_api()
