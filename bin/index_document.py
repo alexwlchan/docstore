@@ -9,11 +9,14 @@ import requests
 
 @click.command()
 @click.argument("path", required=True)
+@click.option("--port", default="8072")
 @click.option(
     "--tags", prompt="What is this document tagged with?", default=""
 )
 @click.option("--title", prompt="What is the title?", default="")
-def main(path, title, tags):
+def main(path, port, title, tags):
+    url = "http://localhost:%s" % port
+
     data = {
         "filename": os.path.basename(path)
     }
@@ -25,7 +28,7 @@ def main(path, title, tags):
         data["tags"] = tags
 
     resp = requests.post(
-        "http://localhost:8072/upload",
+        url + "/upload",
         data=data,
         files={"file": open(path, "rb")}
     )
@@ -33,16 +36,16 @@ def main(path, title, tags):
     print(resp.json())
 
     doc_id = resp.json()["id"]
-    resp = requests.get(f"http://localhost:8072/documents/{doc_id}")
+    resp = requests.get(url + f"/documents/{doc_id}")
     resp.raise_for_status()
 
-    url = os.path.join("http://localhost:8072/files", resp.json()["file_identifier"])
+    url = os.path.join(url + "/files", resp.json()["file_identifier"])
     resp = requests.get(url, stream=True)
     resp.raise_for_status()
     stored_data = resp.raw.read()
-    original_pdf = open(path, "rb").read()
+    original_data = open(path, "rb").read()
 
-    if stored_data == original_pdf:
+    if stored_data == original_data:
         os.unlink(path)
 
 
