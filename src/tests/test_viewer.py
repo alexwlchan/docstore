@@ -2,6 +2,7 @@
 
 import pytest
 
+import api as service
 from index_helpers import index_document
 
 
@@ -33,3 +34,11 @@ def test_grid_view(sess, store):
     resp = sess.get("/", params={"view": "grid"})
     assert '<div class="row">' in resp.text
     assert '<table class="table">' not in resp.text
+
+
+def test_uses_display_title(store):
+    resp = service.create_api(store).requests.get("/")
+    assert "Alex&rsquo;s documents" in resp.text
+
+    resp = service.create_api(store, display_title="Manuals").requests.get("/")
+    assert "Manuals" in resp.text

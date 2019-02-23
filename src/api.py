@@ -16,7 +16,7 @@ import search_helpers
 from tagged_store import TaggedDocumentStore
 
 
-def create_api(store):
+def create_api(store, display_title="Alex’s documents"):
     # Compile the CSS file before the API starts
     css = scss.Compiler().compile_string(open("assets/style.scss").read())
     open("static/style.css", "w").write(css)
@@ -53,7 +53,8 @@ def create_api(store):
             "document_list.html",
             search_options=search_options,
             search_response=search_response,
-            grid_view=grid_view
+            grid_view=grid_view,
+            title=display_title
         )
 
     def prepare_upload_data(user_data):
