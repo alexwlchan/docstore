@@ -2,6 +2,20 @@ version: "2"
 
 services:
 
+  books:
+    image: "docstore"
+    ports:
+      - "8062:8062"
+    environment:
+      - "PORT=8062"
+    entrypoint:
+      - python3
+      - api.py
+      - /documents
+      - --title=books
+    volumes:
+      - ~/Documents/docstore/books:/documents
+
   correspondence:
     image: "docstore"
     ports:
