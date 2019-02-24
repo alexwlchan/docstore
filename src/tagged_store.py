@@ -105,16 +105,7 @@ class TaggedDocumentStore:
     def thumbnails_dir(self):
         return os.path.join(self.root, "thumbnails")
 
-    def index_document(self, doc):
-        if isinstance(doc, dict):
-            doc = TaggedDocument(doc)
-
-        if not isinstance(doc, TaggedDocument):
-            raise TypeError("doc=%r is %s, expected TaggedDocument" % (doc, type(doc)))
-
-        new_documents = self.documents.copy()
-        new_documents[doc.id] = doc
-
+    def save(self, new_documents):
         json_string = json.dumps(
             new_documents,
             indent=2,
@@ -132,6 +123,18 @@ class TaggedDocumentStore:
         # We deliberately don't write to the in-memory database until it's been
         # persisted to disk.
         self.documents = new_documents
+
+    def index_document(self, doc):
+        if isinstance(doc, dict):
+            doc = TaggedDocument(doc)
+
+        if not isinstance(doc, TaggedDocument):
+            raise TypeError("doc=%r is %s, expected TaggedDocument" % (doc, type(doc)))
+
+        new_documents = self.documents.copy()
+        new_documents[doc.id] = doc
+
+        self.save(new_documents)
 
     def search_documents(self, query):
         return [
