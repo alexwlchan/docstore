@@ -29,18 +29,6 @@ function setSortOrder(sortOrder) {
   window.location = window.location.pathname + '?' + searchParams.toString();
 }
 
-function setPageNumber(pageNumber) {
-  var searchParams = new URLSearchParams(window.location.search);
-  searchParams.delete("page");
-
-  if (pageNumber != 1) {
-    searchParams.append("page", pageNumber);
-  }
-
-  window.location = window.location.pathname + '?' + searchParams.toString();
-}
-
-
 function setViewOption(viewOption) {
   var searchParams = new URLSearchParams(window.location.search);
   searchParams.delete("view");
