@@ -4,7 +4,7 @@
   {% for t in search_options.tag_query %}
     <span class="tag_query__tag">
       <strong>{{ t }}</strong>
-      <a href="#" onclick="script:removeTag('{{ t }}')" class="text-danger">x</a>
+      <a href="{{ t|remove_tag_from_url(req_url) }}" class="text-danger">x</a>
     </span>
   {% endfor %}
 </p>

@@ -26,7 +26,7 @@ def test_table_view(sess, store):
     index_document(store=store, user_data={
         "file": b"hello world",
         "title": "foo",
-        "tags": "bar,baz,bat"
+        "tags": ["bar", "baz", "bat"]
     })
     resp = sess.get("/", params={"view": "table"})
     assert '<div class="row">' not in resp.text
@@ -46,3 +46,30 @@ def test_uses_display_title(store):
 
     resp = service.create_api(store, display_title="Manuals").requests.get("/")
     assert "Manuals" in resp.text
+
+
+def test_can_filter_by_tag(sess, store):
+    index_document(
+        store=store,
+        user_data={
+            "file": b"hello world",
+            "title": "hello world",
+            "tags": ["bar", "baz"]
+        }
+    )
+    index_document(
+        store=store,
+        user_data={
+            "file": b"hi world",
+            "title": "hi world",
+            "tags": ["bar", "bat"]
+        }
+    )
+
+    resp_bar = sess.get("/", params={"tag": "bar"})
+    assert "hello world" in resp_bar.text
+    assert "hi world" in resp_bar.text
+
+    resp_bat = sess.get("/", params={"tag": ["bar", "bat"]})
+    assert "hello world" not in resp_bat.text
+    assert "hi world" in resp_bat.text
