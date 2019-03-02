@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import functools
 import os
 from urllib.parse import quote as urlquote
 
@@ -18,12 +19,14 @@ import search_helpers
 from tagged_store import TaggedDocumentStore
 
 
+@functools.lru_cache()
 def add_tag(tag, req_url):
     quoted_tag = urlquote(tag)
     assert quoted_tag not in req_url.get("tag")
     return req_url.add("tag", quoted_tag)
 
 
+@functools.lru_cache()
 def remove_tag_from_url(tag, req_url):
     quoted_tag = urlquote(tag)
     assert quoted_tag in req_url.get("tag")
@@ -32,6 +35,14 @@ def remove_tag_from_url(tag, req_url):
     for t in tags_to_keep:
         url = url.add("tag", t)
     return url
+
+
+def set_sort_order(sort_order, req_url):
+    return req_url.set("sort", sort_order)
+
+
+def set_view_option(view_option, req_url):
+    return req_url.set("view", view_option)
 
 
 def create_api(store, display_title="Alex’s documents"):
@@ -44,6 +55,8 @@ def create_api(store, display_title="Alex’s documents"):
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
     api.jinja_env.filters["add_tag_to_url"] = add_tag
     api.jinja_env.filters["remove_tag_from_url"] = remove_tag_from_url
+    api.jinja_env.filters["set_sort_order"] = set_sort_order
+    api.jinja_env.filters["set_view_option"] = set_view_option
 
     # Add routes for serving the static files/thumbnails
     whitenoise_files = WhiteNoise(application=api._default_wsgi_app)

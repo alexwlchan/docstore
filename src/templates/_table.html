@@ -5,9 +5,9 @@
 
       <th>
       {% if search_options.sort_order == ("title", "asc") %}
-      <a href="#" onclick="script:setSortOrder('title:desc')">Name &Uarr;</a>
+      <a href="{{ 'title:desc'|set_sort_order(req_url) }}">Name &Uarr;</a>
       {% else %}
-      <a href="#" onclick="script:setSortOrder('title:asc')">
+      <a href="{{ 'title:asc'|set_sort_order(req_url) }}">
         Name
         {% if search_options.sort_order == ("title", "desc") %}
           &Darr;
@@ -18,9 +18,9 @@
 
       <th>
       {% if search_options.sort_order == ("date_created", "desc") %}
-      <a href="#" onclick="script:setSortOrder('date_created:asc')">Date saved &Darr;</a>
+      <a href="{{ 'date_created:asc'|set_sort_order(req_url) }}">
       {% else %}
-      <a href="#" onclick="script:setSortOrder('date_created:desc')">
+      <a href="{{ 'date_created:desc'|set_sort_order(req_url) }}">
         Date saved
         {% if search_options.sort_order == ("date_created", "asc") %}
           &Uarr;
