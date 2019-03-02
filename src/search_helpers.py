@@ -8,8 +8,6 @@ import attr
 @attr.s
 class SearchOptions:
     tag_query = attr.ib(default=())
-    page = attr.ib(default=1)
-    page_size = attr.ib(default=48)
     sort_order = attr.ib(default=("indexed_at", "desc"))
 
 
@@ -17,7 +15,6 @@ class SearchOptions:
 class SearchResponse:
     documents = attr.ib()
     tags = attr.ib()
-    total = attr.ib()
 
 
 def search_store(store, options):
@@ -34,11 +31,7 @@ def search_store(store, options):
         reverse=(sort_order == "desc")
     )
 
-    lower_page = options.page_size * (options.page - 1)
-    upper_page = options.page_size * options.page
-
     return SearchResponse(
-        documents=all_documents[lower_page:upper_page],
-        tags=tags,
-        total=len(all_documents)
+        documents=all_documents,
+        tags=tags
     )

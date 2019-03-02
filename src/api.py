@@ -37,13 +37,11 @@ def create_api(store, display_title="Alex’s documents"):
     @api.route("/")
     def list_documents(req, resp):
         tag_query = req.params.get_list("tag", [])
-        page = req.params.get("page", default=1)
         sort_order = req.params.get("sort", "date_created:desc")
         grid_view = req.params.get("view", "table") == "grid"
 
         search_options = search_helpers.SearchOptions(
             tag_query=tag_query,
-            page=int(page),
             sort_order=tuple(sort_order.split(":"))
         )
 
