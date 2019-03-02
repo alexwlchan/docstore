@@ -4,7 +4,7 @@
   {% for t in search_options.tag_query %}
     <span class="tag_query__tag">
       <strong>{{ t }}</strong>
-      <a href="#" onclick="script:removeTag('{{ t }}')" class="text-danger">x</a>
+      <a href="{{ t|remove_tag_from_url(req_url) }}" class="text-danger">x</a>
     </span>
   {% endfor %}
 </p>
@@ -37,7 +37,7 @@
         <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
         {% endif %}
       {% endif %}
-      <li>{% if tag not in search_options.tag_query %}<a href="#" onclick="script:gotoTag('{{ tag }}')">{{ tag }}</a>{% else %}{{ tag }}{% endif %} ({{ search_response.tags[tag] }})</li>
+      <li>{% if tag not in search_options.tag_query %}<a href="{{ tag | add_tag_to_url(req_url) }}">{{ tag }}</a>{% else %}{{ tag }}{% endif %} ({{ search_response.tags[tag] }})</li>
 
       {% if loop.last %}
         {% for i in range(tag.count(":")) %}</ul>{% endfor %}

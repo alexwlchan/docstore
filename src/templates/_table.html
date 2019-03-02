@@ -5,9 +5,9 @@
 
       <th>
       {% if search_options.sort_order == ("title", "asc") %}
-      <a href="#" onclick="script:setSortOrder('title:desc')">Name &Uarr;</a>
+      <a href="{{ 'title:desc'|set_sort_order(req_url) }}">Name &Uarr;</a>
       {% else %}
-      <a href="#" onclick="script:setSortOrder('title:asc')">
+      <a href="{{ 'title:asc'|set_sort_order(req_url) }}">
         Name
         {% if search_options.sort_order == ("title", "desc") %}
           &Darr;
@@ -18,9 +18,9 @@
 
       <th>
       {% if search_options.sort_order == ("date_created", "desc") %}
-      <a href="#" onclick="script:setSortOrder('date_created:asc')">Date saved &Darr;</a>
+      <a href="{{ 'date_created:asc'|set_sort_order(req_url) }}">
       {% else %}
-      <a href="#" onclick="script:setSortOrder('date_created:desc')">
+      <a href="{{ 'date_created:desc'|set_sort_order(req_url) }}">
         Date saved
         {% if search_options.sort_order == ("date_created", "asc") %}
           &Uarr;
@@ -32,8 +32,6 @@
   </thead>
   {% for doc in search_response.documents %}
 
-  {% set tags = doc.tags %}
-
   <tr>
     <td class="thumbnail">
       {% if doc.thumbnail_identifier %}
@@ -44,13 +42,7 @@
     </td>
     <td><a href="/files/{{ doc.file_identifier }}" target="_blank">{{ doc.title }}</a>
 
-    {% if tags %}
-    <p class="tags">
-      {% for t in tags|sort %}
-      <button type="button" class="btn btn-light tag" {% if t in search_options.tag_query %}disabled{% else %}onclick="script:gotoTag('{{ t }}')"{% endif %}>{{ t }}</button>
-      {% endfor %}
-    </p>
-    {% endif %}
+    {% include "_taglist.html" %}
 
     </td>
     <td>{% if doc.date_created %}{{ doc.date_created | since_now_date_str }}{% endif %}</td>

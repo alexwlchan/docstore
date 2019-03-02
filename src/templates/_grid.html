@@ -16,13 +16,7 @@
       <h5 class="card-title">{{ doc.title }}</h5>
       {% endif %}
 
-      {% if doc.tags %}
-      <p class="tags card-text">
-        {% for t in doc.tags | sort %}
-        <button type="button" class="btn btn-light tag" {% if t in search_options.tag_query %}disabled{% else %}onclick="script:gotoTag('{{ t }}')"{% endif %}>{{ t }}</button>
-        {% endfor %}
-      </p>
-      {% endif %}
+      {% include "_taglist.html" %}
     </div>
   </div>
 </div>

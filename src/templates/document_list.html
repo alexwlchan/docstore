@@ -13,13 +13,13 @@
 
         <ul class="pagination float-right">
           <li class="page-item{% if grid_view %} disabled{% endif %}">
-            <a class="page-link text-muted" href="#" onclick="script:setViewOption('grid')">
+            <a class="page-link text-muted" href="{{ 'grid'|set_view_option(req_url) }}">
               <span aria-hidden="true"><i class="fas fa-grip-horizontal"></i></span>
               <span class="sr-only">Grid view</span>
             </a>
           </li>
           <li class="page-item{% if not grid_view %} disabled{% endif %}">
-            <a class="page-link text-muted" href="#" onclick="script:setViewOption('table')">
+            <a class="page-link text-muted" href="{{ 'table'|set_view_option(req_url) }}">
               <span aria-hidden="true"><i class="fas fa-list"></i></span>
               <span class="sr-only">Table view</span>
             </a>
