@@ -21,7 +21,8 @@ graphql-relay==0.4.5      # via graphene
 graphql-server-core==1.1.1  # via responder
 h11==0.8.1                # via uvicorn
 httptools==0.0.11         # via uvicorn
-idna==2.8                 # via requests
+hyperlink==18.0.0
+idna==2.8                 # via hyperlink, requests
 itsdangerous==1.1.0       # via responder
 jinja2==2.10              # via apistar, responder
 markupsafe==1.1.0         # via jinja2

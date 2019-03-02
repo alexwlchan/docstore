@@ -23,7 +23,11 @@ def test_empty_state(sess):
 
 
 def test_table_view(sess, store):
-    index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+    index_document(store=store, user_data={
+        "file": b"hello world",
+        "title": "foo",
+        "tags": "bar,baz,bat"
+    })
     resp = sess.get("/", params={"view": "table"})
     assert '<div class="row">' not in resp.text
     assert '<table class="table">' in resp.text

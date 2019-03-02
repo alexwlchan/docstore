@@ -2,8 +2,10 @@
 # -*- encoding: utf-8
 
 import os
+from urllib.parse import quote as urlquote
 
 import click
+import hyperlink
 from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
 import responder
 import scss
@@ -16,6 +18,12 @@ import search_helpers
 from tagged_store import TaggedDocumentStore
 
 
+def add_tag(tag, req_url):
+    quoted_tag = urlquote(tag)
+    assert quoted_tag not in req_url.get("tag")
+    return req_url.add("tag", quoted_tag)
+
+
 def create_api(store, display_title="Alex’s documents"):
     # Compile the CSS file before the API starts
     css = scss.Compiler().compile_string(open("assets/style.scss").read())
@@ -24,6 +32,7 @@ def create_api(store, display_title="Alex’s documents"):
     api = responder.API()
 
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
+    api.jinja_env.filters["add_tag_to_url"] = add_tag
 
     # Add routes for serving the static files/thumbnails
     whitenoise_files = WhiteNoise(application=api._default_wsgi_app)
@@ -47,12 +56,15 @@ def create_api(store, display_title="Alex’s documents"):
 
         search_response = search_helpers.search_store(store, options=search_options)
 
+        req_url = hyperlink.URL.from_text(req.full_url)
+
         resp.content = api.template(
             "document_list.html",
             search_options=search_options,
             search_response=search_response,
             grid_view=grid_view,
-            title=display_title
+            title=display_title,
+            req_url=req_url
         )
 
     def prepare_upload_data(user_data):

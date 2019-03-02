@@ -1,12 +1,3 @@
-// https://stackoverflow.com/a/41542008/1558022
-function gotoTag(tagName) {
-  var searchParams = new URLSearchParams(window.location.search);
-  if (!searchParams.getAll("tag").includes(tagName)) {
-    searchParams.append("tag", tagName);
-    window.location = window.location.pathname + '?' + searchParams.toString();
-  }
-}
-
 function removeTag(tagName) {
   var searchParams = new URLSearchParams(window.location.search);
   if (searchParams.getAll("tag").includes(tagName)) {
