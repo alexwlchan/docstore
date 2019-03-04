@@ -7,10 +7,10 @@ import sys
 
 import click
 
+from docstore_mv import get_store_name, DOCSTORE_ROOT
+
 sys.path.append("../src")
 from tagged_store import TaggedDocumentStore  # noqa
-
-from docstore_mv import get_store_name, DOCSTORE_ROOT
 
 
 @click.command()
