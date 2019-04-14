@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
-import functools
 import os
-from urllib.parse import quote as urlquote
 
 import click
 import hyperlink
@@ -17,25 +15,8 @@ from exceptions import UserError
 from index_helpers import create_thumbnail, index_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
+import urls
 from version import __version__
-
-
-@functools.lru_cache()
-def add_tag_to_url(tag, req_url):
-    quoted_tag = urlquote(tag)
-    assert quoted_tag not in req_url.get("tag")
-    return req_url.add("tag", quoted_tag)
-
-
-@functools.lru_cache()
-def remove_tag_from_url(tag, req_url):
-    quoted_tag = urlquote(tag)
-    assert quoted_tag in req_url.get("tag")
-    tags_to_keep = [t for t in req_url.get("tag") if t != quoted_tag]
-    url = req_url.remove("tag")
-    for t in tags_to_keep:
-        url = url.add("tag", t)
-    return url
 
 
 def set_sort_order(sort_order, req_url):
@@ -56,8 +37,8 @@ def create_api(store, display_title="Alex’s documents"):
     api.static_url = lambda asset: "static/" + asset
 
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
-    api.jinja_env.filters["add_tag_to_url"] = add_tag_to_url
-    api.jinja_env.filters["remove_tag_from_url"] = remove_tag_from_url
+    api.jinja_env.filters["add_tag_to_url"] = urls.add_tag_to_url
+    api.jinja_env.filters["remove_tag_from_url"] = urls.remove_tag_from_url
     api.jinja_env.filters["set_sort_order"] = set_sort_order
     api.jinja_env.filters["set_view_option"] = set_view_option
 

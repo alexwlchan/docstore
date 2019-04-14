@@ -33,3 +33,5 @@ RUN pip3 install -r /test_requirements.txt
 FROM tests AS pip_tools
 
 RUN pip3 install pip-tools==3.4.0
+
+ENTRYPOINT ["pip-compile"]
