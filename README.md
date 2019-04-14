@@ -8,11 +8,28 @@ It includes small thumbnails to help me identify images.
 ![](screenshot.png)
 
 It was a chance for me to play with [Responder](https://github.com/kennethreitz/responder) and newer versions of [Bootstrap](https://getbootstrap.com/) in a quick tool.
-This is pretty slapdash code, written in a single evening as a fun exercise. :)
+
+
 
 ## Usage
 
-To view your documents, open the <http://localhost:8072> in a browser.
+Build the Docker image by running:
+
+```console
+$ make build
+```
+
+Then start the app by running:
+
+```console
+$ docker run --detach --publish 8072:8072 --volume $(pwd)/documents:/documents docstore
+```
+
+To view your documents, open <http://localhost:8072> in a browser.
+
+
+
+## Uploading documents
 
 To index a PDF document, make a POST request to `/upload`:
 
@@ -52,4 +69,10 @@ POST /upload
 }
 ```
 
-If you'd rather not do this yourself, the `index_document.py` script in the root of the repository can also do this for you.
+For one implementation of this upload API, see the `bin/index_document.py` script in the repo.
+
+
+
+## License
+
+MIT.
