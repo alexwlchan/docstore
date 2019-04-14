@@ -17,6 +17,7 @@ from exceptions import UserError
 from index_helpers import create_thumbnail, index_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
+from version import __version__
 
 
 @functools.lru_cache()
@@ -170,6 +171,7 @@ def create_api(store, display_title="Alex’s documents"):
 
 
 @click.command()
+@click.version_option(version=__version__, prog_name="docstore")
 @click.argument("root", required=True)
 @click.option("--title", default="Alex’s documents")
 def run_api(root, title):
