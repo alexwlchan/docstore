@@ -16,7 +16,7 @@ WORKDIR /app
 
 VOLUME ["/documents"]
 
-CMD ["python3", "api.py", "/documents"]
+ENTRYPOINT ["python3", "api.py", "/documents"]
 
 
 
