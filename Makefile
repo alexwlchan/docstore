@@ -9,10 +9,10 @@ build: requirements.txt
 
 test: test_requirements.txt
 	docker build --target tests --tag docstore_test .
-	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT)/src docstore_test \
-		coverage run -m py.test tests
-	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT)/src docstore_test \
-		coverage report
+	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT)/src \
+		--entrypoint "coverage" docstore_test run -m py.test tests
+	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT)/src \
+		--entrypoint "coverage" docstore_test report
 
 requirements.txt: requirements.in
 	docker build --target pip_tools --tag docstore_piptools .
