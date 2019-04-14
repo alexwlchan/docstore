@@ -51,4 +51,4 @@ def test_api_prints_version(runner):
     result = runner.invoke(api.run_api, ["--version"])
 
     assert result.exit_code == 0
-    assert re.match(r"^docstore \d+\.\d+\.\d+$", result.output)
+    assert re.match(r"^docstore, version \d+\.\d+\.\d+\n$", result.output)

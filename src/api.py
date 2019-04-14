@@ -171,7 +171,7 @@ def create_api(store, display_title="Alex’s documents"):
 
 
 @click.command()
-@click.version_option(version=f"docstore {__version__}")
+@click.version_option(version=__version__, prog_name="docstore")
 @click.argument("root", required=True)
 @click.option("--title", default="Alex’s documents")
 def run_api(root, title):
