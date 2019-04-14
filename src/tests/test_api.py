@@ -143,7 +143,7 @@ def test_get_view_endpoint(api, pdf_file):
 
 def test_can_view_file_and_thumbnail(api, pdf_file, file_identifier):
     api.requests.post("/upload", files={"file": pdf_file})
-    time.sleep(2)
+    time.sleep(1)
 
     resp = api.requests.get("/")
     assert resp.status_code == 200
@@ -216,3 +216,18 @@ def test_resolves_css(api):
     assert css_link.endswith(".css")
     css_resp = api.requests.get(css_link)
     assert css_resp.status_code == 200
+
+
+@pytest.mark.parametrize("filename,expected_header", [
+    ("example.pdf", "filename*=utf-8''example.pdf"),
+])
+def test_sets_content_disposition_header(api, pdf_file, filename, expected_header):
+    resp = api.requests.post(
+        "/upload",
+        files={"file": pdf_file},
+        data={"filename": filename}
+    )
+
+    doc_id = resp.json()["id"]
+    resp = api.requests.get(f"/files/{doc_id[0]}/{doc_id}.pdf")
+    assert resp.headers["Content-Disposition"] == expected_header
