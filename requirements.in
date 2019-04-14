@@ -1,7 +1,7 @@
-attrs
-click
-hyperlink
-Pillow
-preview-generator
-pyscss
-responder
+attrs>=19.1.0,<19.2.0
+click>=7.0,<8
+hyperlink>=19.0.0,<19.1.0
+Pillow>=6.0.0,<7
+preview-generator==0.10
+pyscss>=1.3.5,<2
+responder>=1.3.0,<2

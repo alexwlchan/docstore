@@ -16,8 +16,8 @@ test: test_requirements.txt
 
 requirements.txt: requirements.in
 	docker build --target pip_tools --tag docstore_piptools .
-	docker run -v $(ROOT):/src --workdir /src docstore_piptools pip-compile
+	docker run -v $(ROOT):/src --workdir /src docstore_piptools requirements.in
 
 test_requirements.txt: requirements.txt test_requirements.in
 	docker build --target pip_tools --tag docstore_piptools .
-	docker run -v $(ROOT):/src --workdir /src docstore_piptools pip-compile test_requirements.in
+	docker run -v $(ROOT):/src --workdir /src docstore_piptools test_requirements.in

@@ -11,7 +11,7 @@ apistar==0.6.0
 asgiref==2.3.2
 async-timeout==3.0.1
 atomicwrites==1.3.0       # via pytest
-attrs==18.2.0
+attrs==19.1.0
 beautifulsoup4==4.7.1     # via bs4
 bs4==0.0.1
 certifi==2018.11.29
@@ -27,7 +27,7 @@ graphql-relay==0.4.5
 graphql-server-core==1.1.1
 h11==0.8.1
 httptools==0.0.11
-hyperlink==18.0.0
+hyperlink==19.0.0
 idna==2.8
 itsdangerous==1.1.0
 jinja2==2.10
@@ -39,9 +39,9 @@ packaging==19.0
 parse==1.9.0
 pathlib==1.0.1
 pdf2image==1.4.1
-pillow==5.4.1
+pillow==6.0.0
 pluggy==0.8.1             # via pytest
-preview-generator==0.9
+preview-generator==0.10
 promise==2.2.1
 py==1.7.0                 # via pytest
 pycodestyle==2.5.0        # via flake8
@@ -57,12 +57,12 @@ python-multipart==0.0.5
 pyyaml==3.13
 requests-toolbelt==0.8.0
 requests==2.21.0
-responder==1.2.0
+responder==1.3.0
 rfc3986==1.2.0
 rx==1.6.1
 six==1.12.0
 soupsieve==1.8            # via beautifulsoup4
-starlette==0.9.9
+starlette==0.10.7
 urllib3==1.24.1
 uvicorn==0.3.24
 uvloop==0.11.3
