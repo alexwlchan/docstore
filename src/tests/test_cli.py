@@ -1,5 +1,7 @@
 # -*- encoding: utf-8
 
+import re
+
 from click.testing import CliRunner
 import pytest
 
@@ -43,3 +45,10 @@ def test_api_sets_title(runner, store):
 
     assert result.exit_code == 0
     assert "'display_title': 'manuals'" in result.output
+
+
+def test_api_prints_version(runner):
+    result = runner.invoke(api.run_api, ["--version"])
+
+    assert result.exit_code == 0
+    assert re.match(r"^docstore \d+\.\d+\.\d+$", result.output)
