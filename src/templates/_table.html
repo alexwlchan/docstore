@@ -35,12 +35,12 @@
   <tr>
     <td class="thumbnail">
       {% if doc.thumbnail_identifier %}
-        <img src="/thumbnails/{{ doc.thumbnail_identifier }}">
+        <img src="{{ api.thumbnail_url(doc) }}">
       {% else %}
-        <img src="/static/placeholder.jpg">
+        <img src="{{ api.static_url('placeholder.jpg') }}">
       {% endif %}
     </td>
-    <td><a href="/files/{{ doc.file_identifier }}" target="_blank">{{ doc.title }}</a>
+    <td><a href="{{ api.file_url(doc) }}" target="_blank">{{ doc.title }}</a>
 
     {% include "_taglist.html" %}
 

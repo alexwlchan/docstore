@@ -3,11 +3,11 @@
 <div class="col-lg-3 col-md-4 col-sm-6">
   <div class="card">
 
-    <a href="/files/{{ doc.file_identifier }}">
+    <a href="{{ api.file_url(doc) }}">
       {% if doc.thumbnail_identifier %}
-      <img class="card-img-top" src="/thumbnails/{{ doc.thumbnail_identifier }}">
+      <img class="card-img-top" src="{{ api.thumbnail_url(doc) }}">
       {% else %}
-      <img class="card-img-top" src="/static/placeholder.jpg">
+      <img class="card-img-top" src="{{ api.static_url('placeholder.jpg') }}">
       {% endif %}
     </a>
 
