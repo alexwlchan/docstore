@@ -21,7 +21,7 @@ from version import __version__
 
 
 @functools.lru_cache()
-def add_tag(tag, req_url):
+def add_tag_to_url(tag, req_url):
     quoted_tag = urlquote(tag)
     assert quoted_tag not in req_url.get("tag")
     return req_url.add("tag", quoted_tag)
@@ -53,8 +53,10 @@ def create_api(store, display_title="Alex’s documents"):
 
     api = responder.API()
 
+    api.static_url = lambda asset: "static/" + asset
+
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
-    api.jinja_env.filters["add_tag_to_url"] = add_tag
+    api.jinja_env.filters["add_tag_to_url"] = add_tag_to_url
     api.jinja_env.filters["remove_tag_from_url"] = remove_tag_from_url
     api.jinja_env.filters["set_sort_order"] = set_sort_order
     api.jinja_env.filters["set_view_option"] = set_view_option
@@ -64,9 +66,13 @@ def create_api(store, display_title="Alex’s documents"):
     whitenoise_files.add_files(store.files_dir)
     api.mount("/files", whitenoise_files)
 
+    api.file_url = lambda doc: "files/" + doc["file_identifier"]
+
     whitenoise_thumbs = WhiteNoise(application=api._default_wsgi_app)
     whitenoise_thumbs.add_files(store.thumbnails_dir)
     api.mount("/thumbnails", whitenoise_thumbs)
+
+    api.thumbnail_url = lambda doc: "thumbnails/" + doc["thumbnail_identifier"]
 
     @api.route("/")
     def list_documents(req, resp):
