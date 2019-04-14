@@ -17,6 +17,7 @@ from exceptions import UserError
 from index_helpers import create_thumbnail, index_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
+from urls import remove_tag_from_url
 from version import __version__
 
 
@@ -25,17 +26,6 @@ def add_tag_to_url(tag, req_url):
     quoted_tag = urlquote(tag)
     assert quoted_tag not in req_url.get("tag")
     return req_url.add("tag", quoted_tag)
-
-
-@functools.lru_cache()
-def remove_tag_from_url(tag, req_url):
-    quoted_tag = urlquote(tag)
-    assert quoted_tag in req_url.get("tag")
-    tags_to_keep = [t for t in req_url.get("tag") if t != quoted_tag]
-    url = req_url.remove("tag")
-    for t in tags_to_keep:
-        url = url.add("tag", t)
-    return url
 
 
 def set_sort_order(sort_order, req_url):
