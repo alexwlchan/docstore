@@ -51,9 +51,8 @@ def main(path, port, title, tags, cleanup):
         sys.exit("Saved file does not match original file!")
 
     if not cleanup:
-        click.confirm("File saved successfully.  Delete original file?")
-
-    os.unlink(path)
+        if click.confirm("File saved successfully.  Delete original file?"):
+            os.unlink(path)
 
 
 if __name__ == "__main__":
