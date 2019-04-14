@@ -2,7 +2,7 @@ language: "sh"
 
 branches:
   only:
-    - "master"
+    - "development"
 
 script:
   - make lint
