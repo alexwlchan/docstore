@@ -2,6 +2,7 @@
 # -*- encoding: utf-8
 
 import os
+import urllib.parse
 
 import click
 import hyperlink
@@ -42,8 +43,26 @@ def create_api(store, display_title="Alex’s documents"):
     api.jinja_env.filters["set_sort_order"] = set_sort_order
     api.jinja_env.filters["set_view_option"] = set_view_option
 
+    def add_headers_function(headers, path, url):
+        # Add the Content-Disposition header to file requests, so they can
+        # be downloaded with the original filename they were uploaded under
+        # (if specified).
+        #
+        # For encoding as UTF-8, see https://stackoverflow.com/a/49481671/1558022
+        doc_id, _ = os.path.splitext(os.path.basename(url))
+        try:
+            filename = store.documents[doc_id].data["filename"]
+        except KeyError:
+            pass
+        else:
+            encoded_filename = urllib.parse.quote(filename, encoding="utf-8")
+            headers["Content-Disposition"] = f"filename*=utf-8''{encoded_filename}"
+
     # Add routes for serving the static files/thumbnails
-    whitenoise_files = WhiteNoise(application=api._default_wsgi_app)
+    whitenoise_files = WhiteNoise(
+        application=api._default_wsgi_app,
+        add_headers_function=add_headers_function
+    )
     whitenoise_files.add_files(store.files_dir)
     api.mount("/files", whitenoise_files)
 
