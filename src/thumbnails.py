@@ -2,7 +2,6 @@
 
 import os
 import tempfile
-from xml.dom import minidom
 import zipfile
 
 from preview_generator.exception import UnsupportedMimeType
