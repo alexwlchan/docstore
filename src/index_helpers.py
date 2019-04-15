@@ -4,16 +4,12 @@ import hashlib
 import mimetypes
 import os
 import shutil
-import tempfile
 
 import magic
-from preview_generator.manager import PreviewManager
 
 from exceptions import UserError
 from tagged_store import TaggedDocument
-
-
-preview_manager = PreviewManager(tempfile.mkdtemp())
+from thumbnails import create_jpeg_thumbnail
 
 
 def create_thumbnail(store, doc):
@@ -29,11 +25,7 @@ def create_thumbnail(store, doc):
     absolute_thumb_path = os.path.join(store.thumbnails_dir, thumb_path)
     os.makedirs(os.path.dirname(absolute_thumb_path), exist_ok=True)
 
-    thumbnail = preview_manager.get_jpeg_preview(
-        absolute_file_identifier,
-        height=400,
-        width=400
-    )
+    thumbnail = create_jpeg_thumbnail(absolute_file_identifier)
 
     shutil.move(thumbnail, absolute_thumb_path)
     assert os.path.exists(absolute_thumb_path)
