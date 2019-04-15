@@ -89,8 +89,20 @@ def test_detects_correct_extension(store, filename, extension):
     assert doc["file_identifier"].endswith(extension)
 
 
-# def test_errors_if_cannot_detect_extension(store):
-#     user_data = {
-#         "file": open(os.path.join("tests", "files", "metamorphosis.epub"), "rb").read()
-#     }
-#     index_document.index_document(store=store, user_data=user_data)
+def test_errors_if_cannot_detect_extension(store):
+    user_data = {
+        "file": open(os.path.join("tests", "files", "metamorphosis.epub"), "rb").read()
+    }
+
+    with pytest.raises(UserError, match="Unable to detect file extension"):
+        index_helpers.index_document(store=store, user_data=user_data)
+
+
+def test_uses_filename_if_cannot_detect_extension(store):
+    user_data = {
+        "file": open(os.path.join("tests", "files", "metamorphosis.epub"), "rb").read(),
+        "filename": "metamorphosis.epub"
+    }
+
+    doc = index_helpers.index_document(store=store, user_data=user_data)
+    assert doc["file_identifier"].endswith(".epub")

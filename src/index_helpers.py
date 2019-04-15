@@ -56,6 +56,14 @@ def index_document(store, user_data):
     else:
         extension = mimetypes.guess_extension(guessed_mimetype)
 
+    # If we aren't able to detect an extension, throw up an error back to
+    # the user.
+    if extension is None:
+        try:
+            _, extension = os.path.splitext(doc["filename"])
+        except KeyError:
+            raise UserError("Unable to detect file extension!")
+
     file_identifier = os.path.join(doc.id[0], doc.id + extension)
     complete_file_identifier = os.path.join(store.files_dir, file_identifier)
     os.makedirs(os.path.dirname(complete_file_identifier), exist_ok=True)
