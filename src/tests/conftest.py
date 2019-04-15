@@ -15,15 +15,20 @@ def store(tmpdir):
 
 
 @pytest.fixture
-def pdf_file():
-    return open("tests/snakes.pdf", "rb")
+def pdf_path():
+    return os.path.join("tests", "files", "snakes.pdf")
 
 
 @pytest.fixture
-def file_identifier(store):
+def pdf_file(pdf_path):
+    return open(pdf_path, "rb")
+
+
+@pytest.fixture
+def file_identifier(store, pdf_path):
     p = os.path.join(store.files_dir, "s/snakes.pdf")
     os.makedirs(os.path.dirname(p), exist_ok=True)
-    shutil.copyfile("tests/snakes.pdf", p)
+    shutil.copyfile(pdf_path, p)
     return "s/snakes.pdf"
 
 

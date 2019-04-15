@@ -46,7 +46,7 @@ def test_uploading_file_with_wrong_name_is_400(api):
 
 def pdf_hash():
     h = hashlib.sha256()
-    h.update(open("tests/snakes.pdf", "rb").read())
+    h.update(open("tests/files/snakes.pdf", "rb").read())
     return h.hexdigest()
 
 
@@ -71,9 +71,9 @@ def test_incorrect_checksum_is_400(api, pdf_file):
     assert resp.status_code == 400
 
 
-def test_stores_document_in_store(api, store, pdf_file):
+def test_stores_document_in_store(api, store, pdf_file, pdf_path):
     h = hashlib.sha256()
-    h.update(open("tests/snakes.pdf", "rb").read())
+    h.update(open(pdf_path, "rb").read())
 
     data = {
         "title": "Hello world",
@@ -141,7 +141,7 @@ def test_get_view_endpoint(api, pdf_file):
     assert data["title"] in resp.text
 
 
-def test_can_view_file_and_thumbnail(api, pdf_file, file_identifier):
+def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
     api.requests.post("/upload", files={"file": pdf_file})
     time.sleep(1)
 
@@ -167,7 +167,7 @@ def test_can_view_file_and_thumbnail(api, pdf_file, file_identifier):
 
     pdf_resp = api.requests.get(pdf_href, stream=True)
     assert pdf_resp.status_code == 200
-    assert pdf_resp.raw.read() == open("tests/snakes.pdf", "rb").read()
+    assert pdf_resp.raw.read() == open(pdf_path, "rb").read()
 
     now = time.time()
     while time.time() - now < 3:  # pragma: no cover
