@@ -18,3 +18,11 @@ def add_tag_to_url(tag, req_url):
 @functools.lru_cache()
 def remove_tag_from_url(tag, req_url):
     return _build_query(req_url.remove(name="tag", value=urlquote(tag)))
+
+
+def set_sort_order(sort_order, req_url):
+    return _build_query(req_url.set("sort", sort_order))
+
+
+def set_view_option(view_option, req_url):
+    return _build_query(req_url.set("view", view_option))
