@@ -1,9 +1,19 @@
 # -*- encoding: utf-8
 
+import bs4
 import pytest
 
 import api as service
 from index_helpers import index_document
+
+
+PARAMS = [
+    [("view", "table"), ("tag", "x")],
+    [("sort", "title:asc")],
+    [("sort", "title:desc")],
+    [("sort", "date_created:asc")],
+    [("sort", "date_created:desc")],
+]
 
 
 @pytest.fixture
@@ -73,3 +83,42 @@ def test_can_filter_by_tag(sess, store):
     resp_bat = sess.get("/", params={"tag": ["bar", "bat"]})
     assert "hello world" not in resp_bat.text
     assert "hi world" in resp_bat.text
+
+
+@pytest.mark.parametrize("params", PARAMS)
+def test_shows_column_headers(sess, store, params):
+    index_document(
+        store=store,
+        user_data={
+            "file": b"hello world",
+            "title": "hello world",
+            "tags": ["x", "y"]
+        }
+    )
+
+    resp = sess.get("/", params=params)
+    assert "Date saved" in resp.text
+    assert "Name" in resp.text
+    assert resp.text.count("&Darr;") <= 1
+    assert resp.text.count("&Uarr;") <= 1
+    assert resp.text.count("&Darr;") + resp.text.count("&Uarr;") == 1
+
+
+@pytest.mark.parametrize("params", PARAMS)
+def test_all_urls_are_relative(sess, store, params):
+    index_document(
+        store=store,
+        user_data={
+            "file": b"hello world",
+            "title": "hello world",
+            "tags": ["x", "y"]
+        }
+    )
+
+    resp = sess.get("/", params=params)
+
+    soup = bs4.BeautifulSoup(resp.text, "html.parser")
+    links = [a.attrs["href"] for a in soup.find_all("a")]
+
+    for href in links:
+        assert href.startswith(("?", "#", "files/")), href

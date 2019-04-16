@@ -20,14 +20,6 @@ import urls
 from version import __version__
 
 
-def set_sort_order(sort_order, req_url):
-    return req_url.set("sort", sort_order)
-
-
-def set_view_option(view_option, req_url):
-    return req_url.set("view", view_option)
-
-
 def create_api(store, display_title="Alex’s documents"):
     # Compile the CSS file before the API starts
     css = scss.Compiler().compile_string(open("assets/style.scss").read())
@@ -40,8 +32,8 @@ def create_api(store, display_title="Alex’s documents"):
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
     api.jinja_env.filters["add_tag_to_url"] = urls.add_tag_to_url
     api.jinja_env.filters["remove_tag_from_url"] = urls.remove_tag_from_url
-    api.jinja_env.filters["set_sort_order"] = set_sort_order
-    api.jinja_env.filters["set_view_option"] = set_view_option
+    api.jinja_env.filters["set_sort_order"] = urls.set_sort_order
+    api.jinja_env.filters["set_view_option"] = urls.set_view_option
 
     def add_headers_function(headers, path, url):
         # Add the Content-Disposition header to file requests, so they can
