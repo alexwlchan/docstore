@@ -16,9 +16,10 @@
       {% endif %}
       </th>
 
-      <th>
+      <th style="width: 150px;">
       {% if search_options.sort_order == ("date_created", "desc") %}
       <a href="{{ 'date_created:asc'|set_sort_order(req_url) }}">
+        Date saved &Darr;
       {% else %}
       <a href="{{ 'date_created:desc'|set_sort_order(req_url) }}">
         Date saved

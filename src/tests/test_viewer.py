@@ -73,3 +73,28 @@ def test_can_filter_by_tag(sess, store):
     resp_bat = sess.get("/", params={"tag": ["bar", "bat"]})
     assert "hello world" not in resp_bat.text
     assert "hi world" in resp_bat.text
+
+
+@pytest.mark.parametrize("params", [
+    [("view", "table"), ("tag", "x")],
+    [("sort", "title:asc")],
+    [("sort", "title:desc")],
+    [("sort", "date_created:asc")],
+    [("sort", "date_created:desc")],
+])
+def test_shows_column_headers(sess, store, params):
+    index_document(
+        store=store,
+        user_data={
+            "file": b"hello world",
+            "title": "hello world",
+            "tags": ["x", "y"]
+        }
+    )
+
+    resp = sess.get("/", params=params)
+    assert "Date saved" in resp.text
+    assert "Name" in resp.text
+    assert resp.text.count("&Darr;") <= 1
+    assert resp.text.count("&Uarr;") <= 1
+    assert resp.text.count("&Darr;") + resp.text.count("&Uarr;") == 1
