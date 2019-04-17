@@ -1,5 +1,7 @@
 # -*- encoding: utf-8
 
+import re
+
 import bs4
 import pytest
 
@@ -122,3 +124,12 @@ def test_all_urls_are_relative(sess, store, params):
 
     for href in links:
         assert href.startswith(("?", "#", "files/")), href
+
+
+def test_version_is_shown_in_footer(sess):
+    resp = sess.get("/")
+
+    soup = bs4.BeautifulSoup(resp.text, "html.parser")
+    footer = soup.find("footer")
+
+    assert re.search(r'docstore v\d+\.\d+\.\d+', str(footer)) is not None
