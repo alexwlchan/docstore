@@ -25,7 +25,7 @@ def create_api(store, display_title="Alex’s documents"):
     css = scss.Compiler().compile_string(open("assets/style.scss").read())
     open("static/style.css", "w").write(css)
 
-    api = responder.API()
+    api = responder.API(version=__version__)
 
     api.static_url = lambda asset: "static/" + asset
 
