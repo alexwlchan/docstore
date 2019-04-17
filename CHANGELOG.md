@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v1.1.2 - 2019-04-17
+
+*   Fix a bug where the "date added" header wasn't always shown in the table view, and you couldn't sort by date.
+
+*   Use relative links for the sort order and view order, so they work when running behind a path prefix.
+
+*   Display version information in the footer of the browser.
+
 ## v1.1.1 - 2019-04-15
 
 *   If it can't detect a file extension from the data, it throws an error rather than failing silently.
