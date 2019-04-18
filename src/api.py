@@ -99,6 +99,14 @@ def create_api(store, display_title="Alex’s documents"):
         except KeyError:
             raise UserError("Unable to find multipart upload 'file'!")
 
+        # Handle HTML forms, which send this data as a dict of filename, content
+        # and content-type.
+        if isinstance(prepared_data["file"], dict):
+            prepared_data["filename"] = prepared_data["file"]["filename"]
+            prepared_data["file"] = prepared_data["file"]["content"]
+
+        assert isinstance(prepared_data["file"], bytes), type(prepared_data["file"])
+
         for key in ("title", "tags", "filename", "sha256_checksum"):
             try:
                 prepared_data[key] = user_data.pop(key).decode("utf8")

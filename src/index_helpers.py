@@ -42,6 +42,7 @@ def index_document(store, user_data):
     # Guess an appropriate file extension based on the data.  Note that mimetypes
     # will suggest ".jpe" for JPEG images, so replace it with the more common
     # extension by hand.
+    assert isinstance(file_data, bytes)
     guessed_mimetype = magic.from_buffer(file_data, mime=True)
     if guessed_mimetype == "image/jpeg":
         extension = ".jpg"

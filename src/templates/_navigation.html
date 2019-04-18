@@ -47,3 +47,33 @@
   </div>
 </div>
 {% endif %}
+
+<div>
+  <p>
+    <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+    View all tags
+    </a>
+
+    <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseExample2" role="button" aria-expanded="false" aria-controls="collapseExample2">
+    Add a document
+    </a>
+  </p>
+</div>
+
+<div class="collapse.show" id="collapseExample2">
+  <div class="card card-body">
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="exampleInputEmail1">Email address</label>
+        <input name="email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+      </div>
+
+      <div class="form-group">
+        <label for="exampleFormControlFile1">Example file input</label>
+        <input name="file" type="file" class="form-control-file" id="exampleFormControlFile1">
+      </div>
+
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+</div>
