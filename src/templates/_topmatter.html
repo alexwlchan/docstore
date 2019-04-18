@@ -1,24 +1,18 @@
-{% if search_options.tag_query %}
-<p class="tag_query">Filtering to documents with
-  <strong>{{ t }}</strong>
-  {% for t in search_options.tag_query %}
-    <span class="tag_query__tag">
-      <strong>{{ t }}</strong>
-      <a href="{{ t|remove_tag_from_url(req_url) }}" class="text-danger">x</a>
-    </span>
-  {% endfor %}
-</p>
-{% endif %}
-
-{% if search_response.tags %}
 <div>
   <p>
-    <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-    View all tags
+    <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseDocumentForm" role="button" aria-expanded="false" aria-controls="collapseDocumentForm">
+    Store a document
     </a>
+
+    {% if search_response.tags %}
+    <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+    Show tags
+    </a>
+    {% endif %}
   </p>
 </div>
 
+{% if search_response.tags %}
 <div class="collapse" id="collapseExample">
   <div class="card card-body">
     <ul style="margin-bottom: 0;">
@@ -48,32 +42,37 @@
 </div>
 {% endif %}
 
-<div>
-  <p>
-    <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
-    View all tags
-    </a>
-
-    <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseExample2" role="button" aria-expanded="false" aria-controls="collapseExample2">
-    Add a document
-    </a>
-  </p>
-</div>
-
-<div class="collapse.show" id="collapseExample2">
+<div class="collapse show" id="collapseDocumentForm">
   <div class="card card-body">
     <form action="/upload" method="post" enctype="multipart/form-data">
       <div class="form-group">
-        <label for="exampleInputEmail1">Email address</label>
-        <input name="email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+        <label for="form__title">Title</label>
+        <input name="title" type="text" class="form-control" id="form__title" placeholder="Enter title" required>
       </div>
 
       <div class="form-group">
-        <label for="exampleFormControlFile1">Example file input</label>
-        <input name="file" type="file" class="form-control-file" id="exampleFormControlFile1">
+        <label for="form_tags">Tags</label>
+        <input name="tags" type="text" class="form-control" id="form_tags" placeholder="Enter tags (space-separated)" required>
+      </div>
+
+      <div class="form-group">
+        <label for="form__file">File</label>
+        <input name="file" type="file" class="form-control-file" id="form__file" required>
       </div>
 
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
   </div>
 </div>
+
+{% if search_options.tag_query %}
+<p class="tag_query">Filtering to documents with
+  <strong>{{ t }}</strong>
+  {% for t in search_options.tag_query %}
+    <span class="tag_query__tag">
+      <strong>{{ t }}</strong>
+      <a href="{{ t|remove_tag_from_url(req_url) }}" class="text-danger">x</a>
+    </span>
+  {% endfor %}
+</p>
+{% endif %}
