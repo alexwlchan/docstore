@@ -43,25 +43,30 @@
 {% endif %}
 
 <div class="collapse show" id="collapseDocumentForm">
-  <div class="card card-body">
-    <form action="/upload" method="post" enctype="multipart/form-data">
-      <div class="form-group">
-        <label for="form__title">Title</label>
-        <input name="title" type="text" class="form-control" id="form__title" placeholder="Enter title" required>
-      </div>
+  <div class="card">
+    <div class="card-header">
+      Store a document
+    </div>
+    <div class="card-body">
+      <form action="/upload" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="form__title">Title</label>
+          <input name="title" type="text" class="form-control" id="form__title" placeholder="Enter title" required>
+        </div>
 
-      <div class="form-group">
-        <label for="form_tags">Tags</label>
-        <input name="tags" type="text" class="form-control" id="form_tags" placeholder="Enter tags (space-separated)" required>
-      </div>
+        <div class="form-group">
+          <label for="form_tags">Tags</label>
+          <input name="tags" type="text" class="form-control" id="form_tags" placeholder="Enter tags (space-separated)" required>
+        </div>
 
-      <div class="form-group">
-        <label for="form__file">File</label>
-        <input name="file" type="file" class="form-control-file" id="form__file" required>
-      </div>
+        <div class="form-group">
+          <label for="form__file">File</label>
+          <input name="file" type="file" class="form-control-file" id="form__file" required>
+        </div>
 
-      <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
   </div>
 </div>
 
