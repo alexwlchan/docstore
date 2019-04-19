@@ -17,7 +17,6 @@ from exceptions import UserError
 from index_helpers import create_thumbnail, index_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
-import urls
 from version import __version__
 
 
@@ -31,10 +30,6 @@ def create_api(store, display_title="Alex’s documents"):
     api.static_url = lambda asset: "static/" + asset
 
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
-    api.jinja_env.filters["add_tag_to_url"] = urls.add_tag_to_url
-    api.jinja_env.filters["remove_tag_from_url"] = urls.remove_tag_from_url
-    api.jinja_env.filters["set_sort_order"] = urls.set_sort_order
-    api.jinja_env.filters["set_view_option"] = urls.set_view_option
 
     def add_headers_function(headers, path, url):
         # Add the Content-Disposition header to file requests, so they can
@@ -80,7 +75,7 @@ def create_api(store, display_title="Alex’s documents"):
 
         search_response = search_helpers.search_store(store, options=search_options)
 
-        req_url = hyperlink.URL.from_text(req.full_url)
+        req_url = hyperlink.URL.from_text(req.full_url).remove("_message")
 
         resp.content = api.template(
             "document_list.html",
@@ -89,8 +84,7 @@ def create_api(store, display_title="Alex’s documents"):
             grid_view=grid_view,
             title=display_title,
             req_url=req_url,
-            params=req.params,
-            page_url=str(hyperlink.URL.from_text(req.full_url).remove("_message"))
+            params=req.params
         )
 
     def prepare_upload_data(user_data):
@@ -188,7 +182,7 @@ def create_api(store, display_title="Alex’s documents"):
             new_url = original_url.add("_message", json.dumps(resp.media))
             resp.headers["Location"] = str(new_url)
             resp.status_code = api.status_codes.HTTP_302
-        except KeyError as err:
+        except KeyError:
             pass
 
     return api

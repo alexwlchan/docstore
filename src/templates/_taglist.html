@@ -1,7 +1,9 @@
 {% if doc.tags %}
 <p class="tags">
   {% for t in doc.tags|sort %}
-  {% if t not in search_options.tag_query %}<a href="{{ t | add_tag_to_url(req_url) }}">{% endif %}
+  {% if t not in search_options.tag_query %}
+    <a href="#" onclick="window.location = addTagToUrl('{{ t }}');">
+  {% endif %}
     <button type="button" class="btn btn-light tag" {% if t in search_options.tag_query %}disabled{% endif %}>{{ t }}</button>
   {% if t not in search_options.tag_query %}</a>{% endif %}
   {% endfor %}

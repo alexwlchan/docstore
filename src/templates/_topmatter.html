@@ -15,7 +15,7 @@
 
   {% if page_url != req_url %}
   <script>
-    window.history.pushState({path: "{{ page_url }}" }, "", "{{ page_url }}");
+    window.history.pushState({path: "{{ req_url }}" }, "", "{{ req_url }}");
   </script>
   {% endif %}
 {% endif %}
@@ -30,7 +30,7 @@
     </a>
 
     {% if search_response.tags %}
-    <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+    <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseTagList" role="button" aria-expanded="false" aria-controls="collapseTagList">
     Show tags
     </a>
     {% endif %}
@@ -38,7 +38,7 @@
 </div>
 
 {% if search_response.tags %}
-<div class="collapse" id="collapseExample">
+<div class="collapse{% if params.get('tag_list') == 'show' %} show{% endif %}" id="collapseTagList">
   <div class="card card-body">
     <ul style="margin-bottom: 0;">
     {% for tag in search_response.tags|sort %}
@@ -56,7 +56,11 @@
         <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
         {% endif %}
       {% endif %}
-      <li>{% if tag not in search_options.tag_query %}<a href="{{ tag | add_tag_to_url(req_url) }}">{{ tag }}</a>{% else %}{{ tag }}{% endif %} ({{ search_response.tags[tag] }})</li>
+      <li>{% if tag not in search_options.tag_query %}
+        <a href="#" onclick="window.location = addTagToUrl('{{ tag }}');">{{ tag }}</a>
+      {% else %}
+        {{ tag }}
+      {% endif %} ({{ search_response.tags[tag] }})</li>
 
       {% if loop.last %}
         {% for i in range(tag.count(":")) %}</ul>{% endfor %}
@@ -67,7 +71,7 @@
 </div>
 {% endif %}
 
-<div class="collapse show" id="collapseDocumentForm">
+<div class="collapse{% if params.get('form') == 'show' %} show{% endif %}" id="collapseDocumentForm">
   <div class="card">
     <div class="card-header">
       Store a document
@@ -81,7 +85,7 @@
 
         <div class="form-group">
           <label for="form_tags">Tags</label>
-          <input name="tags" type="text" class="form-control" id="form_tags" placeholder="Enter tags (space-separated)" required>
+          <input name="tags" type="text" class="form-control" id="form_tags" placeholder="Enter tags (space-separated)" value="{{ ' '.join(req_url.get('tag')) }}" required>
         </div>
 
         <div class="form-group">
@@ -101,8 +105,31 @@
   {% for t in search_options.tag_query %}
     <span class="tag_query__tag">
       <strong>{{ t }}</strong>
-      <a href="{{ t|remove_tag_from_url(req_url) }}" class="text-danger">x</a>
+      <a href="#" onclick="window.location = deleteTag('{{ t }}');" class="text-danger">x</a>
     </span>
   {% endfor %}
 </p>
 {% endif %}
+
+
+<script>
+  $("#collapseDocumentForm")
+    .on("show.bs.collapse", function() {
+      var newUrl = addQueryParameter("form", "show");
+      window.history.pushState(newUrl, "", newUrl);
+    })
+    .on("hide.bs.collapse", function() {
+      var newUrl = deleteQueryParameter("form");
+      window.history.pushState(newUrl, "", newUrl);
+    })
+
+  $("#collapseTagList")
+    .on("show.bs.collapse", function() {
+      var newUrl = addQueryParameter("tag_list", "show");
+      window.history.pushState(newUrl, "", newUrl);
+    })
+    .on("hide.bs.collapse", function() {
+      var newUrl = deleteQueryParameter("tag_list");
+      window.history.pushState(newUrl, "", newUrl);
+    })
+</script>
