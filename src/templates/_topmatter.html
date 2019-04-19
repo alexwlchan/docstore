@@ -1,20 +1,24 @@
 <!-- Display any message from the app, then clear it from history -->
 
-{% if message.id %}
-<div class="alert alert-success" role="alert">
-  Stored new document as {{ message.id }}!
-</div>
-{% endif %}
+{% if "_message" in params %}
+  {% if params._message.id %}
+  <div class="alert alert-success" role="alert">
+    Stored new document as {{ params._message.id }}!
+  </div>
+  {% endif %}
 
-{% if message.error %}
-<div class="alert alert-success" role="alert">
-  Unable to store document: {{ message.error }}
-</div>
-{% endif %}
+  {% if params._message.error %}
+  <div class="alert alert-success" role="alert">
+    Unable to store document: {{ params._message.error }}
+  </div>
+  {% endif %}
 
-<script>
-  window.history.pushState({path: "{{ page_url }}" }, "", "{{ page_url }}");
-</script>
+  {% if page_url != req_url %}
+  <script>
+    window.history.pushState({path: "{{ page_url }}" }, "", "{{ page_url }}");
+  </script>
+  {% endif %}
+{% endif %}
 
 
 
