@@ -13,11 +13,10 @@
   </div>
   {% endif %}
 
-  {% if page_url != req_url %}
   <script>
-    window.history.pushState({path: "{{ req_url }}" }, "", "{{ req_url }}");
+    var newUrl = deleteQueryParameter("_message");
+    window.history.pushState({path: newUrl }, "", newUrl);
   </script>
-  {% endif %}
 {% endif %}
 
 

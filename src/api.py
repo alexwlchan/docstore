@@ -75,7 +75,13 @@ def create_api(store, display_title="Alex’s documents"):
 
         search_response = search_helpers.search_store(store, options=search_options)
 
-        req_url = hyperlink.URL.from_text(req.full_url).remove("_message")
+        req_url = hyperlink.URL.from_text(req.full_url)
+
+        params = {k: v for k, v in req.params.items()}
+        try:
+            params["_message"] = json.loads(params["_message"])
+        except KeyError:
+            pass
 
         resp.content = api.template(
             "document_list.html",
@@ -84,7 +90,7 @@ def create_api(store, display_title="Alex’s documents"):
             grid_view=grid_view,
             title=display_title,
             req_url=req_url,
-            params=req.params
+            params=params
         )
 
     def prepare_upload_data(user_data):
