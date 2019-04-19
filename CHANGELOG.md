@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v1.2.0 - 2019-04-19
+
+*   Add a GUI form for storing a document in the web app, so you can upload new documents through the browser.
+
+*   Display version information in the footer.
+
+*   The tag list and "store a document" forms are both stateful, so if you reload the page your toggle position will be preserved.
+
 ## v1.1.2 - 2019-04-17
 
 *   Fix a bug where the "date added" header wasn't always shown in the table view, and you couldn't sort by date.
