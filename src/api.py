@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import json
 import os
 import urllib.parse
 
@@ -16,7 +17,6 @@ from exceptions import UserError
 from index_helpers import create_thumbnail, index_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
-import urls
 from version import __version__
 
 
@@ -30,10 +30,6 @@ def create_api(store, display_title="Alex’s documents"):
     api.static_url = lambda asset: "static/" + asset
 
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
-    api.jinja_env.filters["add_tag_to_url"] = urls.add_tag_to_url
-    api.jinja_env.filters["remove_tag_from_url"] = urls.remove_tag_from_url
-    api.jinja_env.filters["set_sort_order"] = urls.set_sort_order
-    api.jinja_env.filters["set_view_option"] = urls.set_view_option
 
     def add_headers_function(headers, path, url):
         # Add the Content-Disposition header to file requests, so they can
@@ -81,13 +77,20 @@ def create_api(store, display_title="Alex’s documents"):
 
         req_url = hyperlink.URL.from_text(req.full_url)
 
+        params = {k: v for k, v in req.params.items()}
+        try:
+            params["_message"] = json.loads(params["_message"])
+        except KeyError:
+            pass
+
         resp.content = api.template(
             "document_list.html",
             search_options=search_options,
             search_response=search_response,
             grid_view=grid_view,
             title=display_title,
-            req_url=req_url
+            req_url=req_url,
+            params=params
         )
 
     def prepare_upload_data(user_data):
@@ -98,6 +101,14 @@ def create_api(store, display_title="Alex’s documents"):
             prepared_data["file"] = user_data.pop("file")
         except KeyError:
             raise UserError("Unable to find multipart upload 'file'!")
+
+        # Handle HTML forms, which send this data as a dict of filename, content
+        # and content-type.
+        if isinstance(prepared_data["file"], dict):
+            prepared_data["filename"] = prepared_data["file"]["filename"]
+            prepared_data["file"] = prepared_data["file"]["content"]
+
+        assert isinstance(prepared_data["file"], bytes), type(prepared_data["file"])
 
         for key in ("title", "tags", "filename", "sha256_checksum"):
             try:
@@ -125,8 +136,7 @@ def create_api(store, display_title="Alex’s documents"):
             resp.media = {"error": "Document %s not found!" % document_id}
             resp.status_code = api.status_codes.HTTP_404
 
-    @api.route("/upload")
-    async def upload_document(req, resp):
+    async def _upload_document_api(req, resp):
         if req.method == "post":
 
             # This catches the error that gets thrown if the user doesn't include
@@ -160,10 +170,26 @@ def create_api(store, display_title="Alex’s documents"):
             )
 
             create_doc_thumbnail(doc)
+
             resp.status_code = api.status_codes.HTTP_201
             resp.media = {"id": doc.id}
         else:
             resp.status_code = api.status_codes.HTTP_405
+
+    @api.route("/upload")
+    async def upload_document(req, resp):
+        await _upload_document_api(req, resp)
+
+        # If the request came through the browser rather than via
+        # a script, redirect back to the original page (which we get
+        # in the "referer" header), along with a message to display.
+        try:
+            original_url = hyperlink.URL.from_text(req.headers["referer"])
+            new_url = original_url.add("_message", json.dumps(resp.media))
+            resp.headers["Location"] = str(new_url)
+            resp.status_code = api.status_codes.HTTP_302
+        except KeyError:
+            pass
 
     return api
 
