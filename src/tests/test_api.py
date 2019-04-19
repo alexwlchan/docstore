@@ -93,6 +93,23 @@ def test_stores_document_in_store(api, store, pdf_file, pdf_path):
     assert stored_doc["sha256_checksum"] == data["sha256_checksum"]
 
 
+def test_stores_document_from_form_upload_in_store(api, store, pdf_file, pdf_path):
+    data = {
+        "title": "Hello world",
+        "tags": "x y z"
+    }
+    resp = api.requests.post(
+        "/upload",
+        files={"file": ("mydocument.pdf", pdf_file, "application/pdf")},
+        data=data
+    )
+    assert resp.status_code == 201
+
+    docid = resp.json()["id"]
+    stored_doc = store.documents[docid]
+    assert stored_doc["filename"] == "mydocument.pdf"
+
+
 def test_extra_keys_are_kept_in_store(api, store, pdf_file):
     data = {
         "title": "Hello world",
