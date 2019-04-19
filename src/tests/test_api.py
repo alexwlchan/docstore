@@ -237,8 +237,6 @@ def test_sets_content_disposition_header(api, pdf_file, filename, expected_heade
 
 def test_does_not_set_content_disposition_if_no_filename(api, pdf_file):
     resp = api.requests.post("/upload", files={"file": pdf_file})
-    print(resp.headers)
-    print(resp.text)
 
     doc_id = resp.json()["id"]
     resp = api.requests.get(f"/files/{doc_id[0]}/{doc_id}.pdf")
