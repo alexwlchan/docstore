@@ -2,9 +2,11 @@
 
 import hashlib
 import io
+import json
 import time
 
 import bs4
+import hyperlink
 import pytest
 
 import api as service
@@ -91,23 +93,6 @@ def test_stores_document_in_store(api, store, pdf_file, pdf_path):
     assert stored_doc["tags"] == data["tags"].split()
     assert stored_doc["filename"] == data["filename"]
     assert stored_doc["sha256_checksum"] == data["sha256_checksum"]
-
-
-def test_stores_document_from_form_upload_in_store(api, store, pdf_file, pdf_path):
-    data = {
-        "title": "Hello world",
-        "tags": "x y z"
-    }
-    resp = api.requests.post(
-        "/upload",
-        files={"file": ("mydocument.pdf", pdf_file, "application/pdf")},
-        data=data
-    )
-    assert resp.status_code == 201
-
-    docid = resp.json()["id"]
-    stored_doc = store.documents[docid]
-    assert stored_doc["filename"] == "mydocument.pdf"
 
 
 def test_extra_keys_are_kept_in_store(api, store, pdf_file):
@@ -252,7 +237,54 @@ def test_sets_content_disposition_header(api, pdf_file, filename, expected_heade
 
 def test_does_not_set_content_disposition_if_no_filename(api, pdf_file):
     resp = api.requests.post("/upload", files={"file": pdf_file})
+    print(resp.headers)
+    print(resp.text)
 
     doc_id = resp.json()["id"]
     resp = api.requests.get(f"/files/{doc_id[0]}/{doc_id}.pdf")
     assert "Content-Disposition" not in resp.headers
+
+
+class TestBrowser:
+    """Tests for the in-browser functionality"""
+
+    @staticmethod
+    def upload(api, file_contents, data=None, referer=None):
+        if data is None:
+            data = {}
+        referer = referer or "http://localhost:8072/"
+        return api.requests.post(
+            "/upload",
+            files={"file": ("mydocument.pdf", file_contents, "application/pdf")},
+            data=data,
+            headers={"referer": referer}
+        )
+
+    def test_returns_302_redirect_to_original_page(self, api, pdf_file):
+        original_page = "https://example.org/docstore/"
+        resp = self.upload(api=api, file_contents=pdf_file, referer=original_page)
+
+        assert resp.status_code == 302
+        assert resp.headers["Location"].startswith(original_page)
+
+    def test_includes_document_in_store(self, api, store, pdf_file):
+        resp = self.upload(api=api, file_contents=pdf_file)
+
+        location = hyperlink.URL.from_text(resp.headers["Location"])
+        message = json.loads(dict(location.query)["_message"])
+
+        docid = message["id"]
+        stored_doc = store.documents[docid]
+        assert stored_doc["filename"] == "mydocument.pdf"
+
+    def test_includes_error_message_in_response(self, api, pdf_file):
+        resp = self.upload(
+            api=api,
+            file_contents=pdf_file,
+            data={"sha256_checksum": "123"}
+        )
+
+        location = hyperlink.URL.from_text(resp.headers["Location"])
+        message = json.loads(dict(location.query)["_message"])
+
+        assert "error" in message

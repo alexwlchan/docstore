@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import json
 import os
 import urllib.parse
 
@@ -67,7 +68,7 @@ def create_api(store, display_title="Alex’s documents"):
     api.thumbnail_url = lambda doc: "thumbnails/" + doc["thumbnail_identifier"]
 
     @api.route("/")
-    def list_documents(req, resp):
+    def list_documents(req, resp, message=None):
         tag_query = req.params.get_list("tag", [])
         sort_order = req.params.get("sort", "date_created:desc")
         grid_view = req.params.get("view", "table") == "grid"
@@ -87,7 +88,8 @@ def create_api(store, display_title="Alex’s documents"):
             search_response=search_response,
             grid_view=grid_view,
             title=display_title,
-            req_url=req_url
+            req_url=req_url,
+            message=message
         )
 
     def prepare_upload_data(user_data):
@@ -133,8 +135,7 @@ def create_api(store, display_title="Alex’s documents"):
             resp.media = {"error": "Document %s not found!" % document_id}
             resp.status_code = api.status_codes.HTTP_404
 
-    @api.route("/upload")
-    async def upload_document(req, resp):
+    async def _upload_document_api(req, resp):
         if req.method == "post":
 
             # This catches the error that gets thrown if the user doesn't include
@@ -168,10 +169,26 @@ def create_api(store, display_title="Alex’s documents"):
             )
 
             create_doc_thumbnail(doc)
+
             resp.status_code = api.status_codes.HTTP_201
             resp.media = {"id": doc.id}
         else:
             resp.status_code = api.status_codes.HTTP_405
+
+    @api.route("/upload")
+    async def upload_document(req, resp):
+        await _upload_document_api(req, resp)
+
+        # If the request came through the browser rather than via
+        # a script, redirect back to the original page (which we get
+        # in the "referer" header), along with a message to display.
+        try:
+            original_url = hyperlink.URL.from_text(req.headers["referer"])
+            new_url = original_url.add("_message", json.dumps(resp.media))
+            resp.headers["Location"] = str(new_url)
+            resp.status_code = api.status_codes.HTTP_302
+        except KeyError as err:
+            pass
 
     return api
 
