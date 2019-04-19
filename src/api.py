@@ -68,10 +68,11 @@ def create_api(store, display_title="Alex’s documents"):
     api.thumbnail_url = lambda doc: "thumbnails/" + doc["thumbnail_identifier"]
 
     @api.route("/")
-    def list_documents(req, resp, message=None):
+    def list_documents(req, resp):
         tag_query = req.params.get_list("tag", [])
         sort_order = req.params.get("sort", "date_created:desc")
         grid_view = req.params.get("view", "table") == "grid"
+        message = json.loads(req.params.get("_message", "{}"))
 
         search_options = search_helpers.SearchOptions(
             tag_query=tag_query,
@@ -89,7 +90,8 @@ def create_api(store, display_title="Alex’s documents"):
             grid_view=grid_view,
             title=display_title,
             req_url=req_url,
-            message=message
+            message=message,
+            page_url=str(hyperlink.URL.from_text(req.full_url).remove("_message"))
         )
 
     def prepare_upload_data(user_data):
