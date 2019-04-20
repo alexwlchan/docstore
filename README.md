@@ -9,6 +9,8 @@ It includes small thumbnails to help me identify images.
 
 It was a chance for me to play with [Responder](https://github.com/kennethreitz/responder) and newer versions of [Bootstrap](https://getbootstrap.com/) in a quick tool.
 
+You can read some of what I learnt in the [what I learnt][what-i-learnt.md] file.
+
 
 
 ## Usage
