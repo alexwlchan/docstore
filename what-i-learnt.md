@@ -7,7 +7,27 @@ There are inline comments that explain what a piece of code is doing, but they'r
 For my benefit and for everybody else, this file has a short list of some of the things I learnt while working on docstore.
 I'll add to the file as I learn more!
 
-*   [The Content-Disposition HTTP header](#the-content-disposition-http-header)
+Contents:
+
+*   [HTTP and web stuff](#http-and-web-stuff)
+
+    -   [The Content-Disposition HTTP header](#the-content-disposition-http-header)
+    -   [Manipulating URL query parameters in JavaScript](#manipulating-url-query-parameters-in-javascript)
+    -   [Edit the URL in the window without reloading the page](#edit-the-url-in-the-window-without-reloading-the-page)
+    -   [Construct the URL behind an &lt;a&gt; tag in JavaScript](#construct-the-url-behind-an-a-tag-in-javascript)
+
+*   [Useful Python libraries and tricks](#useful-python-libraries-and-tricks)
+
+    -   [whitenoise: for serving static files](#whitenoise-for-serving-static-files)
+    -   [python-magic: detect the mimetype of some bytes](#python-magic-detect-the-mimetype-of-some-bytes)
+    -   [mimetypes: get a filename extension for a mimetype](#mimetypes-get-a-filename-extension-for-a-mimetype)
+    -   [preview-generator: creating thumbnails of files](#preview-generator-creating-thumbnails-of-files)
+    -   [hyperlink: manipulate URL query parameters](#hyperlink-manipulate-URL-query-parameters)
+    -   [Include the filename, content-type and content-length in a python-requests upload](#include-the-filename,-content-type-and-content-length-in-a-python-requests-upload)
+
+*   [Everything else](#everything-else)
+
+    -   [Getting the cover image of an epub file](#getting-the-cover-image-of-an-epub-file)
 
 
 
@@ -65,8 +85,6 @@ See <https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams>
 
 
 
-
-
 ### Edit the URL in the window without reloading the page
 
 Yes, that's possible:
@@ -80,7 +98,7 @@ You can also use `replaceState`, which overwrites the current history entry.
 
 
 
-### Construct the URL behind an `<a>` tag in JavaScript
+### Construct the URL behind an &lt;a&gt; tag in JavaScript
 
 Like so:
 
