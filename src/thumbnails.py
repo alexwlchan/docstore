@@ -33,6 +33,7 @@ PREVIEW_MANAGER = create_preview_manager()
 
 
 def _get_epub_cover(path):
+    # Based on https://github.com/marianosimone/epub-thumbnailer
     # An epub is a zipfile, so look inside it for a cover image.
     with zipfile.ZipFile(open(path, "rb")) as epub:
         images = [
