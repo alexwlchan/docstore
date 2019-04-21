@@ -8,7 +8,7 @@ Usage: release.py check_release_file
 import subprocess
 import sys
 
-from releasetooling import check_release_file, configure_secrets, git, release
+from releasetooling import check_release_file, configure_secrets, git, release, ROOT
 
 
 if __name__ == '__main__':
@@ -29,6 +29,16 @@ if __name__ == '__main__':
             "docker", "tag",
             "docstore:latest", "greengloves/docstore:%s" % new_version
         ])
+
+        try:
+            subprocess.check_call([
+                "docker", "login",
+                "--username", "greengloves",
+                "--password", open(os.path.join(ROOT, "docker_password.txt")).read().strip()
+            ])
+        except Exception:
+            sys.exit(1)
+
         subprocess.check_call([
             "docker", "push", "greengloves/docstore:%s" % new_version
         ])
