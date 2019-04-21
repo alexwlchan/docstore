@@ -247,14 +247,15 @@ def update_for_pending_release():
     git("add", CHANGELOG_FILE)
     git("add", VERSION_PY)
 
+    new_version = get_new_version_string(release_type)
+
     git(
         "commit",
-        "-m", "Bump version to %s and update changelog\n\n[skip ci]" % (
-            get_new_version_string(release_type))
+        "-m", "Bump version to %s and update changelog\n\n[skip ci]" % new_version
     )
-    git("tag", get_new_version_string(release_type))
+    git("tag", new_version)
 
-    return get_new_version_string(release_type)
+    return new_version
 
 
 def configure_secrets():
