@@ -270,8 +270,8 @@ def configure_secrets():
     subprocess.check_call(["chmod", "600", "id_rsa"])
     git("config", "core.sshCommand", "ssh -i id_rsa")
 
-    git("config", "user.name", "Travis CI on behalf of Wellcome")
-    git("config", "user.email", "wellcomedigitalplatform@wellcome.ac.uk")
+    git("config", "user.name", "Travis CI on behalf of alexwlchan")
+    git("config", "user.email", "travisci@alexwlchan.fastmail.co.uk")
 
     print("SSH public key:")
     subprocess.check_call(["ssh-keygen", "-y", "-f", "id_rsa"])
