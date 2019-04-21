@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.3.0 - 2019-04-21
+
+Add a "source URL" field to the web form and index document script, and display it in the web UI.
+
+This makes it easier to track the original source of a document.
+
 ## v1.2.2 - 2019-04-21
 
 *   Fix a tiny cosmetic issue when hovering over tag links on a document.
