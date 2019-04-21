@@ -1,27 +1,3 @@
-<!-- Display any message from the app, then clear it from history -->
-
-{% if "_message" in params %}
-  {% if params._message.id %}
-  <div class="alert alert-success" role="alert">
-    Stored new document as {{ params._message.id }}!
-  </div>
-  {% endif %}
-
-  {% if params._message.error %}
-  <div class="alert alert-success" role="alert">
-    Unable to store document: {{ params._message.error }}
-  </div>
-  {% endif %}
-
-  <script>
-    var newUrl = deleteQueryParameter("_message");
-    window.history.pushState({path: newUrl }, "", newUrl);
-  </script>
-{% endif %}
-
-
-
-
 <div>
   <p>
     <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseDocumentForm" role="button" aria-expanded="false" aria-controls="collapseDocumentForm">
@@ -97,19 +73,6 @@
     </div>
   </div>
 </div>
-
-{% if search_options.tag_query %}
-<div class="alert alert-info tag_query" role="alert">
-  Filtering to documents with
-  <strong>{{ t }}</strong>
-  {% for t in search_options.tag_query %}
-    <span class="tag_query__tag">
-      <strong>{{ t }}</strong>
-      <a href="#" onclick="window.location = deleteTag('{{ t }}');" class="text-danger">x</a>
-    </span>
-  {% endfor %}
-</div>
-{% endif %}
 
 
 <script>

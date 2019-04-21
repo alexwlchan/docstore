@@ -8,7 +8,21 @@
 
     <div class="container">
 
-      {% include "_topmatter.html" %}
+      {% include "_message.html" %}
+      {% include "_collapsibles.html" %}
+
+      {% if search_options.tag_query %}
+      <div class="alert alert-info tag_query" role="alert">
+        Filtering to documents with
+        <strong>{{ t }}</strong>
+        {% for t in search_options.tag_query %}
+          <span class="tag_query__tag">
+            <strong>{{ t }}</strong>
+            <a href="#" onclick="window.location = deleteTag('{{ t }}');" class="text-danger">x</a>
+          </span>
+        {% endfor %}
+      </div>
+      {% endif %}
 
       <p></p>
 
