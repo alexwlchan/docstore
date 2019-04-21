@@ -99,7 +99,8 @@
 </div>
 
 {% if search_options.tag_query %}
-<p class="tag_query">Filtering to documents with
+<div class="alert alert-info tag_query" role="alert">
+  Filtering to documents with
   <strong>{{ t }}</strong>
   {% for t in search_options.tag_query %}
     <span class="tag_query__tag">
@@ -107,7 +108,7 @@
       <a href="#" onclick="window.location = deleteTag('{{ t }}');" class="text-danger">x</a>
     </span>
   {% endfor %}
-</p>
+</div>
 {% endif %}
 
 
