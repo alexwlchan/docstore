@@ -2,3 +2,8 @@
 .coverage
 .DS_Store
 style.css
+
+id_rsa
+id_rsa.pub
+docker_password.txt
+secrets.zip

@@ -5,5 +5,21 @@ branches:
     - "development"
 
 script:
-  - make lint
-  - make test
+  - make "$TASK"
+
+jobs:
+  include:
+    - stage: test
+      env: TASK=lint
+    - env: TASK=test
+    - stage: check_release
+      env: TASK=check_release_file
+    - stage: release
+      env: TASK=autorelease
+
+stages:
+  - test
+  - name: check_release
+    if: type != push
+  - name: release
+    if: type = push

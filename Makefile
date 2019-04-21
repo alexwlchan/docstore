@@ -24,3 +24,9 @@ requirements.txt: requirements.in
 test_requirements.txt: requirements.txt test_requirements.in
 	docker build --target pip_tools --tag docstore_piptools .
 	docker run -v $(ROOT):/src --workdir /src docstore_piptools test_requirements.in
+
+check_release_file:
+	python .travis/autorelease.py check_release_file
+
+autorelease:
+	python .travis/autorelease.py release
