@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.3.2 - 2019-04-21
+
+Tweak the URL handling so you can open links in new tabs/windows.
+
 ## v1.3.1 - 2019-04-21
 
 Fix a bug where tags with URL-encoded characters would be displayed incorrectly in the "store a document" form.
