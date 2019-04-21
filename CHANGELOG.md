@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.2.2 - 2019-04-21
+
+*   Fix a tiny cosmetic issue when hovering over tag links on a document.
+
 ## v1.2.1 - 2019-04-21
 
 *   Tiny cosmetic tweak to make the "filtering by tag X" blurb more promionent.
