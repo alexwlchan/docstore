@@ -5,6 +5,7 @@ Usage: release.py check_release_file
        release.py release
 """
 
+import os
 import subprocess
 import sys
 
