@@ -133,3 +133,24 @@ def test_version_is_shown_in_footer(sess):
     footer = soup.find("footer")
 
     assert re.search(r'docstore v\d+\.\d+\.\d+', str(footer)) is not None
+
+
+class TestStoreDocumentForm:
+    def test_url_decodes_tags_before_displaying(self, sess, pdf_file):
+        """
+        Check that URL-encoded entities get unwrapped when we display the tag form.
+
+        e.g. "colour:blue" isn't displayed as "colour%3Ablue"
+
+        """
+        sess.post(
+            "/upload",
+            files={"file": ("mydocument.pdf", pdf_file)},
+            data={"tags": ["colour:blue"]}
+        )
+
+        resp = sess.get("/", params={"tag": "colour:blue"})
+
+        soup = bs4.BeautifulSoup(resp.text, "html.parser")
+        tag_field = soup.find("input", attrs={"name": "tags"})
+        assert tag_field.attrs["value"] == "colour:blue"
