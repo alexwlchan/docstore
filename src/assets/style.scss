@@ -19,6 +19,10 @@ button.tag {
 
 .tags {
   margin-bottom: 0;
+
+  a:hover {
+    text-decoration: none;
+  }
 }
 
 td.thumbnail {
