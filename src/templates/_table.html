@@ -5,7 +5,7 @@
 
       <th>
       {% if search_options.sort_order == ("title", "asc") %}
-      <a href="{{ req_url.set('sort', 'title:desc') | query_str_only }}">
+      <a href="{{ req_url.set('sort', 'title:desc') | query_str_only }}">Name &Uarr;</a>
       {% else %}
       <a href="{{ req_url.set('sort', 'title:asc') | query_str_only }}">
         Name
