@@ -31,6 +31,7 @@ def create_api(store, display_title="Alex’s documents"):
 
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
     api.jinja_env.filters["short_url"] = lambda u: urllib.parse.urlparse(u).netloc
+    api.jinja_env.filters["query_str_only"] = lambda url: "?" + "&".join(f"{k}={v}" for k, v in url.query)
 
     def add_headers_function(headers, path, url):
         # Add the Content-Disposition header to file requests, so they can
@@ -91,7 +92,8 @@ def create_api(store, display_title="Alex’s documents"):
             grid_view=grid_view,
             title=display_title,
             req_url=req_url,
-            params=params
+            params=params,
+            cookies=req.cookies
         )
 
     def prepare_upload_data(user_data):
