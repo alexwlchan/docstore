@@ -5,9 +5,9 @@
 
       <th>
       {% if search_options.sort_order == ("title", "asc") %}
-      <a href="#" onclick="window.location = setQueryParameter('sort', 'title:desc');">Name &Uarr;</a>
+      <a href="{{ req_url.set('sort', 'title:desc') | query_str_only }}">
       {% else %}
-      <a href="#" onclick="window.location = setQueryParameter('sort', 'title:asc');">
+      <a href="{{ req_url.set('sort', 'title:asc') | query_str_only }}">
         Name
         {% if search_options.sort_order == ("title", "desc") %}
           &Darr;
@@ -18,10 +18,10 @@
 
       <th style="width: 150px;">
       {% if search_options.sort_order == ("date_created", "desc") %}
-      <a href="#" onclick="window.location = setQueryParameter('sort', 'date_created:asc');">
+      <a href="{{ req_url.set('sort', 'date_created:asc') | query_str_only }}">
         Date saved &Darr;
       {% else %}
-      <a href="#" onclick="window.location = setQueryParameter('sort', 'date_created:desc');">
+      <a href="{{ req_url.set('sort', 'date_created:desc') | query_str_only }}">
         Date saved
         {% if search_options.sort_order == ("date_created", "asc") %}
           &Uarr;

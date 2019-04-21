@@ -32,7 +32,7 @@
         {% endif %}
       {% endif %}
       <li>{% if tag not in search_options.tag_query %}
-        <a href="#" onclick="window.location = addTagToUrl('{{ tag }}');">{{ tag }}</a>
+        <a href="{{ req_url.add('tag', tag) | query_str_only }}">{{ tag }}</a>
       {% else %}
         {{ tag }}
       {% endif %} ({{ search_response.tags[tag] }})</li>

@@ -13,12 +13,11 @@
 
       {% if search_options.tag_query %}
       <div class="alert alert-info tag_query" role="alert">
-        Filtering to documents with
-        <strong>{{ t }}</strong>
-        {% for t in search_options.tag_query %}
+        Filtering to documents tagged with
+        {% for tag in search_options.tag_query %}
           <span class="tag_query__tag">
-            <strong>{{ t }}</strong>
-            <a href="#" onclick="window.location = deleteTag('{{ t }}');" class="text-danger">x</a>
+            <strong>{{ tag }}</strong>
+            <a class="text-danger" href="{{ req_url.remove('tag', tag) | query_str_only }}">x</a>
           </span>
         {% endfor %}
       </div>

@@ -1,11 +1,11 @@
 {% if doc.tags %}
 <p class="tags">
-  {% for t in doc.tags|sort %}
-  {% if t not in search_options.tag_query %}
-    <a href="#" onclick="window.location = addTagToUrl('{{ t }}');">
+  {% for tag in doc.tags|sort %}
+  {% if tag not in search_options.tag_query %}
+    <a href="{{ req_url.add('tag', tag) | query_str_only }}">
   {% endif %}
-    <button type="button" class="btn btn-light tag" {% if t in search_options.tag_query %}disabled{% endif %}>{{ t }}</button>
-  {% if t not in search_options.tag_query %}</a>{% endif %}
+    <button type="button" class="btn btn-light tag" {% if tag in search_options.tag_query %}disabled{% endif %}>{{ tag }}</button>
+  {% if tag not in search_options.tag_query %}</a>{% endif %}
   {% endfor %}
 </p>
 {% endif %}
