@@ -25,9 +25,8 @@ test_requirements.txt: requirements.txt test_requirements.in
 	docker build --target pip_tools --tag docstore_piptools .
 	docker run -v $(ROOT):/src --workdir /src docstore_piptools test_requirements.in
 
+check_release_file:
+	python .travis/autorelease.py check_release_file
+
 autorelease:
-	if [[ "$TRAVIS_PULL_REQUEST" == true ]]; \
-		python .travis/autorelease.py check_release_file; \
-	else \
-		python .travis/autorelease.py release; \
-	fi
+	python .travis/autorelease.py release
