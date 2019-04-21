@@ -45,7 +45,7 @@ if __name__ == '__main__':
         ])
 
         git("remote", "add", "ssh-origin", "git@github.com:alexwlchan/docstore.git")
-        git("push", "ssh-origin", "HEAD:master")
+        git("push", "ssh-origin", "HEAD:development")
         git("push", "ssh-origin", "--tag")
     elif sys.argv[1] == "check_release_file":
         check_release_file()
