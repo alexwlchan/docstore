@@ -78,8 +78,9 @@ def has_source_changes():
     """
     changed_files = [
         f for f in modified_files()
-        if f.startswith(("Dockerfile", "src")) and not f.startswith("src/tests")
+        if (f == "Dockerfile") or (f.startswith("src") and not f.startswith("src/tests"))
     ]
+    print("*** Changed files: %s" % ", ".join(changed_files) or "<none>")
     return len(changed_files) != 0
 
 
