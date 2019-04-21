@@ -224,7 +224,7 @@ def update_changelog_and_version():
     lines = list(open(VERSION_PY))
     for idx, l in enumerate(lines):
         if l.startswith("__version_info__"):
-            lines[idx] = "__version_info__ = %s\n" % new_version
+            lines[idx] = "__version_info__ = %s\n" % new_version_string
             break
     else:  # no break
         raise RuntimeError("Never updated version in version.py?")
