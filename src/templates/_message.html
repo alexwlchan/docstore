@@ -13,7 +13,7 @@
 
   <script>
     var url = new URL(window.location.href);
-    url.searchParams.delete(name);
+    url.searchParams.delete("_message");
     window.history.pushState({ path: url.href }, "", url.href);
   </script>
 {% endif %}
