@@ -7,13 +7,13 @@
 
     <ul class="pagination float-right">
       <li class="page-item{% if grid_view %} disabled{% endif %}">
-        <a class="page-link text-muted" href="#" onclick="document.location = setQueryParameter('view', 'grid');">
+        <a class="page-link text-muted" href="{{ req_url.set('view', 'grid') | query_str_only }}">
           <span aria-hidden="true"><i class="fas fa-grip-horizontal"></i></span>
           <span class="sr-only">Grid view</span>
         </a>
       </li>
       <li class="page-item{% if not grid_view %} disabled{% endif %}">
-        <a class="page-link text-muted" href="#" onclick="document.location = setQueryParameter('view', 'table');">
+        <a class="page-link text-muted" href="{{ req_url.set('view', 'table') | query_str_only }}">
           <span aria-hidden="true"><i class="fas fa-list"></i></span>
           <span class="sr-only">Table view</span>
         </a>

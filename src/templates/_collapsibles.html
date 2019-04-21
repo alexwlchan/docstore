@@ -13,7 +13,7 @@
 </div>
 
 {% if search_response.tags %}
-<div class="collapse{% if params.get('tag_list') == 'show' %} show{% endif %}" id="collapseTagList">
+<div class="collapse{% if cookies.get('tags-collapse__show') == 'true' %} show{% endif %}" id="collapseTagList">
   <div class="card card-body">
     <ul style="margin-bottom: 0;">
     {% for tag in search_response.tags|sort %}
@@ -32,7 +32,7 @@
         {% endif %}
       {% endif %}
       <li>{% if tag not in search_options.tag_query %}
-        <a href="#" onclick="window.location = addTagToUrl('{{ tag }}');">{{ tag }}</a>
+        <a href="{{ req_url.add('tag', tag) | query_str_only }}">{{ tag }}</a>
       {% else %}
         {{ tag }}
       {% endif %} ({{ search_response.tags[tag] }})</li>
@@ -46,7 +46,7 @@
 </div>
 {% endif %}
 
-<div class="collapse{% if params.get('form') == 'show' %} show{% endif %}" id="collapseDocumentForm">
+<div class="collapse{% if cookies.get('form-collapse__show') == 'true' %} show{% endif %}" id="collapseDocumentForm">
   <div class="card">
     <div class="card-header">
       Store a document
@@ -83,21 +83,17 @@
 <script>
   $("#collapseDocumentForm")
     .on("show.bs.collapse", function() {
-      var newUrl = addQueryParameter("form", "show");
-      window.history.pushState(newUrl, "", newUrl);
+      Cookies.set("form-collapse__show", true);
     })
     .on("hide.bs.collapse", function() {
-      var newUrl = deleteQueryParameter("form");
-      window.history.pushState(newUrl, "", newUrl);
+      Cookies.set("form-collapse__show", false);
     })
 
   $("#collapseTagList")
     .on("show.bs.collapse", function() {
-      var newUrl = addQueryParameter("tag_list", "show");
-      window.history.pushState(newUrl, "", newUrl);
+      Cookies.set("tags-collapse__show", true);
     })
     .on("hide.bs.collapse", function() {
-      var newUrl = deleteQueryParameter("tag_list");
-      window.history.pushState(newUrl, "", newUrl);
+      Cookies.set("tags-collapse__show", false);
     })
 </script>

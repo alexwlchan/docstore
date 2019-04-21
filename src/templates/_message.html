@@ -12,7 +12,8 @@
   {% endif %}
 
   <script>
-    var newUrl = deleteQueryParameter("_message");
-    window.history.pushState({path: newUrl }, "", newUrl);
+    var url = new URL(window.location.href);
+    url.searchParams.delete("_message");
+    window.history.pushState({ path: url.href }, "", url.href);
   </script>
 {% endif %}
