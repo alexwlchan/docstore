@@ -176,6 +176,11 @@ def get_new_version(release_type):
 VERSION_PY = os.path.join(ROOT, "src", "version.py")
 
 
+def get_new_version_string(release_type):
+    new_version = get_new_version(release_type)
+    return "v" + ".".join(map(str, new_version))
+
+
 def update_changelog_and_version():
     contents = changelog()
     assert "\r" not in contents
@@ -191,7 +196,7 @@ def update_changelog_and_version():
     release_type, release_contents = parse_release_file()
 
     new_version = get_new_version(release_type)
-    new_version_string = "v" + ".".join(map(str, new_version))
+    new_version_string = get_new_version_string(release_type)
 
     print("New version: %s" % new_version_string)
 
@@ -224,7 +229,7 @@ def update_changelog_and_version():
     lines = list(open(VERSION_PY))
     for idx, l in enumerate(lines):
         if l.startswith("__version_info__"):
-            lines[idx] = "__version_info__ = %s\n" % new_version_string
+            lines[idx] = "__version_info__ = (%d, %d, %d)\n" % new_version
             break
     else:  # no break
         raise RuntimeError("Never updated version in version.py?")
@@ -245,11 +250,11 @@ def update_for_pending_release():
     git(
         "commit",
         "-m", "Bump version to %s and update changelog\n\n[skip ci]" % (
-            get_new_version(release_type))
+            get_new_version_string(release_type))
     )
-    git("tag", get_new_version(release_type))
+    git("tag", get_new_version_string(release_type))
 
-    return get_new_version(release_type)
+    return get_new_version_string(release_type)
 
 
 def configure_secrets():
