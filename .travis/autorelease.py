@@ -8,7 +8,7 @@ Usage: release.py check_release_file
 import subprocess
 import sys
 
-from releasetooling import check_release_file, configure_secrets
+from releasetooling import check_release_file, configure_secrets, git, release
 
 
 if __name__ == '__main__':
@@ -32,6 +32,8 @@ if __name__ == '__main__':
         subprocess.check_call([
             "docker", "push", "greengloves/docstore:%s" % new_version
         ])
+        git("push", "ssh-origin", "HEAD:master")
+        git("push", "ssh-origin", "--tag")
     elif sys.argv[1] == "check_release_file":
         check_release_file()
     else:

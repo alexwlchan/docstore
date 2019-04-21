@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import datetime as dt
 import os
 import re
 import subprocess
@@ -294,9 +295,6 @@ def release():
         sys.exit(0)
 
     print("Attempting a release.")
-
-    git("push", "ssh-origin", "HEAD:master")
-    git("push", "ssh-origin", "--tag")
 
     return new_version
 
