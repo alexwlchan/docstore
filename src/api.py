@@ -30,6 +30,7 @@ def create_api(store, display_title="Alex’s documents"):
     api.static_url = lambda asset: "static/" + asset
 
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
+    api.jinja_env.filters["short_url"] = lambda u: urllib.parse.urlparse(u).netloc
 
     def add_headers_function(headers, path, url):
         # Add the Content-Disposition header to file requests, so they can

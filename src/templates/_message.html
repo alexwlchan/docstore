@@ -1,0 +1,18 @@
+{% if "_message" in params %}
+  {% if params._message.id %}
+  <div class="alert alert-success" role="alert">
+    Stored new document as {{ params._message.id }}!
+  </div>
+  {% endif %}
+
+  {% if params._message.error %}
+  <div class="alert alert-success" role="alert">
+    Unable to store document: {{ params._message.error }}
+  </div>
+  {% endif %}
+
+  <script>
+    var newUrl = deleteQueryParameter("_message");
+    window.history.pushState({path: newUrl }, "", newUrl);
+  </script>
+{% endif %}
