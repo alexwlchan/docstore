@@ -286,3 +286,14 @@ class TestBrowser:
         message = json.loads(dict(location.query)["_message"])
 
         assert "error" in message
+
+    @pytest.mark.parametrize("view_option", ["table", "grid"])
+    def test_includes_source_url_in_page(self, api, view_option):
+        self.upload(
+            api=api,
+            file_contents=b"hello world",
+            data={"source_url": "https://example.org/document.pdf"}
+        )
+
+        resp = api.requests.get("/", params={"view": view_option})
+        assert '<a href="https://example.org/document.pdf">example.org</a>' in resp.text
