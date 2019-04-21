@@ -251,6 +251,12 @@ def update_for_pending_release():
 
 
 def configure_secrets():
+    subprocess.check_call([
+        "openssl", "aes-256-cbc",
+        "-K", os.environ["encrypted_83630750896a_key"],
+        "-iv", os.environ["encrypted_83630750896a_iv"],
+        "-in", "secrets.zip.enc", "-out", "secrets.zip", "-d"
+    ])
     subprocess.check_call(["unzip", "secrets.zip"])
 
     subprocess.check_call(["chmod", "600", "id_rsa"])

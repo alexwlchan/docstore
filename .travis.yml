@@ -7,3 +7,4 @@ branches:
 script:
   - make lint
   - make test
+  - make autorelease
