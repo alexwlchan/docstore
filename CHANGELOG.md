@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.3.1 - 2019-04-21
+
+Fix a bug where tags with URL-encoded characters would be displayed incorrectly in the "store a document" form.
+
 ## v1.3.0 - 2019-04-21
 
 Add a "source URL" field to the web form and index document script, and display it in the web UI.
