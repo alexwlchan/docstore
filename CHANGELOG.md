@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.2.1 - 2019-04-21
+
+*   Tiny cosmetic tweak to make the "filtering by tag X" blurb more promionent.
+
 ## v1.2.0 - 2019-04-19
 
 *   Add a GUI form for storing a document in the web app, so you can upload new documents through the browser.
