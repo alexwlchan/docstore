@@ -43,6 +43,8 @@ if __name__ == '__main__':
         subprocess.check_call([
             "docker", "push", "greengloves/docstore:%s" % new_version
         ])
+
+        git("remote", "add", "ssh-origin", "git@github.com:alexwlchan/docstore.git")
         git("push", "ssh-origin", "HEAD:master")
         git("push", "ssh-origin", "--tag")
     elif sys.argv[1] == "check_release_file":

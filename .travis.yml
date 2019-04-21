@@ -9,9 +9,9 @@ script:
 
 jobs:
   include:
-    # - stage: test
-    #   env: TASK=lint
-    # - env: TASK=test
+    - stage: test
+      env: TASK=lint
+    - env: TASK=test
     - stage: check_release
       env: TASK=check_release_file
     - stage: release
