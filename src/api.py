@@ -76,7 +76,7 @@ def create_api(store, display_title="Alex’s documents"):
 
         search_response = search_helpers.search_store(store, options=search_options)
 
-        req_url = hyperlink.URL.from_text(req.full_url)
+        req_url = hyperlink.DecodedURL.from_text(req.full_url)
 
         params = {k: v for k, v in req.params.items()}
         try:
