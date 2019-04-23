@@ -33,7 +33,7 @@ def relative_date_str(x, y):
         else:
             return "%d days ago" % days
     else:
-        return min([x, y]).strftime("%-d %B %Y")
+        return min([x, y]).strftime("%-d %b %Y")
 
 
 def since_now_date_str(x):
