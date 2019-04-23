@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.3.4 - 2019-04-23
+
+Tweak the display of dates in the table UI to avoid line wrapping.
+
 ## v1.3.3 - 2019-04-23
 
 Change some of the internal storage logic so it's less likely to return a user error or server error when trying to index documents.
