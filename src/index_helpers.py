@@ -39,23 +39,23 @@ def index_document(store, user_data):
 
     file_data = user_data.pop("file")
 
-    # Guess an appropriate file extension based on the data.  Note that mimetypes
-    # will suggest ".jpe" for JPEG images, so replace it with the more common
-    # extension by hand.
-    assert isinstance(file_data, bytes)
-    guessed_mimetype = magic.from_buffer(file_data, mime=True)
-    if guessed_mimetype == "image/jpeg":
-        extension = ".jpg"
-    else:
-        extension = mimetypes.guess_extension(guessed_mimetype)
+    try:
+        # Try to guess an extension based on the filename provided by the user.
+        _, extension = os.path.splitext(doc["filename"])
+    except KeyError:
 
-    # If we aren't able to detect an extension, throw up an error back to
-    # the user.
+        # If we didn't get a filename from the user, try to guess one based
+        # on the data.  Note that mimetypes will suggest ".jpe" for JPEG images,
+        # so replace it with the more common extension by hand.
+        assert isinstance(file_data, bytes)
+        guessed_mimetype = magic.from_buffer(file_data, mime=True)
+        if guessed_mimetype == "image/jpeg":
+            extension = ".jpg"
+        else:
+            extension = mimetypes.guess_extension(guessed_mimetype)
+
     if extension is None:
-        try:
-            _, extension = os.path.splitext(doc["filename"])
-        except KeyError:
-            raise UserError("Unable to detect file extension!")
+        extension = ""
 
     file_identifier = os.path.join(doc.id[0], doc.id + extension)
     complete_file_identifier = os.path.join(store.files_dir, file_identifier)
