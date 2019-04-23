@@ -20,6 +20,8 @@ NOW = dt.datetime.now()
     (NOW, NOW - dt.timedelta(seconds=60 * 60 * 24 + 1), "1 day ago"),
     (NOW, NOW - dt.timedelta(seconds=60 * 60 * 24 * 3 + 1), "3 days ago"),
     (NOW, NOW + dt.timedelta(seconds=60 * 60 * 24 * 10 + 1), NOW.strftime("%-d %B %Y")),
+    (dt.datetime(2000, 2, 3), NOW, "3 February 2000"),
+    (dt.datetime(2000, 1, 1), dt.datetime(2000, 1, 30), "1 January 2000"),
 ])
 def test_relative_date_str(x, y, expected_relative_str):
     assert relative_date_str(x, y) == expected_relative_str
