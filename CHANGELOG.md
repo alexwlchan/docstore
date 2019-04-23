@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v1.3.3 - 2019-04-23
+
+Change some of the internal storage logic so it's less likely to return a user error or server error when trying to index documents.
+
+
+
+Specifically, change the logic for detecting filename extensions (which are mostly used for internal storage), and just don't set one if it can't be detected.
+
 ## v1.3.2 - 2019-04-21
 
 Tweak the URL handling so you can open links in new tabs/windows.
