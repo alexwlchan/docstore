@@ -20,7 +20,7 @@ from tagged_store import TaggedDocumentStore
 from version import __version__
 
 
-def create_api(store, display_title="Alex’s documents"):
+def create_api(store, display_title, default_view):
     # Compile the CSS file before the API starts
     css = scss.Compiler().compile_string(open("assets/style.scss").read())
     open("static/style.css", "w").write(css)
@@ -201,11 +201,12 @@ def create_api(store, display_title="Alex’s documents"):
 @click.version_option(version=__version__, prog_name="docstore")
 @click.argument("root", required=True)
 @click.option("--title", default="Alex’s documents")
-def run_api(root, title):
+@click.option("--default_view", default="table", type=click.Choice(["table", "grid"]))
+def run_api(root, title, default_view):
     root = os.path.normpath(root)
 
     store = TaggedDocumentStore(root)
-    api = create_api(store, display_title=title)
+    api = create_api(store, display_title=title, default_view=default_view)
 
     api.run()
 
