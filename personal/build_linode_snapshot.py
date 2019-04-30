@@ -79,4 +79,3 @@ with tarfile.open(name="snapshot.%s.tar.gz" % int(time.time()), mode="w") as tf:
         tf.add(root, arcname=os.path.join("docstore", name))
 
     logger.info("Created archive as %s", os.path.basename(tf.name))
-
