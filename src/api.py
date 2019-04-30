@@ -20,7 +20,7 @@ from tagged_store import TaggedDocumentStore
 from version import __version__
 
 
-def create_api(store, display_title="Alex’s documents"):
+def create_api(store, display_title="Alex’s documents", default_view="table"):
     # Compile the CSS file before the API starts
     css = scss.Compiler().compile_string(open("assets/style.scss").read())
     open("static/style.css", "w").write(css)
@@ -68,7 +68,7 @@ def create_api(store, display_title="Alex’s documents"):
     def list_documents(req, resp):
         tag_query = req.params.get_list("tag", [])
         sort_order = req.params.get("sort", "date_created:desc")
-        grid_view = req.params.get("view", "table") == "grid"
+        view_option = req.params.get("view", default_view)
 
         search_options = search_helpers.SearchOptions(
             tag_query=tag_query,
@@ -89,7 +89,7 @@ def create_api(store, display_title="Alex’s documents"):
             "document_list.html",
             search_options=search_options,
             search_response=search_response,
-            grid_view=grid_view,
+            view_option=view_option,
             title=display_title,
             req_url=req_url,
             params=params,
@@ -201,11 +201,12 @@ def create_api(store, display_title="Alex’s documents"):
 @click.version_option(version=__version__, prog_name="docstore")
 @click.argument("root", required=True)
 @click.option("--title", default="Alex’s documents")
-def run_api(root, title):
+@click.option("--default_view", default="table", type=click.Choice(["table", "grid"]))
+def run_api(root, title, default_view):
     root = os.path.normpath(root)
 
     store = TaggedDocumentStore(root)
-    api = create_api(store, display_title=title)
+    api = create_api(store, display_title=title, default_view=default_view)
 
     api.run()
 

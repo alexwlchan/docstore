@@ -26,7 +26,7 @@
       <p></p>
 
       {% if search_response.documents %}
-        {% if grid_view %}
+        {% if view_option == 'grid' %}
           {% include "_grid.html" %}
         {% else %}
           {% include "_table.html" %}

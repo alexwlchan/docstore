@@ -34,22 +34,49 @@ def test_empty_state(sess):
     assert '<table class="table">' not in resp.text
 
 
-def test_table_view(sess, store):
-    index_document(store=store, user_data={
-        "file": b"hello world",
-        "title": "foo",
-        "tags": ["bar", "baz", "bat"]
-    })
-    resp = sess.get("/", params={"view": "table"})
-    assert '<div class="row">' not in resp.text
-    assert '<table class="table">' in resp.text
+class TestViewOptions:
 
+    @staticmethod
+    def _assert_is_table(resp):
+        assert '<div class="row">' not in resp.text
+        assert '<table class="table">' in resp.text
 
-def test_grid_view(sess, store):
-    index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
-    resp = sess.get("/", params={"view": "grid"})
-    assert '<div class="row">' in resp.text
-    assert '<table class="table">' not in resp.text
+    @staticmethod
+    def _assert_is_grid(resp):
+        assert '<div class="row">' in resp.text
+        assert '<table class="table">' not in resp.text
+
+    def test_table_view(self, sess, store):
+        index_document(store=store, user_data={
+            "file": b"hello world",
+            "title": "foo",
+            "tags": ["bar", "baz", "bat"]
+        })
+        resp = sess.get("/", params={"view": "table"})
+        self._assert_is_table(resp)
+
+    def test_grid_view(self, sess, store):
+        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        resp = sess.get("/", params={"view": "grid"})
+        self._assert_is_grid(resp)
+
+    def test_default_is_table_view(self, store):
+        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        api = service.create_api(store)
+        resp = api.requests.get("/")
+        self._assert_is_table(resp)
+
+    def test_can_set_default_as_table_view(self, store):
+        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        api = service.create_api(store, default_view="table")
+        resp = api.requests.get("/")
+        self._assert_is_table(resp)
+
+    def test_can_set_default_as_grid_view(self, store):
+        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        api = service.create_api(store, default_view="grid")
+        resp = api.requests.get("/")
+        self._assert_is_grid(resp)
 
 
 def test_uses_display_title(store):
