@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.3.6 - 2019-04-30
+
+Don't require a title to be set in the web GUI form.
+
 ## v1.3.5 - 2019-04-24
 
 Swap the order of the "Store a document" and "Show tags" form, so the former always appears in a consistent position.
