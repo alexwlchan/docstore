@@ -68,7 +68,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
     def list_documents(req, resp):
         tag_query = req.params.get_list("tag", [])
         sort_order = req.params.get("sort", "date_created:desc")
-        grid_view = req.params.get("view", "table") == "grid"
+        view_option = req.params.get("view", default_view)
 
         search_options = search_helpers.SearchOptions(
             tag_query=tag_query,
@@ -89,7 +89,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
             "document_list.html",
             search_options=search_options,
             search_response=search_response,
-            grid_view=grid_view,
+            view_option=view_option,
             title=display_title,
             req_url=req_url,
             params=params,
