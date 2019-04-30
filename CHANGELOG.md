@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.4.0 - 2019-04-30
+
+Add a `--view_option` flag to the CLI, which allows you to decide whether the table or grid view should be the default view.
+
 ## v1.3.6 - 2019-04-30
 
 Don't require a title to be set in the web GUI form.
