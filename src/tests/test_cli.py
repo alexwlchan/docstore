@@ -4,7 +4,6 @@ import re
 
 from click.testing import CliRunner
 import pytest
-import requests
 
 import api
 
