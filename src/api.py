@@ -20,7 +20,7 @@ from tagged_store import TaggedDocumentStore
 from version import __version__
 
 
-def create_api(store, display_title, default_view):
+def create_api(store, display_title="Alex’s documents", default_view="table"):
     # Compile the CSS file before the API starts
     css = scss.Compiler().compile_string(open("assets/style.scss").read())
     open("static/style.css", "w").write(css)
