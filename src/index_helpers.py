@@ -9,7 +9,7 @@ import magic
 
 from exceptions import UserError
 from tagged_store import TaggedDocument
-from thumbnails import create_jpeg_thumbnail
+from thumbnails import create_thumbnail
 
 
 def create_thumbnail(store, doc):
@@ -25,7 +25,7 @@ def create_thumbnail(store, doc):
     absolute_thumb_path = os.path.join(store.thumbnails_dir, thumb_path)
     os.makedirs(os.path.dirname(absolute_thumb_path), exist_ok=True)
 
-    thumbnail = create_jpeg_thumbnail(absolute_file_identifier)
+    thumbnail = create_thumbnail(absolute_file_identifier)
 
     shutil.move(thumbnail, absolute_thumb_path)
     assert os.path.exists(absolute_thumb_path)

@@ -46,7 +46,7 @@ def _get_epub_cover(path):
         return epub.extract(biggest_image, path=tempfile.mkdtemp())
 
 
-def create_jpeg_thumbnail(path):
+def create_thumbnail(path):
     try:
         return PREVIEW_MANAGER.get_jpeg_preview(path, height=400, width=400)
     except UnsupportedMimeType as err:
