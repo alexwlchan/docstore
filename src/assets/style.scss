@@ -57,6 +57,10 @@ th a:hover {
   padding-bottom: 3em;
 }
 
+.docstore__title {
+  color: black;
+}
+
 .tag_query__tag {
   margin-left: 0.4em;
 
@@ -84,6 +88,7 @@ th a:hover {
 
     .card-title {
       margin-bottom: .5rem;
+      font-weight: normal;
 
       h5 {
         font-size: 1rem;

@@ -42,7 +42,7 @@
       {% endif %}
     </td>
     <td>
-      <a href="{{ api.file_url(doc) }}" target="_blank">{{ doc.title }}</a>
+      <a href="{{ api.file_url(doc) }}" target="_blank" class="docstore__title">{{ doc.title }}</a>
       {% if doc.user_data and doc.user_data.source_url %}
         <span class="source_url figure-caption">
           [<a href="{{ doc.user_data.source_url }}">{{ doc.user_data.source_url | short_url }}</a>]

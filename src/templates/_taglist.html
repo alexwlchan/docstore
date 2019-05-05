@@ -4,11 +4,7 @@
   {% if tag not in search_options.tag_query %}
     <a href="{{ req_url.add('tag', tag) | query_str_only }}">
   {% endif %}
-  {% if view_option == 'grid' %}
-    <span class="tag">#{{ tag }}</span>
-  {% else %}
-    <button type="button" class="btn btn-light tag" {% if tag in search_options.tag_query %}disabled{% endif %}>{{ tag }}</button>
-  {% endif %}
+  <span class="tag">#{{ tag }}</span>
   {% if tag not in search_options.tag_query %}</a>{% endif %}
   {% endfor %}
 </p>
