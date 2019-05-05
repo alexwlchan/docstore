@@ -194,6 +194,20 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         except KeyError:
             pass
 
+    async def _recreate_all_thumbnails():
+        for doc in store.documents.values():
+            store_thumbnail(doc=doc, store=store)
+
+    @api.route("/api/v1/recreate_thumbnails")
+    async def recreate_thumbnails(req, resp):
+        if req.method == "post":
+            await _recreate_all_thumbnails()
+
+            resp.media = {"ok": "true"}
+            resp.status_code = api.status_codes.HTTP_202
+        else:
+            resp.status_code = api.status_codes.HTTP_405
+
     return api
 
 
