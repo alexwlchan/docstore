@@ -12,7 +12,7 @@ from tagged_store import TaggedDocument
 from thumbnails import create_thumbnail
 
 
-def create_thumbnail(store, doc):
+def store_thumbnail(store, doc):
     try:
         os.unlink(os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"]))
     except KeyError:

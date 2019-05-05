@@ -14,7 +14,7 @@ from whitenoise import WhiteNoise
 
 import date_helpers
 from exceptions import UserError
-from index_helpers import create_thumbnail, index_document
+from index_helpers import store_thumbnail, index_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
 from version import __version__
@@ -161,7 +161,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 
             @api.background.task
             def create_doc_thumbnail(doc):
-                create_thumbnail(store=store, doc=doc)
+                store_thumbnail(store=store, doc=doc)
                 whitenoise_thumbs.add_file_to_dictionary(
                     url="/" + doc["thumbnail_identifier"],
                     path=os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"])

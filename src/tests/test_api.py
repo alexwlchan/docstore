@@ -120,7 +120,7 @@ def test_calls_create_thumbnail(api, store, pdf_file):
     assert resp.status_code == 201
 
     now = time.time()
-    while time.time() - now < 5:  # pragma: no cover
+    while time.time() - now < 10:  # pragma: no cover
         docid = resp.json()["id"]
         stored_doc = store.documents[docid]
         if "thumbnail_identifier" in stored_doc.data:

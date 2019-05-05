@@ -9,15 +9,15 @@ import index_helpers
 from tagged_store import TaggedDocument, TaggedDocumentStore
 
 
-def test_create_thumbnail(store, file_identifier):
+def test_store_thumbnail(store, file_identifier):
     doc = TaggedDocument({"id": "1", "file_identifier": file_identifier})
-    index_helpers.create_thumbnail(store=store, doc=doc)
+    index_helpers.store_thumbnail(store=store, doc=doc)
     assert "thumbnail_identifier" in doc
 
 
 def test_thumbnail_data_is_saved(store, file_identifier):
     doc = TaggedDocument({"id": "1", "file_identifier": file_identifier})
-    index_helpers.create_thumbnail(store=store, doc=doc)
+    index_helpers.store_thumbnail(store=store, doc=doc)
 
     new_store = TaggedDocumentStore(store.root)
     assert "thumbnail_identifier" in new_store.documents[doc.id]
@@ -34,7 +34,7 @@ def test_removes_old_thumbnail_first(store, file_identifier):
     os.makedirs(os.path.dirname(thumb_path))
     open(thumb_path, "wb").write(b"hello world")
 
-    index_helpers.create_thumbnail(store=store, doc=doc)
+    index_helpers.store_thumbnail(store=store, doc=doc)
     assert not os.path.exists(thumb_path)
     assert doc["thumbnail_identifier"] != "1/100.jpg"
 
