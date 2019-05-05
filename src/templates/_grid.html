@@ -13,13 +13,13 @@
 
     <div class="card-body">
       {% if doc.title %}
-      <h5 class="card-title">{{ doc.title }}</h5>
+      <h5 class="card-title"><a href="{{ api.file_url(doc) }}" target="_blank" class="docstore__title">{{ doc.title }}</a></h5>
       {% endif %}
 
       {% if doc.user_data and doc.user_data.source_url %}
-        <span class="source_url figure-caption">
+        <p class="source_url figure-caption">
           <a href="{{ doc.user_data.source_url }}">{{ doc.user_data.source_url | short_url }}</a>
-        </span>
+        </p>
       {% endif %}
 
       {% include "_taglist.html" %}

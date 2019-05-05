@@ -3,10 +3,21 @@
   height: 88px;
 }
 
+.tag {
+  font-size: .75rem;
+  white-space: nowrap;
+}
+
+.card {
+  .tags {
+    line-height: 1.2;
+    margin-top: .4rem;
+  }
+}
+
 button.tag {
   border-radius: .75rem;
   padding: .075rem .4rem;
-  font-size: 80%;
   margin-top: 0.5em;
 }
 
@@ -47,6 +58,10 @@ th a:hover {
   padding-bottom: 3em;
 }
 
+.docstore__title {
+  color: black;
+}
+
 .tag_query__tag {
   margin-left: 0.4em;
 
@@ -67,6 +82,28 @@ th a:hover {
   .card-header {
     font-weight: bold;
     font-size: 1.25rem;
+  }
+
+  .card-body {
+    padding: .85rem;
+
+    .card-title {
+      margin-bottom: .5rem;
+      font-weight: normal;
+
+      h5 {
+        font-size: 1rem;
+      }
+    }
+
+    .source_url {
+      font-size: 0.75rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .tags {
+      font-size: 0.95rem;
+    }
   }
 }
 
