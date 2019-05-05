@@ -153,11 +153,11 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
 
     all_links = soup.find_all("a", attrs={"target": "_blank"})
-    pdf_links = [
+    pdf_links = list(set(
         link.attrs["href"]
         for link in all_links
         if link.attrs.get("href", "").endswith(".pdf")
-    ]
+    ))
     assert len(pdf_links) == 1
     pdf_href = pdf_links[0]
 
