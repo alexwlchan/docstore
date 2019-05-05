@@ -35,11 +35,13 @@
 
   <tr>
     <td class="thumbnail">
+      <a href="{{ api.file_url(doc) }}" target="_blank">
       {% if doc.thumbnail_identifier %}
         <img src="{{ api.thumbnail_url(doc) }}">
       {% else %}
         <img src="{{ api.static_url('placeholder.jpg') }}">
       {% endif %}
+      </a>
     </td>
     <td>
       <a href="{{ api.file_url(doc) }}" target="_blank" class="docstore__title">{{ doc.title }}</a>
