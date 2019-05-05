@@ -151,8 +151,11 @@ def test_recreates_thumbnail(api, store, pdf_file):
 
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
-        if os.stat(thumb_path).st_mtime != original_mtime:
-            break
+        try:
+            if os.stat(thumb_path).st_mtime != original_mtime:
+                break
+        except FileNotFoundError:
+            pass
 
     assert os.stat(thumb_path).st_mtime > original_mtime
 

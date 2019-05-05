@@ -7,7 +7,6 @@ import subprocess
 import tempfile
 import zipfile
 
-from preview_generator.exception import UnsupportedMimeType
 from preview_generator.manager import PreviewManager
 from preview_generator.utils import LOGGER_NAME as PREVIEW_GENERATOR_LOGGER_NAME
 
@@ -63,7 +62,6 @@ def _get_imagemagick_preview(path):
 def _get_preview_manager_preview(path):
     pm_path = PREVIEW_MANAGER.get_jpeg_preview(path, height=1200, width=1200)
     return _get_imagemagick_preview(pm_path)
-
 
 
 def create_thumbnail(path):
