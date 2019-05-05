@@ -20,7 +20,8 @@ def store_thumbnail(store, doc):
 
     file_identifier = doc["file_identifier"]
     absolute_file_identifier = os.path.join(store.files_dir, file_identifier)
-    thumb_path = os.path.join(doc.id[0], doc.id + ".jpg")
+    _, ext = os.path.splitext(absolute_file_identifier)
+    thumb_path = os.path.join(doc.id[0], doc.id + ext)
 
     absolute_thumb_path = os.path.join(store.thumbnails_dir, thumb_path)
     os.makedirs(os.path.dirname(absolute_thumb_path), exist_ok=True)

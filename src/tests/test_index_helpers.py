@@ -9,7 +9,7 @@ import index_helpers
 from tagged_store import TaggedDocument, TaggedDocumentStore
 
 
-def test_store_thumbnail(store, file_identifier):
+def test_create_thumbnail(store, file_identifier):
     doc = TaggedDocument({"id": "1", "file_identifier": file_identifier})
     index_helpers.store_thumbnail(store=store, doc=doc)
     assert "thumbnail_identifier" in doc
@@ -21,6 +21,17 @@ def test_thumbnail_data_is_saved(store, file_identifier):
 
     new_store = TaggedDocumentStore(store.root)
     assert "thumbnail_identifier" in new_store.documents[doc.id]
+
+
+def test_thumbnail_uses_appropriate_extension(store):
+    user_data = {
+        "path": "cluster.png",
+        "file": open(os.path.join("tests", "files", "cluster.png"), "rb").read(),
+    }
+    doc = index_helpers.index_document(store=store, user_data=user_data)
+    index_helpers.store_thumbnail(store=store, doc=doc)
+
+    assert store.documents[doc.id]["thumbnail_identifier"].endswith(".png")
 
 
 def test_removes_old_thumbnail_first(store, file_identifier):
@@ -78,7 +89,7 @@ def test_raises_error_if_checksum_mismatch(store):
         index_helpers.index_document(store=store, user_data=user_data)
 
 
-@pytest.mark.parametrize('filename,extension', [
+@pytest.mark.parametrize('filename, extension', [
     ("bridge.jpg", ".jpg"),
     ("cluster.png", ".png"),
     ("snakes.pdf", ".pdf"),

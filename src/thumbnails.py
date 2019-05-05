@@ -51,7 +51,12 @@ def _get_epub_cover(path):
 def _get_imagemagick_preview(path):
     _, ext = os.path.splitext(path)
     _, out_path = tempfile.mkstemp(suffix=ext)
-    subprocess.check_call(["convert", path, "-thumbnail", "400x400", out_path])
+    if ext == ".gif":
+        subprocess.check_call([
+            "convert", path, "-coalesce", "-resize", "400x", "-deconstruct", out_path
+        ])
+    else:
+        subprocess.check_call(["convert", path, "-thumbnail", "400x", out_path])
     return out_path
 
 
