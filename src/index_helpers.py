@@ -9,10 +9,10 @@ import magic
 
 from exceptions import UserError
 from tagged_store import TaggedDocument
-from thumbnails import create_jpeg_thumbnail
+from thumbnails import create_thumbnail
 
 
-def create_thumbnail(store, doc):
+def store_thumbnail(store, doc):
     try:
         os.unlink(os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"]))
     except KeyError:
@@ -20,12 +20,15 @@ def create_thumbnail(store, doc):
 
     file_identifier = doc["file_identifier"]
     absolute_file_identifier = os.path.join(store.files_dir, file_identifier)
-    thumb_path = os.path.join(doc.id[0], doc.id + ".jpg")
+
+    thumb_dir = os.path.join(store.thumbnails_dir, doc.id[0])
+    os.makedirs(thumb_dir, exist_ok=True)
+
+    thumbnail = create_thumbnail(absolute_file_identifier)
+    _, ext = os.path.splitext(thumbnail)
+    thumb_path = os.path.join(doc.id[0], doc.id + ext)
 
     absolute_thumb_path = os.path.join(store.thumbnails_dir, thumb_path)
-    os.makedirs(os.path.dirname(absolute_thumb_path), exist_ok=True)
-
-    thumbnail = create_jpeg_thumbnail(absolute_file_identifier)
 
     shutil.move(thumbnail, absolute_thumb_path)
     assert os.path.exists(absolute_thumb_path)

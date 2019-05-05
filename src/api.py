@@ -14,7 +14,7 @@ from whitenoise import WhiteNoise
 
 import date_helpers
 from exceptions import UserError
-from index_helpers import create_thumbnail, index_document
+from index_helpers import store_thumbnail, index_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
 from version import __version__
@@ -139,6 +139,14 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
             resp.media = {"error": "Document %s not found!" % document_id}
             resp.status_code = api.status_codes.HTTP_404
 
+    @api.background.task
+    def create_doc_thumbnail(doc):
+        store_thumbnail(store=store, doc=doc)
+        whitenoise_thumbs.add_file_to_dictionary(
+            url="/" + doc["thumbnail_identifier"],
+            path=os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"])
+        )
+
     async def _upload_document_api(req, resp):
         if req.method == "post":
 
@@ -158,14 +166,6 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
                 resp.media = {"error": str(err)}
                 resp.status_code = api.status_codes.HTTP_400
                 return
-
-            @api.background.task
-            def create_doc_thumbnail(doc):
-                create_thumbnail(store=store, doc=doc)
-                whitenoise_thumbs.add_file_to_dictionary(
-                    url="/" + doc["thumbnail_identifier"],
-                    path=os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"])
-                )
 
             whitenoise_files.add_file_to_dictionary(
                 url="/" + doc["file_identifier"],
@@ -193,6 +193,17 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
             resp.status_code = api.status_codes.HTTP_302
         except KeyError:
             pass
+
+    @api.route("/api/v1/recreate_thumbnails")
+    async def recreate_thumbnails(req, resp):
+        if req.method == "post":
+            for doc in store.documents.values():
+                create_doc_thumbnail(doc)
+
+            resp.media = {"ok": "true"}
+            resp.status_code = api.status_codes.HTTP_202
+        else:
+            resp.status_code = api.status_codes.HTTP_405
 
     return api
 

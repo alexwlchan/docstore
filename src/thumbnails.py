@@ -1,11 +1,12 @@
 # -*- encoding: utf-8
 
 import logging
+import mimetypes
 import os
+import subprocess
 import tempfile
 import zipfile
 
-from preview_generator.exception import UnsupportedMimeType
 from preview_generator.manager import PreviewManager
 from preview_generator.utils import LOGGER_NAME as PREVIEW_GENERATOR_LOGGER_NAME
 
@@ -46,13 +47,34 @@ def _get_epub_cover(path):
         return epub.extract(biggest_image, path=tempfile.mkdtemp())
 
 
-def create_jpeg_thumbnail(path):
-    try:
-        return PREVIEW_MANAGER.get_jpeg_preview(path, height=400, width=400)
-    except UnsupportedMimeType as err:
-        if err.args == ("Unsupported mimetype: application/epub+zip",):
-            epub_thumbnail_path = _get_epub_cover(path)
-            thumbnail_path = PREVIEW_MANAGER.get_jpeg_preview(epub_thumbnail_path)
-            os.unlink(epub_thumbnail_path)
-            return thumbnail_path
-        raise
+def _get_imagemagick_preview(path):
+    _, ext = os.path.splitext(path)
+    _, out_path = tempfile.mkstemp(suffix=ext)
+    if ext == ".gif":
+        subprocess.check_call([
+            "convert", path, "-coalesce", "-resize", "400x", "-deconstruct", out_path
+        ])
+    else:
+        subprocess.check_call(["convert", path, "-thumbnail", "400x", out_path])
+    return out_path
+
+
+def _get_preview_manager_preview(path):
+    pm_path = PREVIEW_MANAGER.get_jpeg_preview(path, height=1200, width=1200)
+    return _get_imagemagick_preview(pm_path)
+
+
+def create_thumbnail(path):
+    _, ext = os.path.splitext(path)
+
+    if ext == ".epub":
+        epub_thumbnail_path = _get_epub_cover(path)
+        thumbnail_path = _get_imagemagick_preview(epub_thumbnail_path)
+        os.unlink(epub_thumbnail_path)
+        return thumbnail_path
+
+    elif mimetypes.guess_type(path)[0].startswith("image/"):
+        return _get_imagemagick_preview(path)
+
+    else:
+        return _get_preview_manager_preview(path)
