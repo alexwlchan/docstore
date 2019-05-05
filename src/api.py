@@ -139,6 +139,14 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
             resp.media = {"error": "Document %s not found!" % document_id}
             resp.status_code = api.status_codes.HTTP_404
 
+    @api.background.task
+    def create_doc_thumbnail(doc):
+        store_thumbnail(store=store, doc=doc)
+        whitenoise_thumbs.add_file_to_dictionary(
+            url="/" + doc["thumbnail_identifier"],
+            path=os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"])
+        )
+
     async def _upload_document_api(req, resp):
         if req.method == "post":
 
@@ -158,14 +166,6 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
                 resp.media = {"error": str(err)}
                 resp.status_code = api.status_codes.HTTP_400
                 return
-
-            @api.background.task
-            def create_doc_thumbnail(doc):
-                store_thumbnail(store=store, doc=doc)
-                whitenoise_thumbs.add_file_to_dictionary(
-                    url="/" + doc["thumbnail_identifier"],
-                    path=os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"])
-                )
 
             whitenoise_files.add_file_to_dictionary(
                 url="/" + doc["file_identifier"],
@@ -196,7 +196,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 
     async def _recreate_all_thumbnails():
         for doc in store.documents.values():
-            store_thumbnail(doc=doc, store=store)
+            create_doc_thumbnail(doc)
 
     @api.route("/api/v1/recreate_thumbnails")
     async def recreate_thumbnails(req, resp):
