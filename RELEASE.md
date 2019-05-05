@@ -1,3 +1,3 @@
 RELEASE_TYPE: patch
 
-Styling tweaks to the grid view.
+Styling and design tweaks in the UI, but no functional changes.
