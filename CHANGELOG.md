@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.4.1 - 2019-05-05
+
+Styling and design tweaks in the UI, but no functional changes.
+
 ## v1.4.0 - 2019-04-30
 
 Add a `--view_option` flag to the CLI, which allows you to decide whether the table or grid view should be the default view.
