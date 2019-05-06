@@ -64,3 +64,9 @@ def test_sets_default_view_option(runner, store, view_option):
 def test_unrecognised_view_option_is_rejected(runner, store):
     result = runner.invoke(api.run_api, [store.root, "--default_view", "mosaic"])
     assert result.exit_code == 2
+
+
+def test_sets_port(runner, store):
+    result = runner.invoke(api.run_api, [store.root, "--port", 5000])
+    assert result.exit_code == 0
+    assert "'port': 5000" in result.output

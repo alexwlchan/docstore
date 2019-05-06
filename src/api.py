@@ -213,13 +213,14 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 @click.argument("root", required=True)
 @click.option("--title", default="Alex’s documents")
 @click.option("--default_view", default="table", type=click.Choice(["table", "grid"]))
-def run_api(root, title, default_view):
+@click.option("--port", default=8072)
+def run_api(root, title, default_view, port):
     root = os.path.normpath(root)
 
     store = TaggedDocumentStore(root)
     api = create_api(store, display_title=title, default_view=default_view)
 
-    api.run()
+    api.run(port=port)
 
 
 if __name__ == "__main__":  # pragma: no cover
