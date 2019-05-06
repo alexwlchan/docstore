@@ -1,31 +1,41 @@
 # docstore
 
-This is a small Python web app for managing my scanned documents.
+This is a small Python web app for managing my scanned documents and other files.
 
-I wanted a way to upload PDFs, add a few tags, then filter by those tags.
-It includes small thumbnails to help me identify images.
+You can upload files through a web UI or HTTP endpoint, add a few tags, then filter by those tags.
+It includes small thumbnails to help identify files.
 
 ![](screenshot.png)
 
-It was a chance for me to play with [Responder](https://github.com/kennethreitz/responder) and newer versions of [Bootstrap](https://getbootstrap.com/) in a quick tool.
+It was originally written for me to play with [Responder](https://github.com/kennethreitz/responder) and newer versions of [Bootstrap](https://getbootstrap.com/), and now I use it to store.
 
-You can read some of what I learnt in the [what I learnt][what-i-learnt.md] file.
+You can read some of what I learnt in the [what I learnt](what-i-learnt.md) file.
 
+
+
+## Ideas
+
+*   The underlying storage should be independent of my code.
+    If all my code is thrown away, the data format should be simple enough for anybody to parse and interpret.
+
+*   Filesystems get antsy about special characters, so better to store documents internally with UUID filenames, and store the original filename in the database.
+    This can be surfaced with the `Content-Disposition` header when somebody downloads the image.
+
+*   Code for storing documents should be very robust.  Practically speaking, that means:
+
+    -   Test everything.  100% line and branch coverage as a minimum.
+    -   SHA256 checksums throughout so you can detect file corruption.
 
 
 ## Usage
 
-Build the Docker image by running:
+You can run the published Docker images like so:
 
 ```console
-$ make build
+$ docker run --publish 8072:8072 --volume $(pwd)/documents:/documents greengloves/docstore:<VERSION>
 ```
 
-Then start the app by running:
-
-```console
-$ docker run --detach --publish 8072:8072 --volume $(pwd)/documents:/documents docstore
-```
+You can see the versions in [the changelog](CHANGELOG.md).
 
 To view your documents, open <http://localhost:8072> in a browser.
 
