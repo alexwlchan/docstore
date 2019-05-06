@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.6.0 - 2019-05-06
+
+Add a `--port` flag for selecting the port to run the web app on.
+
 ## v1.5.0 - 2019-05-06
 
 This patch improves the thumbnail generator, by using ImageMagick rather than Pillow for image resizing.  Thumbnail creation is a bit slower but higher quality.  A nice side effect is that you can now get thumbnails for animated GIFs
