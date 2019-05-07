@@ -95,8 +95,8 @@ class TaggedDocumentStore:
         os.makedirs(self.thumbnails_dir, exist_ok=True)
 
         self.documents = {
-            docid: TaggedDocument(doc)
-            for docid, doc in existing.items()
+            doc_id: TaggedDocument(doc_id=doc_id, data=data)
+            for doc_id, data in existing.items()
         }
 
     @property

@@ -24,6 +24,11 @@ def test_tagged_document_inequality_with_other_types():
     assert d1 != 2
 
 
+def test_inconsistent_id_is_valuerror():
+    with pytest.raises(ValueError, match=r"^IDs must match:"):
+        TaggedDocument({"id": "1"}, doc_id="2")
+
+
 def test_cant_put_tagged_document_in_set():
     d1 = TaggedDocument({"id": "1"})
     with pytest.raises(TypeError, match=r"^unhashable type:"):
@@ -159,3 +164,12 @@ def test_creates_necessary_directories(store, tmpdir):
     store = TaggedDocumentStore(root=str(tmpdir))
     assert os.path.exists(store.files_dir)
     assert os.path.exists(store.thumbnails_dir)
+
+
+def test_persists_id(tmpdir):
+    store = TaggedDocumentStore(root=str(tmpdir))
+    stored_doc = store.index_document({"name": "lexie"})
+
+    new_store = TaggedDocumentStore(root=str(tmpdir))
+    assert new_store.documents == {stored_doc.id: stored_doc}
+    assert stored_doc.id == new_store.documents[stored_doc.id].id
