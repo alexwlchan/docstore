@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v1.7.0 - 2019-05-07
+
+Change the internal data format so we don't store the document ID twice.
+
+This means the `"id"` won't be written to the body of the JSON value for
+a document, just stored in the database key.
+
 ## v1.5.0 - 2019-05-06
 
 This patch improves the thumbnail generator, by using ImageMagick rather than Pillow for image resizing.  Thumbnail creation is a bit slower but higher quality.  A nice side effect is that you can now get thumbnails for animated GIFs
