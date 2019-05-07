@@ -20,7 +20,8 @@ class TaggedDocument(MutableMapping):
             if data["id"] != doc_id:
                 raise ValueError(f"IDs must match: {data['id']!r} != {doc_id!r}")
             else:
-                self.id = data["id"]
+                del data["id"]
+                self.id = doc_id
         elif "id" in data:
             self.id = data["id"]
         elif doc_id is not None:

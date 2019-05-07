@@ -29,6 +29,11 @@ def test_inconsistent_id_is_valuerror():
         TaggedDocument({"id": "1"}, doc_id="2")
 
 
+def test_removes_id_field_if_present():
+    d = TaggedDocument({"id": "1", "color": "red"}, doc_id="1")
+    assert "id" not in d.data
+
+
 def test_cant_put_tagged_document_in_set():
     d1 = TaggedDocument({"id": "1"})
     with pytest.raises(TypeError, match=r"^unhashable type:"):
