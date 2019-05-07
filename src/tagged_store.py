@@ -11,12 +11,22 @@ import attr
 
 @attr.s(init=False, cmp=False)
 class TaggedDocument(MutableMapping):
+    id = attr.ib()
     data = attr.ib()
     tags = attr.ib()
 
-    def __init__(self, data):
-        if "id" not in data:
-            data["id"] = str(uuid.uuid4())
+    def __init__(self, data, doc_id=None):
+        if ("id" in data) and (doc_id is not None):
+            if data["id"] != doc_id:
+                raise ValueError(f"IDs must match: {data['id']!r} != {doc_id!r}")
+            else:
+                self.id = data["id"]
+        elif "id" in data:
+            self.id = data["id"]
+        elif doc_id is not None:
+            self.id = doc_id
+        else:
+            self.id = str(uuid.uuid4())
 
         if "date_created" not in data:
             data["date_created"] = dt.datetime.now().isoformat()
@@ -41,10 +51,6 @@ class TaggedDocument(MutableMapping):
 
     def __iter__(self):
         return iter(self.data)
-
-    @property
-    def id(self):
-        return self.data["id"]
 
     @property
     def date_created(self):
