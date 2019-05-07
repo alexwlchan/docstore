@@ -130,9 +130,9 @@ class TaggedDocumentStore:
         # persisted to disk.
         self.documents = new_documents
 
-    def index_document(self, doc):
+    def index_document(self, doc, doc_id=None):
         if isinstance(doc, dict):
-            doc = TaggedDocument(doc)
+            doc = TaggedDocument(doc, doc_id=doc_id)
 
         if not isinstance(doc, TaggedDocument):
             raise TypeError("doc=%r is %s, expected TaggedDocument" % (doc, type(doc)))
@@ -141,6 +141,8 @@ class TaggedDocumentStore:
         new_documents[doc.id] = doc
 
         self.save(new_documents)
+
+        return doc
 
     def search_documents(self, query):
         return [
