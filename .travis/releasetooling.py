@@ -117,7 +117,7 @@ def parse_release_file():
             print("Unrecognised release type %r" % (release_type,))
             sys.exit(1)
         del release_lines[0]
-        release_contents = "\n".join(release_lines).strip()
+        release_contents = "".join(release_lines).strip()
     else:
         print(
             "RELEASE.md does not start by specifying release type. The first "
