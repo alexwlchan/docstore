@@ -11,12 +11,23 @@ import attr
 
 @attr.s(init=False, cmp=False)
 class TaggedDocument(MutableMapping):
+    id = attr.ib()
     data = attr.ib()
     tags = attr.ib()
 
-    def __init__(self, data):
-        if "id" not in data:
-            data["id"] = str(uuid.uuid4())
+    def __init__(self, data, doc_id=None):
+        if ("id" in data) and (doc_id is not None):
+            if data["id"] != doc_id:
+                raise ValueError(f"IDs must match: {data['id']!r} != {doc_id!r}")
+            else:
+                del data["id"]
+                self.id = doc_id
+        elif "id" in data:
+            self.id = data["id"]
+        elif doc_id is not None:
+            self.id = doc_id
+        else:
+            self.id = str(uuid.uuid4())
 
         if "date_created" not in data:
             data["date_created"] = dt.datetime.now().isoformat()
@@ -41,10 +52,6 @@ class TaggedDocument(MutableMapping):
 
     def __iter__(self):
         return iter(self.data)
-
-    @property
-    def id(self):
-        return self.data["id"]
 
     @property
     def date_created(self):
@@ -89,8 +96,8 @@ class TaggedDocumentStore:
         os.makedirs(self.thumbnails_dir, exist_ok=True)
 
         self.documents = {
-            docid: TaggedDocument(doc)
-            for docid, doc in existing.items()
+            doc_id: TaggedDocument(doc_id=doc_id, data=data)
+            for doc_id, data in existing.items()
         }
 
     @property
@@ -124,9 +131,9 @@ class TaggedDocumentStore:
         # persisted to disk.
         self.documents = new_documents
 
-    def index_document(self, doc):
+    def index_document(self, doc, doc_id=None):
         if isinstance(doc, dict):
-            doc = TaggedDocument(doc)
+            doc = TaggedDocument(doc, doc_id=doc_id)
 
         if not isinstance(doc, TaggedDocument):
             raise TypeError("doc=%r is %s, expected TaggedDocument" % (doc, type(doc)))
@@ -135,6 +142,8 @@ class TaggedDocumentStore:
         new_documents[doc.id] = doc
 
         self.save(new_documents)
+
+        return doc
 
     def search_documents(self, query):
         return [

@@ -24,6 +24,16 @@ def test_tagged_document_inequality_with_other_types():
     assert d1 != 2
 
 
+def test_inconsistent_id_is_valuerror():
+    with pytest.raises(ValueError, match=r"^IDs must match:"):
+        TaggedDocument({"id": "1"}, doc_id="2")
+
+
+def test_removes_id_field_if_present():
+    d = TaggedDocument({"id": "1", "color": "red"}, doc_id="1")
+    assert "id" not in d.data
+
+
 def test_cant_put_tagged_document_in_set():
     d1 = TaggedDocument({"id": "1"})
     with pytest.raises(TypeError, match=r"^unhashable type:"):
@@ -46,23 +56,16 @@ def test_can_match_tag_query(data, query, expected_result):
 
 
 def test_can_read_values():
-    doc = TaggedDocument({"id": "1"})
-    assert doc["id"] == "1"
-    with pytest.raises(KeyError, match="foo"):
-        doc["foo"]
+    doc = TaggedDocument({"x": "xray"})
+    assert doc["x"] == "xray"
+    with pytest.raises(KeyError, match="y"):
+        doc["y"]
 
 
 def test_can_set_values():
     doc = TaggedDocument({"id": "1"})
     doc["foo"] = "bar"
     assert doc.data["foo"] == "bar"
-
-
-def test_creates_id_if_not_assigned():
-    doc1 = TaggedDocument(data={})
-    assert "id" in doc1.data
-    doc2 = TaggedDocument(doc1)
-    assert doc1 == doc2
 
 
 def test_can_delete_value():
@@ -74,10 +77,10 @@ def test_can_delete_value():
 
 def test_doc_has_length():
     doc = TaggedDocument(data={})
-    assert len(doc) == 2  # ID and created date
+    assert len(doc) == 1  # Created date
     doc["foo"] = "bar"
     doc["bar"] = "baz"
-    assert len(doc) == 4
+    assert len(doc) == 3
 
 
 def test_can_iterate_over_doc():
@@ -98,19 +101,13 @@ def test_gets_empty_documents_on_startup(store):
 
 
 def test_can_store_a_document(store):
-    doc = {
-        "id": "123",
-        "tags": ["foo", "bar"]
-    }
+    doc = {"tags": ["foo", "bar"]}
     store.index_document(doc)
     assert doc in store.documents.values()
 
 
 def test_documents_are_saved_to_disk(store):
-    doc = {
-        "id": "123",
-        "tags": ["foo", "bar"]
-    }
+    doc = {"tags": ["foo", "bar"]}
     store.index_document(doc)
 
     new_store = TaggedDocumentStore(root=store.root)
@@ -118,9 +115,9 @@ def test_documents_are_saved_to_disk(store):
 
 
 def test_can_search_documents(store):
-    doc1 = {"id": "1", "tags": ["foo", "bar"]}
-    doc2 = {"id": "2", "tags": ["foo", "baz"]}
-    doc3 = {"id": "3", "tags": []}
+    doc1 = {"tags": ["foo", "bar"]}
+    doc2 = {"tags": ["foo", "baz"]}
+    doc3 = {"tags": []}
 
     store.index_document(doc1)
     store.index_document(doc2)
@@ -138,18 +135,30 @@ def test_indexing_a_non_taggeddocument_is_typeerror(store, doc):
 
 
 def test_assigns_uuid_to_stored_document(store):
-    doc = {"id": "1", "color": "red"}
-    store.index_document(doc)
+    doc = {"color": "red"}
+    stored_doc = store.index_document(doc)
 
-    assert "id" in doc
+    print(stored_doc.id)
 
 
 def test_can_update_document_by_uuid(store):
     doc = {"color": "blue"}
-    store.index_document(doc)
+    stored_doc = store.index_document(doc)
 
-    doc_new = {"id": doc["id"], "color": "red"}
+    doc_new = {"id": stored_doc.id, "color": "red"}
     store.index_document(doc_new)
+
+    assert len(store.documents) == 1
+    assert doc not in store.documents.values()
+    assert doc_new in store.documents.values()
+
+
+def test_can_update_document_by_doc_id(store):
+    doc = {"color": "green"}
+    stored_doc = store.index_document(doc)
+
+    doc_new = {"color": "yellow"}
+    store.index_document(doc_new, doc_id=stored_doc.id)
 
     assert len(store.documents) == 1
     assert doc not in store.documents.values()
@@ -160,3 +169,12 @@ def test_creates_necessary_directories(store, tmpdir):
     store = TaggedDocumentStore(root=str(tmpdir))
     assert os.path.exists(store.files_dir)
     assert os.path.exists(store.thumbnails_dir)
+
+
+def test_persists_id(tmpdir):
+    store = TaggedDocumentStore(root=str(tmpdir))
+    stored_doc = store.index_document({"name": "lexie"})
+
+    new_store = TaggedDocumentStore(root=str(tmpdir))
+    assert new_store.documents == {stored_doc.id: stored_doc}
+    assert stored_doc.id == new_store.documents[stored_doc.id].id

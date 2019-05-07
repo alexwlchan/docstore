@@ -106,7 +106,7 @@ def test_does_not_use_extension_if_cannot_detect_one(store):
     }
 
     doc = index_helpers.index_document(store=store, user_data=user_data)
-    assert doc["file_identifier"].endswith(doc["id"])
+    assert doc["file_identifier"].endswith(doc.id)
     assert "." not in doc["file_identifier"]
 
 
