@@ -18,7 +18,7 @@ import date_helpers
 from exceptions import UserError
 from index_helpers import store_thumbnail, index_new_document
 import search_helpers
-from tagged_store import to_json, TaggedDocumentStore
+from tagged_store import TaggedDocumentStore
 from version import __version__
 
 
@@ -195,7 +195,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         # in the "referer" header), along with a message to display.
         try:
             original_url = hyperlink.URL.from_text(req.headers["referer"])
-            new_url = original_url.add("_message", to_json(resp.media))
+            new_url = original_url.add("_message", json.dumps(resp.media))
             resp.headers["Location"] = str(new_url)
             resp.status_code = api.status_codes.HTTP_302
         except KeyError:

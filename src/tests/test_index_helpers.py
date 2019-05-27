@@ -6,7 +6,7 @@ import pytest
 
 from exceptions import UserError
 import index_helpers
-from tagged_store import TaggedDocument, TaggedDocumentStore
+from tagged_store import TaggedDocumentStore
 
 
 def test_create_thumbnail(store, file_identifier):

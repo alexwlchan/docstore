@@ -8,7 +8,6 @@ import shutil
 import magic
 
 from exceptions import UserError
-from tagged_store import TaggedDocument
 from thumbnails import create_thumbnail
 
 
