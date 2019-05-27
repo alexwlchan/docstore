@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import json
 import os
 import pathlib
 import urllib.parse
@@ -15,9 +16,8 @@ from whitenoise import WhiteNoise
 import date_helpers
 from exceptions import UserError
 from index_helpers import store_thumbnail, index_document
-from json_helpers import from_json, to_json
 import search_helpers
-from tagged_store import TaggedDocumentStore
+from tagged_store import to_json, TaggedDocumentStore
 from version import __version__
 
 
@@ -82,7 +82,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 
         params = {k: v for k, v in req.params.items()}
         try:
-            params["_message"] = from_json(params["_message"])
+            params["_message"] = json.loads(params["_message"])
         except KeyError:
             pass
 
