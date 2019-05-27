@@ -219,3 +219,17 @@ class TestStoreDocumentForm:
         soup = bs4.BeautifulSoup(resp.text, "html.parser")
         tag_field = soup.find("input", attrs={"name": "tags"})
         assert tag_field.attrs["value"] == "colour:blue"
+
+
+def test_omits_source_url_if_empty(sess, pdf_file):
+    sess.post(
+        "/upload",
+        files={"file": ("mydocument.pdf", pdf_file)},
+        data={"title": "my great document", "source_url": ""}
+    )
+
+    resp = sess.get("/")
+
+    soup = bs4.BeautifulSoup(resp.text, "html.parser")
+    assert len(soup.find_all("tr")) == 2  # header + single row
+    assert soup.find("span", attrs={"class": "source_url"}) is None
