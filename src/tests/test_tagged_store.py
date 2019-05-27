@@ -89,11 +89,10 @@ def test_can_iterate_over_doc():
 
 
 def test_root_path_properties(tmpdir):
-    root = str(tmpdir)
-    store = TaggedDocumentStore(root)
-    assert store.db_path == os.path.join(root, "documents.json")
-    assert store.files_dir == os.path.join(root, "files")
-    assert store.thumbnails_dir == os.path.join(root, "thumbnails")
+    store = TaggedDocumentStore(root=tmpdir)
+    assert store.db_path == tmpdir.join("documents.json")
+    assert store.files_dir == tmpdir.join("files")
+    assert store.thumbnails_dir == tmpdir.join("thumbnails")
 
 
 def test_gets_empty_documents_on_startup(store):

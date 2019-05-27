@@ -3,7 +3,7 @@
 from collections.abc import MutableMapping
 import datetime as dt
 import json
-import os
+from pathlib import Path
 import uuid
 
 import attr
@@ -85,27 +85,27 @@ class TaggedDocumentStore:
     documents = attr.ib()
 
     def __init__(self, root):
-        self.root = root
+        self.root = Path(root)
 
         try:
             self.documents = json.load(open(self.db_path))
         except FileNotFoundError:
             self.documents = {}
 
-        os.makedirs(self.files_dir, exist_ok=True)
-        os.makedirs(self.thumbnails_dir, exist_ok=True)
+        self.files_dir.mkdir(exist_ok=True)
+        self.thumbnails_dir.mkdir(exist_ok=True)
 
     @property
     def db_path(self):
-        return os.path.join(self.root, "documents.json")
+        return self.root / "documents.json"
 
     @property
     def files_dir(self):
-        return os.path.join(self.root, "files")
+        return self.root / "files"
 
     @property
     def thumbnails_dir(self):
-        return os.path.join(self.root, "thumbnails")
+        return self.root / "thumbnails"
 
     def save(self, new_documents):
         json_string = json.dumps(
@@ -116,14 +116,12 @@ class TaggedDocumentStore:
         )
 
         # Write to the database atomically.
-        tmp_path = ".".join([self.db_path, str(uuid.uuid4()), "tmp"])
-        with open(tmp_path, "w") as outfile:
-            outfile.write(json_string)
+        tmp_path = self.db_path.parent / (
+            self.db_path.name + str(uuid.uuid4()) + ".tmp")
+        tmp_path.write_text(json_string)
+        tmp_path.rename(self.db_path)
 
-        os.rename(tmp_path, self.db_path)
-
-        # We deliberately don't write to the in-memory database until it's been
-        # persisted to disk.
+        # Don't write to the in-memory database until it's been saved to disk.
         self.documents = new_documents
 
     def index_document(self, doc, doc_id=None):
