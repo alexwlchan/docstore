@@ -1,8 +1,8 @@
 # -*- encoding: utf-8
 
-import hashlib
 import io
 import json
+import pathlib
 import time
 
 import bs4
@@ -10,6 +10,7 @@ import hyperlink
 import pytest
 
 import api as service
+from hash_helpers import sha256
 
 
 @pytest.fixture()
@@ -46,18 +47,12 @@ def test_uploading_file_with_wrong_name_is_400(api):
     }
 
 
-def pdf_hash():
-    h = hashlib.sha256()
-    h.update(open("tests/files/snakes.pdf", "rb").read())
-    return h.hexdigest()
-
-
 @pytest.mark.parametrize('data', [
     {},
     {"title": "Hello world"},
     {"tags": ["foo"]},
     {"filename": "foo.pdf"},
-    {"sha256_checksum": pdf_hash()},
+    {"sha256_checksum": sha256(pathlib.Path("tests/files/snakes.pdf").open("rb"))},
 ])
 def test_can_upload_without_all_parameters(api, data, pdf_file):
     resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
@@ -74,14 +69,13 @@ def test_incorrect_checksum_is_400(api, pdf_file):
 
 
 def test_stores_document_in_store(api, store, pdf_file, pdf_path):
-    h = hashlib.sha256()
-    h.update(open(pdf_path, "rb").read())
+    hex_hash = sha256(pdf_path.open("rb"))
 
     data = {
         "title": "Hello world",
         "tags": "foo bar baz",
         "filename": "foo.pdf",
-        "sha256_checksum": h.hexdigest(),
+        "sha256_checksum": hex_hash,
     }
     resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
     assert resp.status_code == 201

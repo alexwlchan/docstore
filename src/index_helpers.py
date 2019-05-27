@@ -1,7 +1,6 @@
 # -*- encoding: utf-8
 
 import datetime as dt
-import hashlib
 import mimetypes
 import pathlib
 import shutil
@@ -9,6 +8,7 @@ import shutil
 import magic
 
 from exceptions import UserError
+from hash_helpers import sha256
 from thumbnails import create_thumbnail
 
 
@@ -70,18 +70,15 @@ def index_new_document(store, doc_id, doc):
 
     # Add a SHA256 hash of the PDF.  This allows integrity checking later
     # and makes it easy to detect duplicates.
-    # Note: this slurps the entire PDF in at once.  Fine for small files;
-    # might be worth revisiting if I ever get something unusually large.
-    h = hashlib.sha256()
-    h.update(open(complete_file_identifier, "rb").read())
+    actual_sha256 = sha256(complete_file_identifier.open("rb"))
     try:
-        if doc["sha256_checksum"] != h.hexdigest():
+        if doc["sha256_checksum"] != actual_sha256:
             raise UserError(
                 "Incorrect SHA256 hash on upload!  Got %s, calculated %s." %
-                (doc['sha256_checksum'], h.hexdigest())
+                (doc['sha256_checksum'], actual_sha256)
             )
     except KeyError:
-        doc["sha256_checksum"] = h.hexdigest()
+        doc["sha256_checksum"] = actual_sha256
 
     store.index_document(doc_id=doc_id, doc=doc)
     return doc
