@@ -2,6 +2,7 @@
 # -*- encoding: utf-8
 
 import os
+import pathlib
 import urllib.parse
 
 import click
@@ -134,7 +135,10 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
     @api.route("/documents/{document_id}")
     def individual_document(req, resp, *, document_id):
         try:
-            resp.media = store.documents[document_id].data
+            resp.media = {
+                k: (str(v) if isinstance(v, pathlib.Path) else v)
+                for k, v in store.documents[document_id].data.items()
+            }
         except KeyError:
             resp.media = {"error": "Document %s not found!" % document_id}
             resp.status_code = api.status_codes.HTTP_404
