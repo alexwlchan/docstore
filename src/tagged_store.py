@@ -2,11 +2,12 @@
 
 from collections.abc import MutableMapping
 import datetime as dt
-import json
 import pathlib
 import uuid
 
 import attr
+
+from json_helpers import from_json, to_json
 
 
 @attr.s(init=False, cmp=False)
@@ -73,12 +74,6 @@ class TaggedDocument(MutableMapping):
         return all(q in self.tags for q in query)
 
 
-class TaggedDocumentEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, TaggedDocument):
-            return obj.data
-
-
 @attr.s(init=False)
 class TaggedDocumentStore:
     root = attr.ib()
@@ -88,7 +83,7 @@ class TaggedDocumentStore:
         self.root = pathlib.Path(root)
 
         try:
-            self.documents = json.load(open(self.db_path))
+            self.documents = from_json(open(self.db_path))
         except FileNotFoundError:
             self.documents = {}
 
@@ -108,12 +103,7 @@ class TaggedDocumentStore:
         return self.root / "thumbnails"
 
     def save(self, new_documents):
-        json_string = json.dumps(
-            new_documents,
-            indent=2,
-            sort_keys=True,
-            cls=TaggedDocumentEncoder
-        )
+        json_string = to_json(new_documents, indent=2, sort_keys=True)
 
         # Write to the database atomically.
         tmp_path = self.db_path.parent / (
@@ -142,5 +132,10 @@ class TaggedDocumentStore:
         return [
             doc
             for doc in self.documents.values()
-            if doc.matches_tag_query(query)
+            if matches_tag_query(doc, query)
         ]
+
+
+def matches_tag_query(doc, query):
+    tags = set(doc.get("tags", []))
+    return all(q in tags for q in query)

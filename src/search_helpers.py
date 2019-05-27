@@ -22,7 +22,7 @@ def search_store(store, options):
 
     tags = collections.defaultdict(int)
     for doc in all_documents:
-        for t in doc.tags:
+        for t in doc.get("tags", []):
             tags[t] += 1
 
     sort_field, sort_order = options.sort_order

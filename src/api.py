@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
-import json
 import os
 import urllib.parse
 
@@ -15,6 +14,7 @@ from whitenoise import WhiteNoise
 import date_helpers
 from exceptions import UserError
 from index_helpers import store_thumbnail, index_document
+from json_helpers import from_json, to_json
 import search_helpers
 from tagged_store import TaggedDocumentStore
 from version import __version__
@@ -56,7 +56,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
     whitenoise_files.add_files(store.files_dir)
     api.mount("/files", whitenoise_files)
 
-    api.file_url = lambda doc: "files/" + doc["file_identifier"]
+    api.file_url = lambda doc: "files/" + str(doc["file_identifier"])
 
     whitenoise_thumbs = WhiteNoise(application=api._default_wsgi_app)
     whitenoise_thumbs.add_files(store.thumbnails_dir)
@@ -81,7 +81,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 
         params = {k: v for k, v in req.params.items()}
         try:
-            params["_message"] = json.loads(params["_message"])
+            params["_message"] = from_json(params["_message"])
         except KeyError:
             pass
 
@@ -168,8 +168,8 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
                 return
 
             whitenoise_files.add_file_to_dictionary(
-                url="/" + doc["file_identifier"],
-                path=os.path.join(store.files_dir, doc["file_identifier"])
+                url="/" + str(doc["file_identifier"]),
+                path=str(store.files_dir / doc["file_identifier"])
             )
 
             create_doc_thumbnail(doc)
@@ -188,7 +188,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         # in the "referer" header), along with a message to display.
         try:
             original_url = hyperlink.URL.from_text(req.headers["referer"])
-            new_url = original_url.add("_message", json.dumps(resp.media))
+            new_url = original_url.add("_message", to_json(resp.media))
             resp.headers["Location"] = str(new_url)
             resp.status_code = api.status_codes.HTTP_302
         except KeyError:

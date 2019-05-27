@@ -2,7 +2,6 @@
 
 import hashlib
 import mimetypes
-import os
 import pathlib
 import shutil
 
@@ -43,7 +42,7 @@ def index_document(store, user_data):
 
     try:
         # Try to guess an extension based on the filename provided by the user.
-        _, extension = os.path.splitext(doc["filename"])
+        extension = pathlib.Path(doc["filename"]).suffix
     except KeyError:
 
         # If we didn't get a filename from the user, try to guess one based
@@ -59,10 +58,10 @@ def index_document(store, user_data):
     if extension is None:
         extension = ""
 
-    file_identifier = os.path.join(doc.id[0], doc.id + extension)
-    complete_file_identifier = os.path.join(store.files_dir, file_identifier)
-    os.makedirs(os.path.dirname(complete_file_identifier), exist_ok=True)
-    open(complete_file_identifier, "wb").write(file_data)
+    file_identifier = pathlib.Path(doc.id[0]) / (doc.id + extension)
+    complete_file_identifier = store.files_dir / file_identifier
+    complete_file_identifier.parent.mkdir(exist_ok=True)
+    complete_file_identifier.write_bytes(file_data)
     doc["file_identifier"] = file_identifier
 
     # Add a SHA256 hash of the PDF.  This allows integrity checking later

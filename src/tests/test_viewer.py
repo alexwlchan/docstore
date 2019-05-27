@@ -22,6 +22,7 @@ PARAMS = [
 def sess(api):
     def raise_for_status(resp, *args, **kwargs):
         resp.raise_for_status()
+        assert resp.text != "null"
 
     api.requests.hooks["response"].append(raise_for_status)
     return api.requests
