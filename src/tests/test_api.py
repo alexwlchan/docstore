@@ -185,6 +185,7 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
 
     resp = api.requests.get("/")
     assert resp.status_code == 200
+    assert resp.text != "null"
 
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
 

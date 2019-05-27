@@ -3,7 +3,7 @@
 from collections.abc import MutableMapping
 import datetime as dt
 import json
-from pathlib import Path
+import pathlib
 import uuid
 
 import attr
@@ -75,8 +75,8 @@ class TaggedDocument(MutableMapping):
 
 class TaggedDocumentEncoder(json.JSONEncoder):
     def default(self, obj):
-        assert isinstance(obj, TaggedDocument)
-        return obj.data
+        if isinstance(obj, TaggedDocument):
+            return obj.data
 
 
 @attr.s(init=False)
@@ -85,7 +85,7 @@ class TaggedDocumentStore:
     documents = attr.ib()
 
     def __init__(self, root):
-        self.root = Path(root)
+        self.root = pathlib.Path(root)
 
         try:
             self.documents = json.load(open(self.db_path))

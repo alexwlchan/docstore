@@ -31,7 +31,7 @@ def test_thumbnail_uses_appropriate_extension(store):
     doc = index_helpers.index_document(store=store, user_data=user_data)
     index_helpers.store_thumbnail(store=store, doc=doc)
 
-    assert store.documents[doc.id]["thumbnail_identifier"].endswith(".png")
+    assert store.documents[doc.id]["thumbnail_identifier"].suffix == ".png"
 
 
 def test_removes_old_thumbnail_first(store, file_identifier):

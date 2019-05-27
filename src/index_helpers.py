@@ -3,6 +3,7 @@
 import hashlib
 import mimetypes
 import os
+import pathlib
 import shutil
 
 import magic
@@ -14,24 +15,22 @@ from thumbnails import create_thumbnail
 
 def store_thumbnail(store, doc):
     try:
-        os.unlink(os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"]))
+        (store.thumbnails_dir / doc["thumbnail_identifier"]).unlink()
     except KeyError:
         pass
 
-    file_identifier = doc["file_identifier"]
-    absolute_file_identifier = os.path.join(store.files_dir, file_identifier)
+    absolute_file_identifier = store.files_dir / doc["file_identifier"]
 
-    thumb_dir = os.path.join(store.thumbnails_dir, doc.id[0])
-    os.makedirs(thumb_dir, exist_ok=True)
+    thumb_dir = store.thumbnails_dir / doc.id[0]
+    thumb_dir.mkdir(exist_ok=True)
 
     thumbnail = create_thumbnail(absolute_file_identifier)
-    _, ext = os.path.splitext(thumbnail)
-    thumb_path = os.path.join(doc.id[0], doc.id + ext)
+    thumb_path = pathlib.Path(doc.id[0]) / (doc.id + thumbnail.suffix)
 
-    absolute_thumb_path = os.path.join(store.thumbnails_dir, thumb_path)
+    absolute_thumb_path = store.thumbnails_dir / thumb_path
 
     shutil.move(thumbnail, absolute_thumb_path)
-    assert os.path.exists(absolute_thumb_path)
+    assert absolute_thumb_path.exists()
 
     doc["thumbnail_identifier"] = thumb_path
     store.index_document(doc)

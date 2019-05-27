@@ -41,7 +41,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         # For encoding as UTF-8, see https://stackoverflow.com/a/49481671/1558022
         doc_id, _ = os.path.splitext(os.path.basename(url))
         try:
-            filename = store.documents[doc_id].data["filename"]
+            filename = store.documents[doc_id]["filename"]
         except KeyError:
             pass
         else:
@@ -62,7 +62,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
     whitenoise_thumbs.add_files(store.thumbnails_dir)
     api.mount("/thumbnails", whitenoise_thumbs)
 
-    api.thumbnail_url = lambda doc: "thumbnails/" + doc["thumbnail_identifier"]
+    api.thumbnail_url = lambda doc: "thumbnails/" + str(doc["thumbnail_identifier"])
 
     @api.route("/")
     def list_documents(req, resp):
@@ -143,8 +143,8 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
     def create_doc_thumbnail(doc):
         store_thumbnail(store=store, doc=doc)
         whitenoise_thumbs.add_file_to_dictionary(
-            url="/" + doc["thumbnail_identifier"],
-            path=os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"])
+            url="/" + str(doc["thumbnail_identifier"]),
+            path=str(store.thumbnails_dir / doc["thumbnail_identifier"])
         )
 
     async def _upload_document_api(req, resp):
