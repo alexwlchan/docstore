@@ -6,7 +6,7 @@ import bs4
 import pytest
 
 import api as service
-from index_helpers import index_document
+from index_helpers import index_new_document
 
 
 PARAMS = [
@@ -48,7 +48,7 @@ class TestViewOptions:
         assert '<table class="table">' not in resp.text
 
     def test_table_view(self, sess, store):
-        index_document(store=store, user_data={
+        index_new_document(store=store, user_data={
             "file": b"hello world",
             "title": "foo",
             "tags": ["bar", "baz", "bat"]
@@ -57,24 +57,24 @@ class TestViewOptions:
         self._assert_is_table(resp)
 
     def test_grid_view(self, sess, store):
-        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(store=store, user_data={"file": b"hello world", "title": "foo"})
         resp = sess.get("/", params={"view": "grid"})
         self._assert_is_grid(resp)
 
     def test_default_is_table_view(self, store):
-        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(store=store, user_data={"file": b"hello world", "title": "foo"})
         api = service.create_api(store)
         resp = api.requests.get("/")
         self._assert_is_table(resp)
 
     def test_can_set_default_as_table_view(self, store):
-        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(store=store, user_data={"file": b"hello world", "title": "foo"})
         api = service.create_api(store, default_view="table")
         resp = api.requests.get("/")
         self._assert_is_table(resp)
 
     def test_can_set_default_as_grid_view(self, store):
-        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(store=store, user_data={"file": b"hello world", "title": "foo"})
         api = service.create_api(store, default_view="grid")
         resp = api.requests.get("/")
         self._assert_is_grid(resp)
@@ -89,7 +89,7 @@ def test_uses_display_title(store):
 
 
 def test_can_filter_by_tag(sess, store):
-    index_document(
+    index_new_document(
         store=store,
         user_data={
             "file": b"hello world",
@@ -97,7 +97,7 @@ def test_can_filter_by_tag(sess, store):
             "tags": ["bar", "baz"]
         }
     )
-    index_document(
+    index_new_document(
         store=store,
         user_data={
             "file": b"hi world",
@@ -117,7 +117,7 @@ def test_can_filter_by_tag(sess, store):
 
 @pytest.mark.parametrize("params", PARAMS)
 def test_shows_column_headers(sess, store, params):
-    index_document(
+    index_new_document(
         store=store,
         user_data={
             "file": b"hello world",
@@ -136,7 +136,7 @@ def test_shows_column_headers(sess, store, params):
 
 @pytest.mark.parametrize("params", PARAMS)
 def test_all_urls_are_relative(sess, store, params):
-    index_document(
+    index_new_document(
         store=store,
         user_data={
             "file": b"hello world",

@@ -35,7 +35,7 @@ def store_thumbnail(store, doc):
     store.index_document(doc)
 
 
-def index_document(store, user_data):
+def index_new_document(store, user_data):
     doc = TaggedDocument(user_data)
 
     file_data = user_data.pop("file")

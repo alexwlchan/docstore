@@ -15,7 +15,7 @@ from whitenoise import WhiteNoise
 
 import date_helpers
 from exceptions import UserError
-from index_helpers import store_thumbnail, index_document
+from index_helpers import store_thumbnail, index_new_document
 import search_helpers
 from tagged_store import to_json, TaggedDocumentStore
 from version import __version__
@@ -165,7 +165,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 
             try:
                 prepared_data = prepare_upload_data(user_data)
-                doc = index_document(store=store, user_data=prepared_data)
+                doc = index_new_document(store=store, user_data=prepared_data)
             except UserError as err:
                 resp.media = {"error": str(err)}
                 resp.status_code = api.status_codes.HTTP_400
