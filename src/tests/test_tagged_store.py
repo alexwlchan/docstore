@@ -1,7 +1,5 @@
 # -*- encoding: utf-8
 
-import os
-
 import pytest
 
 from tagged_store import TaggedDocument, TaggedDocumentStore
@@ -166,8 +164,8 @@ def test_can_update_document_by_doc_id(store):
 
 def test_creates_necessary_directories(store, tmpdir):
     store = TaggedDocumentStore(root=str(tmpdir))
-    assert os.path.exists(store.files_dir)
-    assert os.path.exists(store.thumbnails_dir)
+    assert store.files_dir.exists()
+    assert store.thumbnails_dir.exists()
 
 
 def test_persists_id(tmpdir):

@@ -3,7 +3,6 @@
 import hashlib
 import io
 import json
-import os
 import time
 
 import bs4
@@ -141,9 +140,9 @@ def test_recreates_thumbnail(api, store, pdf_file):
         if "thumbnail_identifier" in stored_doc.data:
             break
 
-    thumb_path = os.path.join(store.thumbnails_dir, stored_doc["thumbnail_identifier"])
-    assert os.path.exists(thumb_path)
-    original_mtime = os.stat(thumb_path).st_mtime
+    thumb_path = store.thumbnails_dir / stored_doc["thumbnail_identifier"]
+    assert thumb_path.exists()
+    original_mtime = thumb_path.stat().st_mtime
 
     resp = api.requests.post("/api/v1/recreate_thumbnails")
     assert resp.status_code == 202
@@ -152,12 +151,12 @@ def test_recreates_thumbnail(api, store, pdf_file):
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
         try:
-            if os.stat(thumb_path).st_mtime != original_mtime:
+            if thumb_path.stat().st_mtime != original_mtime:
                 break
         except FileNotFoundError:
             pass
 
-    assert os.stat(thumb_path).st_mtime > original_mtime
+    assert thumb_path.stat().st_mtime > original_mtime
 
 
 def test_can_only_post_to_recreate_thumbnail(api):
