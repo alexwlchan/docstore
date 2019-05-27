@@ -1,50 +1,52 @@
 # -*- encoding: utf-8
 
-import hashlib
+import datetime as dt
 import mimetypes
-import os
+import pathlib
 import shutil
 
 import magic
 
 from exceptions import UserError
-from tagged_store import TaggedDocument
+from hash_helpers import sha256
 from thumbnails import create_thumbnail
 
 
-def store_thumbnail(store, doc):
+def store_thumbnail(store, doc_id, doc):
     try:
-        os.unlink(os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"]))
+        (store.thumbnails_dir / doc["thumbnail_identifier"]).unlink()
     except KeyError:
         pass
 
-    file_identifier = doc["file_identifier"]
-    absolute_file_identifier = os.path.join(store.files_dir, file_identifier)
+    absolute_file_identifier = store.files_dir / doc["file_identifier"]
 
-    thumb_dir = os.path.join(store.thumbnails_dir, doc.id[0])
-    os.makedirs(thumb_dir, exist_ok=True)
+    thumb_dir = store.thumbnails_dir / doc_id[0]
+    thumb_dir.mkdir(exist_ok=True)
 
     thumbnail = create_thumbnail(absolute_file_identifier)
-    _, ext = os.path.splitext(thumbnail)
-    thumb_path = os.path.join(doc.id[0], doc.id + ext)
+    thumb_path = pathlib.Path(doc_id[0]) / (doc_id + thumbnail.suffix)
 
-    absolute_thumb_path = os.path.join(store.thumbnails_dir, thumb_path)
+    absolute_thumb_path = store.thumbnails_dir / thumb_path
 
     shutil.move(thumbnail, absolute_thumb_path)
-    assert os.path.exists(absolute_thumb_path)
+    assert absolute_thumb_path.exists()
 
     doc["thumbnail_identifier"] = thumb_path
-    store.index_document(doc)
+    store.index_document(doc_id=doc_id, doc=doc)
 
 
-def index_document(store, user_data):
-    doc = TaggedDocument(user_data)
+def index_new_document(store, doc_id, doc):
+    if doc_id in store.documents:
+        raise ValueError(f"The store already has a document with id {doc_id}!")
 
-    file_data = user_data.pop("file")
+    assert "date_created" not in doc
+    doc["date_created"] = dt.datetime.now().isoformat()
+
+    file_data = doc.pop("file")
 
     try:
         # Try to guess an extension based on the filename provided by the user.
-        _, extension = os.path.splitext(doc["filename"])
+        extension = pathlib.Path(doc["filename"]).suffix
     except KeyError:
 
         # If we didn't get a filename from the user, try to guess one based
@@ -60,26 +62,23 @@ def index_document(store, user_data):
     if extension is None:
         extension = ""
 
-    file_identifier = os.path.join(doc.id[0], doc.id + extension)
-    complete_file_identifier = os.path.join(store.files_dir, file_identifier)
-    os.makedirs(os.path.dirname(complete_file_identifier), exist_ok=True)
-    open(complete_file_identifier, "wb").write(file_data)
+    file_identifier = pathlib.Path(doc_id[0]) / (doc_id + extension)
+    complete_file_identifier = store.files_dir / file_identifier
+    complete_file_identifier.parent.mkdir(exist_ok=True)
+    complete_file_identifier.write_bytes(file_data)
     doc["file_identifier"] = file_identifier
 
     # Add a SHA256 hash of the PDF.  This allows integrity checking later
     # and makes it easy to detect duplicates.
-    # Note: this slurps the entire PDF in at once.  Fine for small files;
-    # might be worth revisiting if I ever get something unusually large.
-    h = hashlib.sha256()
-    h.update(open(complete_file_identifier, "rb").read())
+    actual_sha256 = sha256(complete_file_identifier.open("rb"))
     try:
-        if doc["sha256_checksum"] != h.hexdigest():
+        if doc["sha256_checksum"] != actual_sha256:
             raise UserError(
                 "Incorrect SHA256 hash on upload!  Got %s, calculated %s." %
-                (doc['sha256_checksum'], h.hexdigest())
+                (doc['sha256_checksum'], actual_sha256)
             )
     except KeyError:
-        doc["sha256_checksum"] = h.hexdigest()
+        doc["sha256_checksum"] = actual_sha256
 
-    store.index_document(doc)
+    store.index_document(doc_id=doc_id, doc=doc)
     return doc

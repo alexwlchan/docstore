@@ -1,6 +1,6 @@
 # -*- encoding: utf-8
 
-import os
+import pathlib
 
 from PIL import Image
 import pytest
@@ -19,22 +19,22 @@ from thumbnails import create_thumbnail
     ]
 )
 def test_create_thumbnail(filename, expected_ext):
-    path = os.path.join("tests", "files", filename)
+    path = pathlib.Path("tests/files") / filename
     result = create_thumbnail(path)
-    assert result.endswith(expected_ext)
-    assert os.path.exists(result)
+    assert result.suffix == expected_ext
+    assert result.exists()
 
 
 def test_errors_if_cannot_create_thumbnail():
     with pytest.raises(UnsupportedMimeType):
-        create_thumbnail(os.path.join("tests", "files", "helloworld.rb"))
+        create_thumbnail(pathlib.Path("tests/files/helloworld.rb"))
 
 
 def test_creates_animated_gif_thumbnail():
-    path = os.path.join("tests", "files", "movingsun.gif")
+    path = pathlib.Path("tests/files/movingsun.gif")
     result = create_thumbnail(path)
 
-    assert result.endswith(".gif")
+    assert result.suffix == ".gif"
     im = Image.open(result)
     assert im.format == "GIF"
     im.seek(1)  # throws an EOFError if not animated

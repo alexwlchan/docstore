@@ -1,9 +1,8 @@
 # -*- encoding: utf-8
 
-import hashlib
 import io
 import json
-import os
+import pathlib
 import time
 
 import bs4
@@ -11,6 +10,7 @@ import hyperlink
 import pytest
 
 import api as service
+from hash_helpers import sha256
 
 
 @pytest.fixture()
@@ -47,18 +47,12 @@ def test_uploading_file_with_wrong_name_is_400(api):
     }
 
 
-def pdf_hash():
-    h = hashlib.sha256()
-    h.update(open("tests/files/snakes.pdf", "rb").read())
-    return h.hexdigest()
-
-
 @pytest.mark.parametrize('data', [
     {},
     {"title": "Hello world"},
     {"tags": ["foo"]},
     {"filename": "foo.pdf"},
-    {"sha256_checksum": pdf_hash()},
+    {"sha256_checksum": sha256(pathlib.Path("tests/files/snakes.pdf").open("rb"))},
 ])
 def test_can_upload_without_all_parameters(api, data, pdf_file):
     resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
@@ -75,14 +69,13 @@ def test_incorrect_checksum_is_400(api, pdf_file):
 
 
 def test_stores_document_in_store(api, store, pdf_file, pdf_path):
-    h = hashlib.sha256()
-    h.update(open(pdf_path, "rb").read())
+    hex_hash = sha256(pdf_path.open("rb"))
 
     data = {
         "title": "Hello world",
         "tags": "foo bar baz",
         "filename": "foo.pdf",
-        "sha256_checksum": h.hexdigest(),
+        "sha256_checksum": hex_hash,
     }
     resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
     assert resp.status_code == 201
@@ -124,10 +117,10 @@ def test_calls_create_thumbnail(api, store, pdf_file):
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
         stored_doc = store.documents[doc_id]
-        if "thumbnail_identifier" in stored_doc.data:
+        if "thumbnail_identifier" in stored_doc:
             break
 
-    assert "thumbnail_identifier" in stored_doc.data
+    assert "thumbnail_identifier" in stored_doc
 
 
 def test_recreates_thumbnail(api, store, pdf_file):
@@ -138,12 +131,12 @@ def test_recreates_thumbnail(api, store, pdf_file):
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
         stored_doc = store.documents[doc_id]
-        if "thumbnail_identifier" in stored_doc.data:
+        if "thumbnail_identifier" in stored_doc:
             break
 
-    thumb_path = os.path.join(store.thumbnails_dir, stored_doc["thumbnail_identifier"])
-    assert os.path.exists(thumb_path)
-    original_mtime = os.stat(thumb_path).st_mtime
+    thumb_path = store.thumbnails_dir / stored_doc["thumbnail_identifier"]
+    assert thumb_path.exists()
+    original_mtime = thumb_path.stat().st_mtime
 
     resp = api.requests.post("/api/v1/recreate_thumbnails")
     assert resp.status_code == 202
@@ -152,12 +145,12 @@ def test_recreates_thumbnail(api, store, pdf_file):
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
         try:
-            if os.stat(thumb_path).st_mtime != original_mtime:
+            if thumb_path.stat().st_mtime != original_mtime:
                 break
         except FileNotFoundError:
             pass
 
-    assert os.stat(thumb_path).st_mtime > original_mtime
+    assert thumb_path.stat().st_mtime > original_mtime
 
 
 def test_can_only_post_to_recreate_thumbnail(api):
@@ -185,6 +178,7 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
 
     resp = api.requests.get("/")
     assert resp.status_code == 200
+    assert resp.text != "null"
 
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
 
@@ -324,10 +318,10 @@ class TestBrowser:
         assert "error" in message
 
     @pytest.mark.parametrize("view_option", ["table", "grid"])
-    def test_includes_source_url_in_page(self, api, view_option):
+    def test_includes_source_url_in_page(self, api, view_option, pdf_file):
         self.upload(
             api=api,
-            file_contents=b"hello world",
+            file_contents=pdf_file,
             data={"source_url": "https://example.org/document.pdf"}
         )
 

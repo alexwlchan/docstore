@@ -3,7 +3,9 @@
 
 import json
 import os
+import pathlib
 import urllib.parse
+import uuid
 
 import click
 import hyperlink
@@ -14,7 +16,7 @@ from whitenoise import WhiteNoise
 
 import date_helpers
 from exceptions import UserError
-from index_helpers import store_thumbnail, index_document
+from index_helpers import store_thumbnail, index_new_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
 from version import __version__
@@ -41,7 +43,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         # For encoding as UTF-8, see https://stackoverflow.com/a/49481671/1558022
         doc_id, _ = os.path.splitext(os.path.basename(url))
         try:
-            filename = store.documents[doc_id].data["filename"]
+            filename = store.documents[doc_id]["filename"]
         except KeyError:
             pass
         else:
@@ -56,13 +58,13 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
     whitenoise_files.add_files(store.files_dir)
     api.mount("/files", whitenoise_files)
 
-    api.file_url = lambda doc: "files/" + doc["file_identifier"]
+    api.file_url = lambda doc: "files/" + str(doc["file_identifier"])
 
     whitenoise_thumbs = WhiteNoise(application=api._default_wsgi_app)
     whitenoise_thumbs.add_files(store.thumbnails_dir)
     api.mount("/thumbnails", whitenoise_thumbs)
 
-    api.thumbnail_url = lambda doc: "thumbnails/" + doc["thumbnail_identifier"]
+    api.thumbnail_url = lambda doc: "thumbnails/" + str(doc["thumbnail_identifier"])
 
     @api.route("/")
     def list_documents(req, resp):
@@ -134,17 +136,20 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
     @api.route("/documents/{document_id}")
     def individual_document(req, resp, *, document_id):
         try:
-            resp.media = store.documents[document_id].data
+            resp.media = {
+                k: (str(v) if isinstance(v, pathlib.Path) else v)
+                for k, v in store.documents[document_id].items()
+            }
         except KeyError:
             resp.media = {"error": "Document %s not found!" % document_id}
             resp.status_code = api.status_codes.HTTP_404
 
     @api.background.task
-    def create_doc_thumbnail(doc):
-        store_thumbnail(store=store, doc=doc)
+    def create_doc_thumbnail(doc_id, doc):
+        store_thumbnail(store=store, doc_id=doc_id, doc=doc)
         whitenoise_thumbs.add_file_to_dictionary(
-            url="/" + doc["thumbnail_identifier"],
-            path=os.path.join(store.thumbnails_dir, doc["thumbnail_identifier"])
+            url="/" + str(doc["thumbnail_identifier"]),
+            path=str(store.thumbnails_dir / doc["thumbnail_identifier"])
         )
 
     async def _upload_document_api(req, resp):
@@ -159,23 +164,25 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
                 resp.status_code = api.status_codes.HTTP_400
                 return
 
+            doc_id = str(uuid.uuid4())
+
             try:
                 prepared_data = prepare_upload_data(user_data)
-                doc = index_document(store=store, user_data=prepared_data)
+                doc = index_new_document(store=store, doc_id=doc_id, doc=prepared_data)
             except UserError as err:
                 resp.media = {"error": str(err)}
                 resp.status_code = api.status_codes.HTTP_400
                 return
 
             whitenoise_files.add_file_to_dictionary(
-                url="/" + doc["file_identifier"],
-                path=os.path.join(store.files_dir, doc["file_identifier"])
+                url="/" + str(doc["file_identifier"]),
+                path=str(store.files_dir / doc["file_identifier"])
             )
 
-            create_doc_thumbnail(doc)
+            create_doc_thumbnail(doc_id=doc_id, doc=doc)
 
             resp.status_code = api.status_codes.HTTP_201
-            resp.media = {"id": doc.id}
+            resp.media = {"id": doc_id}
         else:
             resp.status_code = api.status_codes.HTTP_405
 
@@ -197,8 +204,8 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
     @api.route("/api/v1/recreate_thumbnails")
     async def recreate_thumbnails(req, resp):
         if req.method == "post":
-            for doc in store.documents.values():
-                create_doc_thumbnail(doc)
+            for doc_id, doc in store.documents.items():
+                create_doc_thumbnail(doc_id=doc_id, doc=doc)
 
             resp.media = {"ok": "true"}
             resp.status_code = api.status_codes.HTTP_202

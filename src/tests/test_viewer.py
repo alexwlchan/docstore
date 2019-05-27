@@ -6,7 +6,7 @@ import bs4
 import pytest
 
 import api as service
-from index_helpers import index_document
+from index_helpers import index_new_document
 
 
 PARAMS = [
@@ -22,6 +22,7 @@ PARAMS = [
 def sess(api):
     def raise_for_status(resp, *args, **kwargs):
         resp.raise_for_status()
+        assert resp.text != "null"
 
     api.requests.hooks["response"].append(raise_for_status)
     return api.requests
@@ -47,7 +48,7 @@ class TestViewOptions:
         assert '<table class="table">' not in resp.text
 
     def test_table_view(self, sess, store):
-        index_document(store=store, user_data={
+        index_new_document(store=store, doc_id="1", doc={
             "file": b"hello world",
             "title": "foo",
             "tags": ["bar", "baz", "bat"]
@@ -56,24 +57,40 @@ class TestViewOptions:
         self._assert_is_table(resp)
 
     def test_grid_view(self, sess, store):
-        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(
+            store=store,
+            doc_id="1",
+            doc={"file": b"hello world", "title": "foo"}
+        )
         resp = sess.get("/", params={"view": "grid"})
         self._assert_is_grid(resp)
 
     def test_default_is_table_view(self, store):
-        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(
+            store=store,
+            doc_id="1",
+            doc={"file": b"hello world", "title": "xyz"}
+        )
         api = service.create_api(store)
         resp = api.requests.get("/")
         self._assert_is_table(resp)
 
     def test_can_set_default_as_table_view(self, store):
-        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(
+            store=store,
+            doc_id="1",
+            doc={"file": b"hello world", "title": "xyz"}
+        )
         api = service.create_api(store, default_view="table")
         resp = api.requests.get("/")
         self._assert_is_table(resp)
 
     def test_can_set_default_as_grid_view(self, store):
-        index_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(
+            store=store,
+            doc_id="1",
+            doc={"file": b"hello world", "title": "xyz"}
+        )
         api = service.create_api(store, default_view="grid")
         resp = api.requests.get("/")
         self._assert_is_grid(resp)
@@ -88,17 +105,19 @@ def test_uses_display_title(store):
 
 
 def test_can_filter_by_tag(sess, store):
-    index_document(
+    index_new_document(
         store=store,
-        user_data={
+        doc_id="1",
+        doc={
             "file": b"hello world",
             "title": "hello world",
             "tags": ["bar", "baz"]
         }
     )
-    index_document(
+    index_new_document(
         store=store,
-        user_data={
+        doc_id="2",
+        doc={
             "file": b"hi world",
             "title": "hi world",
             "tags": ["bar", "bat"]
@@ -116,9 +135,10 @@ def test_can_filter_by_tag(sess, store):
 
 @pytest.mark.parametrize("params", PARAMS)
 def test_shows_column_headers(sess, store, params):
-    index_document(
+    index_new_document(
         store=store,
-        user_data={
+        doc_id="1",
+        doc={
             "file": b"hello world",
             "title": "hello world",
             "tags": ["x", "y"]
@@ -135,9 +155,10 @@ def test_shows_column_headers(sess, store, params):
 
 @pytest.mark.parametrize("params", PARAMS)
 def test_all_urls_are_relative(sess, store, params):
-    index_document(
+    index_new_document(
         store=store,
-        user_data={
+        doc_id="1",
+        doc={
             "file": b"hello world",
             "title": "hello world",
             "tags": ["x", "y"]
@@ -160,6 +181,23 @@ def test_version_is_shown_in_footer(sess):
     footer = soup.find("footer")
 
     assert re.search(r'docstore v\d+\.\d+\.\d+', str(footer)) is not None
+
+
+def test_includes_created_date(store, sess):
+    index_new_document(
+        store=store,
+        doc_id="1",
+        doc={
+            "file": b"hello world",
+            "title": "hello world"
+        }
+    )
+
+    resp = sess.get("/")
+
+    soup = bs4.BeautifulSoup(resp.text, "html.parser")
+    date_created_td = soup.find("td", attrs={"class": "date__created"})
+    assert date_created_td.text == "just now"
 
 
 class TestStoreDocumentForm:
