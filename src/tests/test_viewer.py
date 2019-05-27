@@ -48,7 +48,7 @@ class TestViewOptions:
         assert '<table class="table">' not in resp.text
 
     def test_table_view(self, sess, store):
-        index_new_document(store=store, user_data={
+        index_new_document(store=store, doc_id="1", doc={
             "file": b"hello world",
             "title": "foo",
             "tags": ["bar", "baz", "bat"]
@@ -57,24 +57,40 @@ class TestViewOptions:
         self._assert_is_table(resp)
 
     def test_grid_view(self, sess, store):
-        index_new_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(
+            store=store,
+            doc_id="1",
+            doc={"file": b"hello world", "title": "foo"}
+        )
         resp = sess.get("/", params={"view": "grid"})
         self._assert_is_grid(resp)
 
     def test_default_is_table_view(self, store):
-        index_new_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(
+            store=store,
+            doc_id="1",
+            doc={"file": b"hello world", "title": "xyz"}
+        )
         api = service.create_api(store)
         resp = api.requests.get("/")
         self._assert_is_table(resp)
 
     def test_can_set_default_as_table_view(self, store):
-        index_new_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(
+            store=store,
+            doc_id="1",
+            doc={"file": b"hello world", "title": "xyz"}
+        )
         api = service.create_api(store, default_view="table")
         resp = api.requests.get("/")
         self._assert_is_table(resp)
 
     def test_can_set_default_as_grid_view(self, store):
-        index_new_document(store=store, user_data={"file": b"hello world", "title": "foo"})
+        index_new_document(
+            store=store,
+            doc_id="1",
+            doc={"file": b"hello world", "title": "xyz"}
+        )
         api = service.create_api(store, default_view="grid")
         resp = api.requests.get("/")
         self._assert_is_grid(resp)
@@ -91,7 +107,8 @@ def test_uses_display_title(store):
 def test_can_filter_by_tag(sess, store):
     index_new_document(
         store=store,
-        user_data={
+        doc_id="1",
+        doc={
             "file": b"hello world",
             "title": "hello world",
             "tags": ["bar", "baz"]
@@ -99,7 +116,8 @@ def test_can_filter_by_tag(sess, store):
     )
     index_new_document(
         store=store,
-        user_data={
+        doc_id="2",
+        doc={
             "file": b"hi world",
             "title": "hi world",
             "tags": ["bar", "bat"]
@@ -119,7 +137,8 @@ def test_can_filter_by_tag(sess, store):
 def test_shows_column_headers(sess, store, params):
     index_new_document(
         store=store,
-        user_data={
+        doc_id="1",
+        doc={
             "file": b"hello world",
             "title": "hello world",
             "tags": ["x", "y"]
@@ -138,7 +157,8 @@ def test_shows_column_headers(sess, store, params):
 def test_all_urls_are_relative(sess, store, params):
     index_new_document(
         store=store,
-        user_data={
+        doc_id="1",
+        doc={
             "file": b"hello world",
             "title": "hello world",
             "tags": ["x", "y"]

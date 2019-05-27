@@ -5,6 +5,7 @@ import json
 import os
 import pathlib
 import urllib.parse
+import uuid
 
 import click
 import hyperlink
@@ -163,9 +164,11 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
                 resp.status_code = api.status_codes.HTTP_400
                 return
 
+            doc_id = str(uuid.uuid4())
+
             try:
                 prepared_data = prepare_upload_data(user_data)
-                doc = index_new_document(store=store, user_data=prepared_data)
+                doc = index_new_document(store=store, doc_id=doc_id, doc=prepared_data)
             except UserError as err:
                 resp.media = {"error": str(err)}
                 resp.status_code = api.status_codes.HTTP_400
@@ -176,10 +179,10 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
                 path=str(store.files_dir / doc["file_identifier"])
             )
 
-            create_doc_thumbnail(doc_id=doc.id, doc=doc.data)
+            create_doc_thumbnail(doc_id=doc_id, doc=doc)
 
             resp.status_code = api.status_codes.HTTP_201
-            resp.media = {"id": doc.id}
+            resp.media = {"id": doc_id}
         else:
             resp.status_code = api.status_codes.HTTP_405
 

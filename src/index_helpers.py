@@ -35,10 +35,8 @@ def store_thumbnail(store, doc_id, doc):
     store.index_document(doc_id=doc_id, doc=doc)
 
 
-def index_new_document(store, user_data):
-    doc = TaggedDocument(user_data)
-
-    file_data = user_data.pop("file")
+def index_new_document(store, doc_id, doc):
+    file_data = doc.pop("file")
 
     try:
         # Try to guess an extension based on the filename provided by the user.
@@ -58,7 +56,7 @@ def index_new_document(store, user_data):
     if extension is None:
         extension = ""
 
-    file_identifier = pathlib.Path(doc.id[0]) / (doc.id + extension)
+    file_identifier = pathlib.Path(doc_id[0]) / (doc_id + extension)
     complete_file_identifier = store.files_dir / file_identifier
     complete_file_identifier.parent.mkdir(exist_ok=True)
     complete_file_identifier.write_bytes(file_data)
@@ -79,5 +77,5 @@ def index_new_document(store, user_data):
     except KeyError:
         doc["sha256_checksum"] = h.hexdigest()
 
-    store.index_document(doc_id=doc.id, doc=doc.data)
+    store.index_document(doc_id=doc_id, doc=doc)
     return doc
