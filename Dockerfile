@@ -38,4 +38,4 @@ FROM tests AS pip_tools
 
 RUN pip3 install pip-tools==3.4.0
 
-ENTRYPOINT ["pip-compile"]
+ENTRYPOINT ["pip-compile", "--upgrade"]
