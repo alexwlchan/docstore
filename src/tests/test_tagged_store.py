@@ -99,13 +99,13 @@ def test_gets_empty_documents_on_startup(store):
 
 def test_can_store_a_document(store):
     doc = {"tags": ["foo", "bar"]}
-    store.index_document(doc)
+    store.index_document(doc_id="1", doc=doc)
     assert doc in store.documents.values()
 
 
 def test_documents_are_saved_to_disk(store):
     doc = {"tags": ["foo", "bar"]}
-    store.index_document(doc)
+    store.index_document(doc_id="1", doc=doc)
 
     new_store = TaggedDocumentStore(root=store.root)
     assert store.documents == new_store.documents
@@ -116,61 +116,40 @@ def test_can_search_documents(store):
     doc2 = {"tags": ["foo", "baz"]}
     doc3 = {"tags": []}
 
-    store.index_document(doc1)
-    store.index_document(doc2)
-    store.index_document(doc3)
+    store.index_document(doc_id="1", doc=doc1)
+    store.index_document(doc_id="2", doc=doc2)
+    store.index_document(doc_id="3", doc=doc3)
 
     assert store.search_documents(query=["foo"]) == [doc1, doc2]
     assert store.search_documents(query=["baz"]) == [doc2]
     assert store.search_documents(query=[]) == [doc1, doc2, doc3]
 
 
-@pytest.mark.parametrize('doc', [object, None, 1, "foo"])
-def test_indexing_a_non_taggeddocument_is_typeerror(store, doc):
-    with pytest.raises(TypeError):
-        store.index_document(doc)
-
-
-def test_assigns_uuid_to_stored_document(store):
-    doc = {"color": "red"}
-    stored_doc = store.index_document(doc)
-
-    print(stored_doc.id)
-
-
-def test_can_update_document_by_uuid(store):
+def test_can_update_document_by_id(store):
     doc = {"color": "blue"}
-    stored_doc = store.index_document(doc)
-
-    doc_new = {"id": stored_doc.id, "color": "red"}
-    store.index_document(doc_new)
-
-    assert len(store.documents) == 1
-    assert doc not in store.documents.values()
-    assert doc_new in store.documents.values()
-
-
-def test_can_update_document_by_doc_id(store):
-    doc = {"color": "green"}
-    stored_doc = store.index_document(doc)
+    stored_doc = store.index_document(doc_id="1", doc=doc)
 
     doc_new = {"color": "yellow"}
-    store.index_document(doc_new, doc_id=stored_doc.id)
+    store.index_document(doc_id="1", doc=doc_new)
 
     assert len(store.documents) == 1
     assert doc not in store.documents.values()
     assert doc_new in store.documents.values()
 
 
-def test_creates_necessary_directories(store, tmpdir):
-    store = TaggedDocumentStore(root=str(tmpdir))
+def test_creates_necessary_directories(tmpdir):
+    store = TaggedDocumentStore(root=tmpdir)
     assert store.files_dir.exists()
     assert store.thumbnails_dir.exists()
 
 
 def test_persists_id(tmpdir):
-    store = TaggedDocumentStore(root=str(tmpdir))
-    stored_doc = store.index_document({"name": "lexie"})
+    store = TaggedDocumentStore(root=tmpdir)
 
-    new_store = TaggedDocumentStore(root=str(tmpdir))
-    assert new_store.documents == {stored_doc.id: stored_doc.data}
+    doc_id = "1"
+    doc = {"name": "lexie"}
+
+    store.index_document(doc_id=doc_id, doc=doc)
+
+    new_store = TaggedDocumentStore(root=tmpdir)
+    assert new_store.documents == {doc_id: doc}

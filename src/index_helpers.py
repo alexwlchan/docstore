@@ -32,7 +32,7 @@ def store_thumbnail(store, doc_id, doc):
     assert absolute_thumb_path.exists()
 
     doc["thumbnail_identifier"] = thumb_path
-    store.better_index_document(doc_id=doc_id, doc=doc)
+    store.index_document(doc_id=doc_id, doc=doc)
 
 
 def index_new_document(store, user_data):
@@ -79,5 +79,5 @@ def index_new_document(store, user_data):
     except KeyError:
         doc["sha256_checksum"] = h.hexdigest()
 
-    store.better_index_document(doc_id=doc.id, doc=doc.data)
+    store.index_document(doc_id=doc.id, doc=doc.data)
     return doc
