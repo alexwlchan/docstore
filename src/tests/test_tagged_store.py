@@ -176,5 +176,4 @@ def test_persists_id(tmpdir):
     stored_doc = store.index_document({"name": "lexie"})
 
     new_store = TaggedDocumentStore(root=str(tmpdir))
-    assert new_store.documents == {stored_doc.id: stored_doc}
-    assert stored_doc.id == new_store.documents[stored_doc.id].id
+    assert new_store.documents == {stored_doc.id: stored_doc.data}

@@ -29,8 +29,8 @@ class TaggedDocument(MutableMapping):
         else:
             self.id = str(uuid.uuid4())
 
-        if "date_created" not in data:
-            data["date_created"] = dt.datetime.now().isoformat()
+        assert "date_created" not in data
+        data["date_created"] = dt.datetime.now().isoformat()
 
         self.data = data
 
@@ -88,17 +88,12 @@ class TaggedDocumentStore:
         self.root = root
 
         try:
-            existing = json.load(open(self.db_path))
+            self.documents = json.load(open(self.db_path))
         except FileNotFoundError:
-            existing = {}
+            self.documents = {}
 
         os.makedirs(self.files_dir, exist_ok=True)
         os.makedirs(self.thumbnails_dir, exist_ok=True)
-
-        self.documents = {
-            doc_id: TaggedDocument(doc_id=doc_id, data=data)
-            for doc_id, data in existing.items()
-        }
 
     @property
     def db_path(self):
