@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.7.2 - 2019-05-27
+
+Bump the versions of bundled dependencies.
+
 ## v1.7.1 - 2019-05-27
 
 Internal refactoring and code cleanups.  This should have no user-visible effect.
