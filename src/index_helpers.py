@@ -36,6 +36,9 @@ def store_thumbnail(store, doc_id, doc):
 
 
 def index_new_document(store, doc_id, doc):
+    if doc_id in store.documents:
+        raise ValueError(f"The store already has a document with id {doc_id}!")
+
     assert "date_created" not in doc
     doc["date_created"] = dt.datetime.now().isoformat()
 

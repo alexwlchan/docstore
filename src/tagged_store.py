@@ -8,7 +8,7 @@ import attr
 
 
 class PosixPathEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj):  # pragma: no cover
         if isinstance(obj, pathlib.Path):
             return str(obj)
 
