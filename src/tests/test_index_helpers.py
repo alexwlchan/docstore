@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import datetime as dt
 import pathlib
 
 import pytest
@@ -121,3 +122,12 @@ def test_uses_filename_if_cannot_detect_extension(store):
 
     index_helpers.index_new_document(store=store, doc_id="1", doc=doc)
     assert doc["file_identifier"].suffix == ".epub"
+
+
+def test_adds_created_date(store):
+    doc = {"file": b"hello world"}
+    index_helpers.index_new_document(store=store, doc_id="1", doc=doc)
+    assert "date_created" in doc
+
+    diff = (dt.datetime.now() - dt.datetime.strptime(doc["date_created"], "%Y-%m-%dT%H:%M:%S.%f"))
+    assert diff.seconds < 5

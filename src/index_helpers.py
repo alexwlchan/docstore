@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import datetime as dt
 import hashlib
 import mimetypes
 import pathlib
@@ -35,6 +36,9 @@ def store_thumbnail(store, doc_id, doc):
 
 
 def index_new_document(store, doc_id, doc):
+    assert "date_created" not in doc
+    doc["date_created"] = dt.datetime.now().isoformat()
+
     file_data = doc.pop("file")
 
     try:

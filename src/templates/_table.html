@@ -45,7 +45,7 @@
     </td>
     <td>
       <a href="{{ api.file_url(doc) }}" target="_blank" class="docstore__title">{{ doc["title"] }}</a>
-      {% if "user_data" in doc["user_data"] and "source_url" in doc["user_data"] %}
+      {% if "user_data" in doc and "source_url" in doc["user_data"] %}
         <span class="source_url figure-caption">
           [<a href="{{ doc['user_data']['source_url'] }}">{{ doc['user_data']['source_url'] | short_url }}</a>]
         </span>
@@ -54,9 +54,7 @@
     {% include "_taglist.html" %}
 
     </td>
-    {% if "date_created" in doc %}
     <td class="date__created">{{ doc["date_created"] | since_now_date_str }}</td>
-    {% endif %}
   </tr>
   {% endfor %}
 </table>

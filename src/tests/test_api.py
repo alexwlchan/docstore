@@ -324,10 +324,10 @@ class TestBrowser:
         assert "error" in message
 
     @pytest.mark.parametrize("view_option", ["table", "grid"])
-    def test_includes_source_url_in_page(self, api, view_option):
+    def test_includes_source_url_in_page(self, api, view_option, pdf_file):
         self.upload(
             api=api,
-            file_contents=b"hello world",
+            file_contents=pdf_file,
             data={"source_url": "https://example.org/document.pdf"}
         )
 
