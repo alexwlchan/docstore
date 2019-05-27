@@ -327,3 +327,33 @@ class TestBrowser:
 
         resp = api.requests.get("/", params={"view": view_option})
         assert '<a href="https://example.org/document.pdf">example.org</a>' in resp.text
+
+
+class TestPrepareData:
+
+    def test_deletes_empty_user_data_values(self):
+        user_data = {
+            "file": b"hello world",
+            "source_url": b"https://example.org/",
+            "external_identifier": b"",
+        }
+
+        prepared_data = service.prepare_form_data(user_data)
+        assert prepared_data["user_data"] == {
+            "source_url": "https://example.org/",
+        }
+
+    def test_deletes_empty_user_data(self):
+        user_data = {
+            "file": b"hello world",
+            "external_identifier": b"",
+        }
+
+        prepared_data = service.prepare_form_data(user_data)
+        assert "user_data" not in prepared_data
+
+    def test_omits_user_data_if_no_extra_values(self):
+        user_data = {"file": b"hello world"}
+
+        prepared_data = service.prepare_form_data(user_data)
+        assert "user_data" not in prepared_data

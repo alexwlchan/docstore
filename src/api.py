@@ -22,6 +22,44 @@ from tagged_store import TaggedDocumentStore
 from version import __version__
 
 
+def prepare_form_data(user_data):
+    prepared_data = {}
+
+    # Copy across all the keys the app knows about.
+    try:
+        prepared_data["file"] = user_data.pop("file")
+    except KeyError:
+        raise UserError("Unable to find multipart upload 'file'!")
+
+    # Handle HTML forms, which send this data as a dict of filename, content
+    # and content-type.
+    if isinstance(prepared_data["file"], dict):
+        prepared_data["filename"] = prepared_data["file"]["filename"]
+        prepared_data["file"] = prepared_data["file"]["content"]
+
+    assert isinstance(prepared_data["file"], bytes), type(prepared_data["file"])
+
+    for key in ("title", "tags", "filename", "sha256_checksum"):
+        try:
+            prepared_data[key] = user_data.pop(key).decode("utf8")
+        except KeyError:
+            pass
+
+    try:
+        prepared_data["tags"] = prepared_data["tags"].split()
+    except KeyError:
+        pass
+
+    # Any remaining keys we put into a special "user_data" array so they're
+    # still saved, but don't conflict with other parameters we might add later.
+    if any(v for v in user_data.values()):
+        prepared_data["user_data"] = {
+            k: v.decode("utf8") for k, v in user_data.items() if v
+        }
+
+    return prepared_data
+
+
 def create_api(store, display_title="Alex’s documents", default_view="table"):
     # Compile the CSS file before the API starts
     css = scss.Compiler().compile_string(open("assets/style.scss").read())
@@ -98,41 +136,6 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
             cookies=req.cookies
         )
 
-    def prepare_upload_data(user_data):
-        prepared_data = {}
-
-        # Copy across all the keys the app knows about.
-        try:
-            prepared_data["file"] = user_data.pop("file")
-        except KeyError:
-            raise UserError("Unable to find multipart upload 'file'!")
-
-        # Handle HTML forms, which send this data as a dict of filename, content
-        # and content-type.
-        if isinstance(prepared_data["file"], dict):
-            prepared_data["filename"] = prepared_data["file"]["filename"]
-            prepared_data["file"] = prepared_data["file"]["content"]
-
-        assert isinstance(prepared_data["file"], bytes), type(prepared_data["file"])
-
-        for key in ("title", "tags", "filename", "sha256_checksum"):
-            try:
-                prepared_data[key] = user_data.pop(key).decode("utf8")
-            except KeyError:
-                pass
-
-        try:
-            prepared_data["tags"] = prepared_data["tags"].split()
-        except KeyError:
-            pass
-
-        # Any remaining keys we put into a special "user_data" array so they're
-        # still saved, but don't conflict with other parameters we might add later.
-        if user_data:
-            prepared_data["user_data"] = {k: v.decode("utf8") for k, v in user_data.items()}
-
-        return prepared_data
-
     @api.route("/documents/{document_id}")
     def individual_document(req, resp, *, document_id):
         try:
@@ -167,7 +170,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
             doc_id = str(uuid.uuid4())
 
             try:
-                prepared_data = prepare_upload_data(user_data)
+                prepared_data = prepare_form_data(user_data)
                 doc = index_new_document(store=store, doc_id=doc_id, doc=prepared_data)
             except UserError as err:
                 resp.media = {"error": str(err)}
