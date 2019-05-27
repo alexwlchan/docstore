@@ -1,6 +1,6 @@
-{% if doc.tags %}
+{% if doc["tags"] %}
 <p class="tags">
-  {% for tag in doc.tags|sort %}
+  {% for tag in doc["tags"]|sort %}
   {% if tag not in search_options.tag_query %}
     <a href="{{ req_url.add('tag', tag) | query_str_only }}">
   {% endif %}

@@ -183,6 +183,23 @@ def test_version_is_shown_in_footer(sess):
     assert re.search(r'docstore v\d+\.\d+\.\d+', str(footer)) is not None
 
 
+def test_includes_created_date(store, sess):
+    index_new_document(
+        store=store,
+        doc_id="1",
+        doc={
+            "file": b"hello world",
+            "title": "hello world"
+        }
+    )
+
+    resp = sess.get("/")
+
+    soup = bs4.BeautifulSoup(resp.text, "html.parser")
+    date_created_td = soup.find("td", attrs={"class": "date__created"})
+    assert date_created_td.text == "just now"
+
+
 class TestStoreDocumentForm:
     def test_url_decodes_tags_before_displaying(self, sess, pdf_file):
         """
