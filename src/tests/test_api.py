@@ -123,10 +123,10 @@ def test_calls_create_thumbnail(api, store, pdf_file):
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
         stored_doc = store.documents[doc_id]
-        if "thumbnail_identifier" in stored_doc.data:
+        if "thumbnail_identifier" in stored_doc:
             break
 
-    assert "thumbnail_identifier" in stored_doc.data
+    assert "thumbnail_identifier" in stored_doc
 
 
 def test_recreates_thumbnail(api, store, pdf_file):
@@ -137,7 +137,7 @@ def test_recreates_thumbnail(api, store, pdf_file):
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
         stored_doc = store.documents[doc_id]
-        if "thumbnail_identifier" in stored_doc.data:
+        if "thumbnail_identifier" in stored_doc:
             break
 
     thumb_path = store.thumbnails_dir / stored_doc["thumbnail_identifier"]

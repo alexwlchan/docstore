@@ -10,42 +10,45 @@ from tagged_store import TaggedDocument, TaggedDocumentStore
 
 
 def test_create_thumbnail(store, file_identifier):
-    doc = TaggedDocument({"id": "1", "file_identifier": file_identifier})
-    index_helpers.store_thumbnail(store=store, doc=doc)
+    doc = {"file_identifier": file_identifier}
+    index_helpers.store_thumbnail(store=store, doc_id="1", doc=doc)
     assert "thumbnail_identifier" in doc
 
 
 def test_thumbnail_data_is_saved(store, file_identifier):
-    doc = TaggedDocument({"id": "1", "file_identifier": file_identifier})
-    index_helpers.store_thumbnail(store=store, doc=doc)
+    doc_id = "1"
+
+    doc = {"file_identifier": file_identifier}
+    index_helpers.store_thumbnail(store=store, doc_id=doc_id, doc=doc)
 
     new_store = TaggedDocumentStore(store.root)
-    assert "thumbnail_identifier" in new_store.documents[doc.id]
+    assert "thumbnail_identifier" in new_store.documents[doc_id]
 
 
 def test_thumbnail_uses_appropriate_extension(store):
+    doc_id = "1"
+
     user_data = {
         "path": "cluster.png",
         "file": pathlib.Path("tests/files/cluster.png").read_bytes(),
     }
     doc = index_helpers.index_new_document(store=store, user_data=user_data)
-    index_helpers.store_thumbnail(store=store, doc=doc)
+    index_helpers.store_thumbnail(store=store, doc_id=doc_id, doc=doc.data)
 
-    assert store.documents[doc.id]["thumbnail_identifier"].suffix == ".png"
+    assert store.documents[doc_id]["thumbnail_identifier"].suffix == ".png"
 
 
 def test_removes_old_thumbnail_first(store, file_identifier):
-    doc = TaggedDocument({
-        "id": "1",
+    doc = {
         "file_identifier": file_identifier,
         "thumbnail_identifier": "1/100.jpg"
-    })
+    }
 
     thumb_path = store.thumbnails_dir / doc["thumbnail_identifier"]
     thumb_path.parent.mkdir()
     thumb_path.write_bytes(b"hello world")
 
-    index_helpers.store_thumbnail(store=store, doc=doc)
+    index_helpers.store_thumbnail(store=store, doc_id="1", doc=doc)
     assert not thumb_path.exists()
     assert doc["thumbnail_identifier"] != "1/100.jpg"
 

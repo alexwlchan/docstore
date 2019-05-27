@@ -12,7 +12,7 @@ from tagged_store import TaggedDocument
 from thumbnails import create_thumbnail
 
 
-def store_thumbnail(store, doc):
+def store_thumbnail(store, doc_id, doc):
     try:
         (store.thumbnails_dir / doc["thumbnail_identifier"]).unlink()
     except KeyError:
@@ -20,11 +20,11 @@ def store_thumbnail(store, doc):
 
     absolute_file_identifier = store.files_dir / doc["file_identifier"]
 
-    thumb_dir = store.thumbnails_dir / doc.id[0]
+    thumb_dir = store.thumbnails_dir / doc_id[0]
     thumb_dir.mkdir(exist_ok=True)
 
     thumbnail = create_thumbnail(absolute_file_identifier)
-    thumb_path = pathlib.Path(doc.id[0]) / (doc.id + thumbnail.suffix)
+    thumb_path = pathlib.Path(doc_id[0]) / (doc_id + thumbnail.suffix)
 
     absolute_thumb_path = store.thumbnails_dir / thumb_path
 
@@ -32,7 +32,7 @@ def store_thumbnail(store, doc):
     assert absolute_thumb_path.exists()
 
     doc["thumbnail_identifier"] = thumb_path
-    store.index_document(doc)
+    store.better_index_document(doc_id=doc_id, doc=doc)
 
 
 def index_new_document(store, user_data):
@@ -79,5 +79,5 @@ def index_new_document(store, user_data):
     except KeyError:
         doc["sha256_checksum"] = h.hexdigest()
 
-    store.index_document(doc)
+    store.better_index_document(doc_id=doc.id, doc=doc.data)
     return doc

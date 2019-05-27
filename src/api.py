@@ -137,15 +137,15 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         try:
             resp.media = {
                 k: (str(v) if isinstance(v, pathlib.Path) else v)
-                for k, v in store.documents[document_id].data.items()
+                for k, v in store.documents[document_id].items()
             }
         except KeyError:
             resp.media = {"error": "Document %s not found!" % document_id}
             resp.status_code = api.status_codes.HTTP_404
 
     @api.background.task
-    def create_doc_thumbnail(doc):
-        store_thumbnail(store=store, doc=doc)
+    def create_doc_thumbnail(doc_id, doc):
+        store_thumbnail(store=store, doc_id=doc_id, doc=doc)
         whitenoise_thumbs.add_file_to_dictionary(
             url="/" + str(doc["thumbnail_identifier"]),
             path=str(store.thumbnails_dir / doc["thumbnail_identifier"])
@@ -176,7 +176,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
                 path=str(store.files_dir / doc["file_identifier"])
             )
 
-            create_doc_thumbnail(doc)
+            create_doc_thumbnail(doc_id=doc.id, doc=doc.data)
 
             resp.status_code = api.status_codes.HTTP_201
             resp.media = {"id": doc.id}
@@ -201,8 +201,8 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
     @api.route("/api/v1/recreate_thumbnails")
     async def recreate_thumbnails(req, resp):
         if req.method == "post":
-            for doc in store.documents.values():
-                create_doc_thumbnail(doc)
+            for doc_id, doc in store.documents.items():
+                create_doc_thumbnail(doc_id=doc_id, doc=doc)
 
             resp.media = {"ok": "true"}
             resp.status_code = api.status_codes.HTTP_202

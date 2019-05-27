@@ -124,6 +124,14 @@ class TaggedDocumentStore:
         # Don't write to the in-memory database until it's been saved to disk.
         self.documents = new_documents
 
+    def better_index_document(self, doc_id, doc):
+        assert not isinstance(doc, TaggedDocument)
+
+        new_documents = self.documents.copy()
+        new_documents[doc_id] = doc
+
+        self.save(new_documents)
+
     def index_document(self, doc, doc_id=None):
         if isinstance(doc, dict):
             doc = TaggedDocument(doc, doc_id=doc_id)
