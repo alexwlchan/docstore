@@ -12,7 +12,7 @@ test: test_requirements.txt
 	make test-fast
 
 test-fast:
-	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT)/src \
+	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT) \
 		--entrypoint "coverage" docstore_test run -m py.test tests
 	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT)/src \
 		--entrypoint "coverage" docstore_test report

@@ -2,6 +2,9 @@
 
 import pathlib
 import shutil
+import sys
+
+sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
 import pytest
 

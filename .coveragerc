@@ -1,7 +1,9 @@
 [run]
 branch = True
 include =
-    *.py
+    src/*.py
+    src/**/*.py
+    tests/*.py
 omit =
     **/.virtualenvs/**/*.py
     /usr/local/**/*.py
