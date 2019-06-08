@@ -61,11 +61,21 @@ def prepare_form_data(user_data):
 
 
 def create_api(store, display_title="Alex’s documents", default_view="table"):
-    # Compile the CSS file before the API starts
-    css = scss.Compiler().compile_string(open("assets/style.scss").read())
-    open("static/style.css", "w").write(css)
+    src_root = pathlib.Path(__file__).parent
+    static_dir = src_root / "static"
 
-    api = responder.API(version=__version__)
+    # Compile the CSS file before the API starts
+    scss_path = src_root / "assets/style.scss"
+    css = scss.Compiler().compile_string(scss_path.read_text())
+
+    css_path = static_dir / "style.css"
+    css_path.write_text(css)
+
+    api = responder.API(
+        static_dir=static_dir,
+        templates_dir=src_root / "templates",
+        version=__version__
+    )
 
     api.static_url = lambda asset: "static/" + asset
 
