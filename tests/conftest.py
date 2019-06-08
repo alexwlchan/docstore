@@ -2,11 +2,14 @@
 
 import pathlib
 import shutil
+import sys
 
 import pytest
 
-import api as service
-from tagged_store import TaggedDocumentStore
+sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
+
+import api as service  # noqa
+from tagged_store import TaggedDocumentStore  # noqa
 
 
 @pytest.fixture
