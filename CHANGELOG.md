@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.7.4 - 2019-06-08
+
+This is a minor rearrangement of the Git repo to make it a bit easier to work on docstore.
+
+There should be no user-visible effect, except that tests are no longer included in the Docker image (so it should be a shade smaller).
+
 ## v1.7.3 - 2019-05-27
 
 Fix two bugs related to the source URL field in the web app:
