@@ -81,3 +81,4 @@ class TestThumbnailManager(FileManagerTestMixin):
             original_file=pathlib.Path("tests/files/bridge.jpg")
         )
         assert resp == pathlib.Path("1/1234.jpg")
+        assert (manager.root / resp).exists()

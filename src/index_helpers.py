@@ -3,36 +3,11 @@
 import datetime as dt
 import mimetypes
 import pathlib
-import shutil
 
 import magic
 
 from exceptions import UserError
 from hash_helpers import sha256
-from thumbnails import create_thumbnail
-
-
-def store_thumbnail(store, doc_id, doc):
-    try:
-        (store.thumbnails_dir / doc["thumbnail_identifier"]).unlink()
-    except KeyError:
-        pass
-
-    absolute_file_identifier = store.files_dir / doc["file_identifier"]
-
-    thumb_dir = store.thumbnails_dir / doc_id[0]
-    thumb_dir.mkdir(exist_ok=True)
-
-    thumbnail = create_thumbnail(absolute_file_identifier)
-    thumb_path = pathlib.Path(doc_id[0]) / (doc_id + thumbnail.suffix)
-
-    absolute_thumb_path = store.thumbnails_dir / thumb_path
-
-    shutil.move(thumbnail, absolute_thumb_path)
-    assert absolute_thumb_path.exists()
-
-    doc["thumbnail_identifier"] = thumb_path
-    store.underlying.put(obj_id=doc_id, obj_data=doc)
 
 
 def index_new_document(store, doc_id, doc):
