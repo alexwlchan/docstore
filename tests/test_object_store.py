@@ -25,20 +25,38 @@ class ObjectStoreTestCasesMixin(abc.ABC):
             with pytest.raises(NoSuchObject):
                 s.get(obj_id="3")
 
-    def test_can_put_objects(self):
+    @pytest.mark.parametrize(
+        "obj_data",
+        ["one", 1, None, {"es": "uno"}, ["a", "b", "c"]]
+    )
+    def test_can_put_objects(self, obj_data):
         with self.create_store(initial_objects={}) as s:
-            s.put(obj_id="1", obj_data="one")
+            s.put(obj_id="1", obj_data=obj_data)
 
-    def test_is_consistent(self):
+    @pytest.mark.parametrize("obj_id", [1, None, object])
+    def test_can_only_put_object_id_str(self, obj_id):
+        with self.create_store(initial_objects={}) as s:
+            with pytest.raises(TypeError):
+                s.put(obj_id=obj_id, obj_data="one")
+
+    @pytest.mark.parametrize("initial_value, updated_value", [
+        ("one", "two"),
+        (1, 2),
+        (None, "None"),
+        ({"es": "uno"}, {"de": "eins"}),
+        (["a", "b", "c"], ["a", "b", "c", "d", "e"]),
+        (("cat", "dog"), ("cat", "dog", "fox")),
+    ])
+    def test_is_consistent(self, initial_value, updated_value):
         with self.create_store(initial_objects={}) as s:
             with pytest.raises(NoSuchObject):
                 s.get(obj_id="1")
 
-            s.put(obj_id="1", obj_data="one")
-            assert s.get(obj_id="1") == "one"
+            s.put(obj_id="1", obj_data=initial_value)
+            assert s.get(obj_id="1") == initial_value
 
-            s.put(obj_id="1", obj_data="uno")
-            assert s.get(obj_id="1") == "uno"
+            s.put(obj_id="1", obj_data=updated_value)
+            assert s.get(obj_id="1") == updated_value
 
 
 class TestMemoryObjectStore(ObjectStoreTestCasesMixin):

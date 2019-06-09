@@ -9,6 +9,10 @@ from .exceptions import NoSuchObject
 class ObjectStore(abc.ABC):
     """
     A store for serialising and storing arbitrary Python objects.
+
+    Object IDs must be strings.  The store guarantees that you'll get an equal
+    object back, but they may not be the same type.
+
     """
 
     @abc.abstractmethod
@@ -35,6 +39,8 @@ class MemoryObjectStore(ObjectStore):
         return self._objects
 
     def put(self, obj_id, obj_data):
+        if not isinstance(obj_id, str):
+            raise TypeError(f"Expected type str, got {type(obj_id)}: {obj_id!r}")
         self._objects[obj_id] = obj_data
 
 
@@ -52,6 +58,9 @@ class JsonObjectStore(ObjectStore):
         return self._objects
 
     def put(self, obj_id, obj_data):
+        if not isinstance(obj_id, str):
+            raise TypeError(f"Expected type str, got {type(obj_id)}: {obj_id!r}")
+
         updated_objects = self._objects.copy()
         updated_objects[obj_id] = obj_data
 
