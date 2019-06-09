@@ -1,10 +1,6 @@
 # -*- encoding: utf-8
 
-import abc
 import contextlib
-import json
-import pathlib
-import tempfile
 
 import pytest
 
@@ -40,7 +36,7 @@ class TaggedObjectStoreTestCasesMixin(ObjectStoreTestCasesMixin):
 class TestMemoryObjectStore(TaggedObjectStoreTestCasesMixin, TestMemoryObjectStore):
     @contextlib.contextmanager
     def create_store(self, initial_objects):
-            yield MemoryTaggedObjectStore(initial_objects=initial_objects)
+        yield MemoryTaggedObjectStore(initial_objects=initial_objects)
 
 
 class TestJsonObjectStore(TaggedObjectStoreTestCasesMixin, TestJsonObjectStore):

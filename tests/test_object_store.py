@@ -8,7 +8,7 @@ import tempfile
 
 import pytest
 
-from storage import JsonObjectStore, MemoryObjectStore, NoSuchObject, ObjectStore
+from storage import JsonObjectStore, MemoryObjectStore, NoSuchObject
 
 
 class ObjectStoreTestCasesMixin(abc.ABC):

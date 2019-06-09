@@ -57,7 +57,7 @@ class JsonObjectStore(ObjectStore):
 
         try:
             self._objects = json.load(self.path.open())
-        except FileNotFoundError as err:
+        except FileNotFoundError:
             self._objects = {}
 
     @property

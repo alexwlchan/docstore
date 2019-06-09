@@ -7,3 +7,15 @@ from .tagged_store import (
     MemoryTaggedObjectStore,
     TaggedObjectStore
 )
+
+__all__ = [
+    "NoSuchObject",
+
+    "JsonObjectStore",
+    "MemoryObjectStore",
+    "ObjectStore",
+
+    "JsonTaggedObjectStore",
+    "MemoryTaggedObjectStore",
+    "TaggedObjectStore",
+]
