@@ -2,6 +2,7 @@
 
 import io
 import json
+import hashlib
 import pathlib
 import time
 
@@ -10,7 +11,18 @@ import hyperlink
 import pytest
 
 import api as service
-from hash_helpers import sha256
+
+
+def sha256(f):
+    h = hashlib.sha256()
+
+    while True:
+        next_buffer = f.read(65536)
+        if not next_buffer:
+            break
+        h.update(next_buffer)
+
+    return h.hexdigest()
 
 
 @pytest.fixture()
@@ -82,7 +94,7 @@ def test_stores_document_in_store(api, store, pdf_file, pdf_path):
     assert list(resp.json().keys()) == ["id"]
 
     docid = resp.json()["id"]
-    stored_doc = store.documents[docid]
+    stored_doc = store.underlying.objects[docid]
     assert stored_doc["title"] == data["title"]
     assert stored_doc["tags"] == data["tags"].split()
     assert stored_doc["filename"] == data["filename"]
@@ -102,7 +114,7 @@ def test_extra_keys_are_kept_in_store(api, store, pdf_file):
     assert list(resp.json().keys()) == ["id"]
 
     docid = resp.json()["id"]
-    stored_doc = store.documents[docid]
+    stored_doc = store.underlying.objects[docid]
     assert stored_doc["user_data"] == {
         "key1": "value1",
         "key2": "value2",
@@ -116,7 +128,7 @@ def test_calls_create_thumbnail(api, store, pdf_file):
 
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
-        stored_doc = store.documents[doc_id]
+        stored_doc = store.underlying.objects[doc_id]
         if "thumbnail_identifier" in stored_doc:
             break
 
@@ -130,7 +142,7 @@ def test_recreates_thumbnail(api, store, pdf_file):
 
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
-        stored_doc = store.documents[doc_id]
+        stored_doc = store.underlying.objects[doc_id]
         if "thumbnail_identifier" in stored_doc:
             break
 
@@ -302,7 +314,7 @@ class TestBrowser:
         message = json.loads(dict(location.query)["_message"])
 
         docid = message["id"]
-        stored_doc = store.documents[docid]
+        stored_doc = store.underlying.objects[docid]
         assert stored_doc["filename"] == "mydocument.pdf"
 
     def test_includes_error_message_in_response(self, api, pdf_file):

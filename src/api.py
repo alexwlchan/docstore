@@ -16,7 +16,8 @@ from whitenoise import WhiteNoise
 
 import date_helpers
 from exceptions import UserError
-from index_helpers import store_thumbnail, index_new_document
+from file_manager import ThumbnailManager
+from index_helpers import index_new_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
 from version import __version__
@@ -91,7 +92,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         # For encoding as UTF-8, see https://stackoverflow.com/a/49481671/1558022
         doc_id, _ = os.path.splitext(os.path.basename(url))
         try:
-            filename = store.documents[doc_id]["filename"]
+            filename = store.underlying.objects[doc_id]["filename"]
         except KeyError:
             pass
         else:
@@ -125,7 +126,16 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
             sort_order=tuple(sort_order.split(":"))
         )
 
-        search_response = search_helpers.search_store(store, options=search_options)
+        matching_documents = store.underlying.query(tag_query)
+
+        sort_field, sort_order = tuple(sort_order.split(":"))
+        display_documents = sorted(
+            list(matching_documents.values()),
+            key=lambda doc: doc.get(sort_field, ""),
+            reverse=(sort_order == "desc")
+        )
+
+        tag_aggregation = search_helpers.get_tag_aggregation(display_documents)
 
         req_url = hyperlink.DecodedURL.from_text(req.full_url)
 
@@ -138,7 +148,8 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         resp.content = api.template(
             "document_list.html",
             search_options=search_options,
-            search_response=search_response,
+            display_documents=display_documents,
+            tag_aggregation=tag_aggregation,
             view_option=view_option,
             title=display_title,
             req_url=req_url,
@@ -151,7 +162,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         try:
             resp.media = {
                 k: (str(v) if isinstance(v, pathlib.Path) else v)
-                for k, v in store.documents[document_id].items()
+                for k, v in store.underlying.objects[document_id].items()
             }
         except KeyError:
             resp.media = {"error": "Document %s not found!" % document_id}
@@ -159,7 +170,16 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 
     @api.background.task
     def create_doc_thumbnail(doc_id, doc):
-        store_thumbnail(store=store, doc_id=doc_id, doc=doc)
+        thumbnail_manager = ThumbnailManager(root=store.thumbnails_dir)
+        absolute_file_identifier = store.files_dir / doc["file_identifier"]
+
+        doc["thumbnail_identifier"] = thumbnail_manager.create_thumbnail(
+            doc_id,
+            absolute_file_identifier
+        )
+
+        store.underlying.put(obj_id=doc_id, obj_data=doc)
+
         whitenoise_thumbs.add_file_to_dictionary(
             url="/" + str(doc["thumbnail_identifier"]),
             path=str(store.thumbnails_dir / doc["thumbnail_identifier"])
@@ -217,7 +237,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
     @api.route("/api/v1/recreate_thumbnails")
     async def recreate_thumbnails(req, resp):
         if req.method == "post":
-            for doc_id, doc in store.documents.items():
+            for doc_id, doc in store.underlying.objects.items():
                 create_doc_thumbnail(doc_id=doc_id, doc=doc)
 
             resp.media = {"ok": "true"}

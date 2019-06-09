@@ -11,27 +11,10 @@ class SearchOptions:
     sort_order = attr.ib(default=("indexed_at", "desc"))
 
 
-@attr.s
-class SearchResponse:
-    documents = attr.ib()
-    tags = attr.ib()
-
-
-def search_store(store, options):
-    all_documents = store.search_documents(query=options.tag_query)
-
+def get_tag_aggregation(objects):
     tags = collections.defaultdict(int)
-    for doc in all_documents:
-        for t in doc.get("tags", []):
+    for obj in objects:
+        for t in obj.get("tags", []):
             tags[t] += 1
 
-    sort_field, sort_order = options.sort_order
-    all_documents.sort(
-        key=lambda doc: doc.get(sort_field, ""),
-        reverse=(sort_order == "desc")
-    )
-
-    return SearchResponse(
-        documents=all_documents,
-        tags=tags
-    )
+    return tags

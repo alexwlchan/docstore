@@ -4,7 +4,7 @@
     Store a document
     </a>
 
-    {% if search_response.tags %}
+    {% if tag_aggregation %}
     <a class="btn btn-light justify-content-left" data-toggle="collapse" href="#collapseTagList" role="button" aria-expanded="false" aria-controls="collapseTagList">
     Show tags
     </a>
@@ -45,11 +45,11 @@
   </div>
 </div>
 
-{% if search_response.tags %}
+{% if tag_aggregation %}
 <div class="collapse{% if cookies.get('tags-collapse__show') == 'true' %} show{% endif %}" id="collapseTagList">
   <div class="card card-body">
     <ul style="margin-bottom: 0;">
-    {% for tag in search_response.tags|sort %}
+    {% for tag in tag_aggregation|sort %}
       {% if not loop.first %}
         {% if tag.count(":") > loop.previtem.count(":") %}
           {% if tag.startswith(loop.previtem) %}<ul>
@@ -68,7 +68,7 @@
         <a href="{{ req_url.add('tag', tag) | query_str_only }}">{{ tag }}</a>
       {% else %}
         {{ tag }}
-      {% endif %} ({{ search_response.tags[tag] }})</li>
+      {% endif %} ({{ tag_aggregation[tag] }})</li>
 
       {% if loop.last %}
         {% for i in range(tag.count(":")) %}</ul>{% endfor %}

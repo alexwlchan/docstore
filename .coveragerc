@@ -13,3 +13,7 @@ omit =
 [report]
 show_missing = true
 fail_under = 100
+exclude_lines =
+    pragma: no cover
+    @abc.abstractmethod
+    @abc.abstractproperty
