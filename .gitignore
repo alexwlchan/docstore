@@ -2,6 +2,7 @@
 .coverage
 .DS_Store
 style.css
+.docker
 
 id_rsa
 id_rsa.pub
