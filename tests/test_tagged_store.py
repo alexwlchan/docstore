@@ -1,27 +1,10 @@
 # -*- encoding: utf-8
 
-import pytest
-
-from tagged_store import matches_tag_query, TaggedDocumentStore
-
-
-@pytest.mark.parametrize('doc, query, expected_result', [
-    ({"id": "1"}, [], True),
-    ({"id": "2"}, ["apple"], False),
-    ({"id": "3"}, ["apple", "banana"], False),
-    ({"id": "4", "tags": []}, [], True),
-    ({"id": "5", "tags": ["apple"]}, [], True),
-    ({"id": "6", "tags": ["apple"]}, ["apple"], True),
-    ({"id": "7", "tags": ["apple"]}, ["apple", "banana"], False),
-    ({"id": "8", "tags": ["apple"]}, ["banana"], False),
-])
-def test_can_match_tag_query(doc, query, expected_result):
-    assert matches_tag_query(doc, query) == expected_result
+from tagged_store import TaggedDocumentStore
 
 
 def test_root_path_properties(tmpdir):
     store = TaggedDocumentStore(root=tmpdir)
-    assert store.db_path == tmpdir.join("documents.json")
     assert store.files_dir == tmpdir.join("files")
     assert store.thumbnails_dir == tmpdir.join("thumbnails")
 
