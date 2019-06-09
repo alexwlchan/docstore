@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.7.5 - 2019-06-09
+
+This is a big internal refactoring to make the code easier to work with and easier to test, but with no user-facing changes.  At best, there should be some mild performance improvements.
+
 ## v1.7.4 - 2019-06-08
 
 This is a minor rearrangement of the Git repo to make it a bit easier to work on docstore.
