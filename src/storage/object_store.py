@@ -2,6 +2,7 @@
 
 import abc
 import json
+import pathlib
 
 from .exceptions import NoSuchObject
 
@@ -44,6 +45,12 @@ class MemoryObjectStore(ObjectStore):
         self._objects[obj_id] = obj_data
 
 
+class PosixPathEncoder(json.JSONEncoder):
+    def default(self, obj):  # pragma: no cover
+        if isinstance(obj, pathlib.Path):
+            return str(obj)
+
+
 class JsonObjectStore(ObjectStore):
     def __init__(self, path):
         self.path = path
@@ -64,7 +71,12 @@ class JsonObjectStore(ObjectStore):
         updated_objects = self._objects.copy()
         updated_objects[obj_id] = obj_data
 
-        json_string = json.dumps(updated_objects, indent=2, sort_keys=True)
+        json_string = json.dumps(
+            updated_objects,
+            indent=2,
+            sort_keys=True,
+            cls=PosixPathEncoder
+        )
 
         # Write to the database atomically
         tmp_path = self.path.with_suffix(".json.tmp")

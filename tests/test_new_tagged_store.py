@@ -9,14 +9,14 @@ import tempfile
 import pytest
 
 from storage import JsonTaggedObjectStore, MemoryTaggedObjectStore
+from test_object_store import (
+    ObjectStoreTestCasesMixin,
+    TestJsonObjectStore,
+    TestMemoryObjectStore
+)
 
 
-class TaggedObjectStoreTestCasesMixin(abc.ABC):
-    @abc.abstractmethod
-    @contextlib.contextmanager
-    def create_store(self, initial_objects):
-        pass
-
+class TaggedObjectStoreTestCasesMixin(ObjectStoreTestCasesMixin):
     @pytest.mark.parametrize("tag_query, expected_ids", [
         ([], {"apple", "banana", "cherry", "damson"}),
         ([1], {"apple", "banana"}),
@@ -37,22 +37,14 @@ class TaggedObjectStoreTestCasesMixin(abc.ABC):
             assert s.query(tag_query).keys() == expected_ids
 
 
-class TestMemoryObjectStore(TaggedObjectStoreTestCasesMixin):
+class TestMemoryObjectStore(TaggedObjectStoreTestCasesMixin, TestMemoryObjectStore):
     @contextlib.contextmanager
     def create_store(self, initial_objects):
-        yield MemoryTaggedObjectStore(initial_objects=initial_objects)
+            yield MemoryTaggedObjectStore(initial_objects=initial_objects)
 
 
-class TestJsonObjectStore(TaggedObjectStoreTestCasesMixin):
-    def temp_path(self):
-        _, temp_path = tempfile.mkstemp()
-        return pathlib.Path(temp_path)
-
+class TestJsonObjectStore(TaggedObjectStoreTestCasesMixin, TestJsonObjectStore):
     @contextlib.contextmanager
     def create_store(self, initial_objects):
-        path = self.temp_path()
-        path.write_text(json.dumps(initial_objects))
-
-        yield JsonTaggedObjectStore(path)
-
-        path.unlink()
+        with super().create_store(initial_objects) as s:
+            yield JsonTaggedObjectStore(s.path)

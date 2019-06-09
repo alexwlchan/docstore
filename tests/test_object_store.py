@@ -27,7 +27,7 @@ class ObjectStoreTestCasesMixin(abc.ABC):
 
     @pytest.mark.parametrize(
         "obj_data",
-        ["one", 1, None, {"es": "uno"}, ["a", "b", "c"]]
+        ["one", 1, None, {"es": "uno"}, ["a", "b", "c"], pathlib.Path("/usr/local")]
     )
     def test_can_put_objects(self, obj_data):
         with self.create_store(initial_objects={}) as s:
