@@ -19,10 +19,6 @@ class TaggedDocumentStore:
         self.thumbnails_dir.mkdir(exist_ok=True)
 
     @property
-    def documents(self):
-        return self.underlying.objects
-
-    @property
     def files_dir(self):
         return self.root / "files"
 

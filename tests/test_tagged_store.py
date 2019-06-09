@@ -9,10 +9,6 @@ def test_root_path_properties(tmpdir):
     assert store.thumbnails_dir == tmpdir.join("thumbnails")
 
 
-def test_gets_empty_documents_on_startup(store):
-    assert store.documents == {}
-
-
 def test_creates_necessary_directories(tmpdir):
     store = TaggedDocumentStore(root=tmpdir)
     assert store.files_dir.exists()

@@ -23,7 +23,7 @@ def test_thumbnail_data_is_saved(store, file_identifier):
     index_helpers.store_thumbnail(store=store, doc_id=doc_id, doc=doc)
 
     new_store = TaggedDocumentStore(store.root)
-    assert "thumbnail_identifier" in new_store.documents[doc_id]
+    assert "thumbnail_identifier" in new_store.underlying.objects[doc_id]
 
 
 def test_thumbnail_uses_appropriate_extension(store):
@@ -36,7 +36,7 @@ def test_thumbnail_uses_appropriate_extension(store):
     index_helpers.index_new_document(store=store, doc_id=doc_id, doc=doc)
     index_helpers.store_thumbnail(store=store, doc_id=doc_id, doc=doc)
 
-    assert store.documents[doc_id]["thumbnail_identifier"].suffix == ".png"
+    assert store.underlying.objects[doc_id]["thumbnail_identifier"].suffix == ".png"
 
 
 def test_removes_old_thumbnail_first(store, file_identifier):
