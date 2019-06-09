@@ -32,6 +32,3 @@ class TaggedDocumentStore:
 
     def index_document(self, doc_id, doc):
         self.underlying.put(str(doc_id), doc)
-
-    def search_documents(self, query):
-        return list(self.underlying.query(query).values())

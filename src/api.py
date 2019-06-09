@@ -125,7 +125,16 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
             sort_order=tuple(sort_order.split(":"))
         )
 
-        search_response = search_helpers.search_store(store, options=search_options)
+        matching_documents = store.underlying.query(tag_query)
+
+        sort_field, sort_order = tuple(sort_order.split(":"))
+        display_documents = sorted(
+            list(matching_documents.values()),
+            key=lambda doc: doc.get(sort_field, ""),
+            reverse=(sort_order == "desc")
+        )
+
+        tag_aggregation = search_helpers.get_tag_aggregation(display_documents)
 
         req_url = hyperlink.DecodedURL.from_text(req.full_url)
 
@@ -138,7 +147,8 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         resp.content = api.template(
             "document_list.html",
             search_options=search_options,
-            search_response=search_response,
+            display_documents=display_documents,
+            tag_aggregation=tag_aggregation,
             view_option=view_option,
             title=display_title,
             req_url=req_url,

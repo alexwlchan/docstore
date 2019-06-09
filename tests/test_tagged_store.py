@@ -27,20 +27,6 @@ def test_documents_are_saved_to_disk(store):
     assert store.documents == new_store.documents
 
 
-def test_can_search_documents(store):
-    doc1 = {"tags": ["foo", "bar"]}
-    doc2 = {"tags": ["foo", "baz"]}
-    doc3 = {"tags": []}
-
-    store.index_document(doc_id="1", doc=doc1)
-    store.index_document(doc_id="2", doc=doc2)
-    store.index_document(doc_id="3", doc=doc3)
-
-    assert store.search_documents(query=["foo"]) == [doc1, doc2]
-    assert store.search_documents(query=["baz"]) == [doc2]
-    assert store.search_documents(query=[]) == [doc1, doc2, doc3]
-
-
 def test_can_update_document_by_id(store):
     doc = {"color": "blue"}
     store.index_document(doc_id="1", doc=doc)
