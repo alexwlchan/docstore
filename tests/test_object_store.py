@@ -89,3 +89,13 @@ class TestJsonObjectStore(ObjectStoreTestCasesMixin):
 
         with pytest.raises(json.JSONDecodeError):
             JsonObjectStore(path)
+
+    def test_persists_objects_to_disk(self):
+        path = self.temp_path()
+        path.write_text("{}")
+
+        s1 = JsonObjectStore(path)
+        s1.put(obj_id="1", obj_data={"text": "one"})
+
+        s2 = JsonObjectStore(path)
+        assert s2.get(obj_id="1") == {"text": "one"}
