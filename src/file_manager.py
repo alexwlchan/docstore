@@ -3,9 +3,10 @@
 import mimetypes
 import pathlib
 
+import attr
 import magic
 
-import attr
+from thumbnails import create_thumbnail
 
 
 @attr.s
@@ -13,8 +14,6 @@ class FileManager:
     root = attr.ib()
 
     def write_bytes(self, file_id, buffer, original_filename=None):
-        pass
-
         if original_filename is not None:
             extension = pathlib.Path(original_filename).suffix
         else:
@@ -38,3 +37,14 @@ class FileManager:
         complete_file_identifier.write_bytes(buffer)
 
         return file_identifier
+
+
+class ThumbnailManager(FileManager):
+
+    def create_thumbnail(self, file_id, original_file):
+        thumbnail = create_thumbnail(original_file)
+        return self.write_bytes(
+            file_id=file_id,
+            buffer=thumbnail.read_bytes(),
+            original_filename=thumbnail
+        )
