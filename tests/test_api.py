@@ -2,6 +2,7 @@
 
 import io
 import json
+import hashlib
 import pathlib
 import time
 
@@ -10,7 +11,18 @@ import hyperlink
 import pytest
 
 import api as service
-from hash_helpers import sha256
+
+
+def sha256(f):
+    h = hashlib.sha256()
+
+    while True:
+        next_buffer = f.read(65536)
+        if not next_buffer:
+            break
+        h.update(next_buffer)
+
+    return h.hexdigest()
 
 
 @pytest.fixture()
