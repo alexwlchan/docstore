@@ -29,6 +29,3 @@ class TaggedDocumentStore:
     @property
     def thumbnails_dir(self):
         return self.root / "thumbnails"
-
-    def index_document(self, doc_id, doc):
-        self.underlying.put(str(doc_id), doc)
