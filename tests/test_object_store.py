@@ -66,12 +66,26 @@ class TestMemoryObjectStore(ObjectStoreTestCasesMixin):
 
 
 class TestJsonObjectStore(ObjectStoreTestCasesMixin):
+    def temp_path(self):
+        _, temp_path = tempfile.mkstemp()
+        return pathlib.Path(temp_path)
+
     @contextlib.contextmanager
     def create_store(self, initial_objects):
-        _, temp_path = tempfile.mkstemp()
-        path = pathlib.Path(temp_path)
+        path = self.temp_path()
         path.write_text(json.dumps(initial_objects))
 
         yield JsonObjectStore(path)
 
         path.unlink()
+
+    def test_gets_empty_documents_if_no_file_at_path(self):
+        s = JsonObjectStore(pathlib.Path("/does/not/exist"))
+        assert s.objects == {}
+
+    def test_errors_if_json_file_is_malformed(self):
+        path = self.temp_path()
+        path.write_text("not a JSON object")
+
+        with pytest.raises(json.JSONDecodeError):
+            JsonObjectStore(path)
