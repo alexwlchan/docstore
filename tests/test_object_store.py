@@ -8,7 +8,7 @@ import tempfile
 
 import pytest
 
-from storage import JsonObjectStore, MemoryObjectStore, NoSuchObject
+from storage import AlreadyExistsError, JsonObjectStore, MemoryObjectStore, NoSuchObject
 
 
 class ObjectStoreTestCasesMixin(abc.ABC):
@@ -38,6 +38,13 @@ class ObjectStoreTestCasesMixin(abc.ABC):
         with self.create_store(initial_objects={}) as s:
             with pytest.raises(TypeError):
                 s.put(obj_id=obj_id, obj_data="one")
+
+    def test_can_only_init_object_that_doesnt_exist(self):
+        with self.create_store(initial_objects={}) as s:
+            s.init(obj_id="1", obj_data="one")
+
+            with pytest.raises(AlreadyExistsError):
+                s.init(obj_id="1", obj_data="uno")
 
     @pytest.mark.parametrize("initial_value, updated_value", [
         ("one", "two"),

@@ -4,7 +4,7 @@ import abc
 import json
 import pathlib
 
-from .exceptions import NoSuchObject
+from .exceptions import AlreadyExistsError, NoSuchObject
 
 
 class ObjectStore(abc.ABC):
@@ -29,6 +29,11 @@ class ObjectStore(abc.ABC):
     @abc.abstractmethod
     def put(self, obj_id, obj_data):
         pass
+
+    def init(self, obj_id, *args, **kwargs):
+        if obj_id in self.objects:
+            raise AlreadyExistsError(obj_id)
+        self.put(obj_id, *args, **kwargs)
 
 
 class MemoryObjectStore(ObjectStore):

@@ -7,6 +7,7 @@ import pytest
 
 from exceptions import UserError
 import index_helpers
+from storage import AlreadyExistsError
 from tagged_store import TaggedDocumentStore
 
 
@@ -137,5 +138,9 @@ def test_cannot_store_same_id_twice(store):
     doc = {"file": b"hello world"}
     index_helpers.index_new_document(store=store, doc_id="1", doc=doc)
 
-    with pytest.raises(ValueError, match="The store already has a document with id"):
-        index_helpers.index_new_document(store=store, doc_id="1", doc=doc)
+    with pytest.raises(AlreadyExistsError):
+        index_helpers.index_new_document(
+            store=store,
+            doc_id="1",
+            doc={"file": b"hello world"}
+        )

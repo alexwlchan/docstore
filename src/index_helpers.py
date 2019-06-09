@@ -36,9 +36,6 @@ def store_thumbnail(store, doc_id, doc):
 
 
 def index_new_document(store, doc_id, doc):
-    if doc_id in store.underlying.objects:
-        raise ValueError(f"The store already has a document with id {doc_id}!")
-
     assert "date_created" not in doc
     doc["date_created"] = dt.datetime.now().isoformat()
 
@@ -80,5 +77,5 @@ def index_new_document(store, doc_id, doc):
     except KeyError:
         doc["sha256_checksum"] = actual_sha256
 
-    store.underlying.put(obj_id=doc_id, obj_data=doc)
+    store.underlying.init(obj_id=doc_id, obj_data=doc)
     return doc
