@@ -30,5 +30,5 @@ steps:
 
     make autorelease
 
-  condition: "eq(variables['Build.SourceBranch'], 'refs/heads/live')"
+  condition: "eq(variables['Build.SourceBranch'], 'refs/heads/development')"
   displayName: "Create new release and publish a Docker image"
