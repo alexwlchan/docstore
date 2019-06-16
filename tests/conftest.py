@@ -9,6 +9,7 @@ import pytest
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
 import api as service  # noqa
+from file_manager import FileManager
 from tagged_store import TaggedDocumentStore  # noqa
 
 
@@ -43,3 +44,13 @@ def file_identifier(store, pdf_path):
 @pytest.fixture()
 def api(store):
     return service.create_api(store)
+
+
+@pytest.fixture
+def tagged_store(store):
+    return store.underlying
+
+
+@pytest.fixture
+def file_manager(tmpdir):
+    return FileManager(root=pathlib.Path(tmpdir))

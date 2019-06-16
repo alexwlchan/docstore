@@ -16,7 +16,7 @@ from whitenoise import WhiteNoise
 
 import date_helpers
 from exceptions import UserError
-from file_manager import ThumbnailManager
+from file_manager import FileManager, ThumbnailManager
 from index_helpers import index_new_document
 import search_helpers
 from tagged_store import TaggedDocumentStore
@@ -62,6 +62,8 @@ def prepare_form_data(user_data):
 
 
 def create_api(store, display_title="Alex’s documents", default_view="table"):
+    file_manager = FileManager(store.files_dir)
+
     src_root = pathlib.Path(__file__).parent
     static_dir = src_root / "static"
 
@@ -201,7 +203,12 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 
             try:
                 prepared_data = prepare_form_data(user_data)
-                doc = index_new_document(store=store, doc_id=doc_id, doc=prepared_data)
+                doc = index_new_document(
+                    store.underlying,
+                    file_manager=file_manager,
+                    doc_id=doc_id,
+                    doc=prepared_data
+                )
             except UserError as err:
                 resp.media = {"error": str(err)}
                 resp.status_code = api.status_codes.HTTP_400
