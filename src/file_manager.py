@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import errno
 import mimetypes
 import os
 import pathlib
@@ -24,12 +25,14 @@ class FileManager:
 
         # This can throw an error if we try to do a rename across devices;
         # in that case fall back to a non-atomic copy operation.
-        # TODO: Make this stricter about the sort of errors it will catch.
         try:
             original_file.rename(complete_file_identifier)
-        except OSError:
-            shutil.copyfile(original_file, complete_file_identifier)
-            original_file.unlink()
+        except OSError as err:
+            if err.errno == errno.EXDEV:
+                shutil.copyfile(original_file, complete_file_identifier)
+                original_file.unlink()
+            else:  # pragma: no cover
+                raise
 
         return file_identifier
 

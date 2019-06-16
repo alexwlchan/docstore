@@ -74,8 +74,7 @@ class FileManagerTestMixin(abc.ABC):
         # created for tests are on the same partition.  What if they're on
         # different partitions?
         manager = self.create_manager("/documents")
-        jpg_data = pathlib.Path("tests/files/bridge.jpg").read_bytes()
-        manager.write_bytes(file_id="1234", buffer=jpg_data)
+        manager.write_bytes(file_id="1234", buffer=b"hello world")
 
 
 class TestFileManager(FileManagerTestMixin):
