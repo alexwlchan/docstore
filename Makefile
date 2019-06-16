@@ -31,7 +31,7 @@ test: $(ROOT)/.docker/tests test-fast
 
 test-fast:
 	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT) \
-		--entrypoint "coverage" docstore_tests run -m py.test tests
+		--entrypoint "coverage" docstore_tests run -m py.test -Werror tests
 	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT) \
 		--entrypoint "coverage" docstore_tests report
 

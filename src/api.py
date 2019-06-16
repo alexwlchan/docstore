@@ -16,10 +16,10 @@ from whitenoise import WhiteNoise
 
 import date_helpers
 from exceptions import UserError
-from file_manager import ThumbnailManager
+from file_manager import FileManager, ThumbnailManager
 from index_helpers import index_new_document
 import search_helpers
-from tagged_store import TaggedDocumentStore
+from storage import JsonTaggedObjectStore
 from version import __version__
 
 
@@ -61,7 +61,12 @@ def prepare_form_data(user_data):
     return prepared_data
 
 
-def create_api(store, display_title="Alex’s documents", default_view="table"):
+def create_api(
+    tagged_store, root, display_title="Alex’s documents", default_view="table"
+):
+    file_manager = FileManager(root / "files")
+    thumbnail_manager = ThumbnailManager(root / "thumbnails")
+
     src_root = pathlib.Path(__file__).parent
     static_dir = src_root / "static"
 
@@ -92,7 +97,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         # For encoding as UTF-8, see https://stackoverflow.com/a/49481671/1558022
         doc_id, _ = os.path.splitext(os.path.basename(url))
         try:
-            filename = store.underlying.objects[doc_id]["filename"]
+            filename = tagged_store.objects[doc_id]["filename"]
         except KeyError:
             pass
         else:
@@ -104,13 +109,19 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         application=api._default_wsgi_app,
         add_headers_function=add_headers_function
     )
-    whitenoise_files.add_files(store.files_dir)
+
+    if file_manager.root.exists():
+        whitenoise_files.add_files(file_manager.root)
+
     api.mount("/files", whitenoise_files)
 
     api.file_url = lambda doc: "files/" + str(doc["file_identifier"])
 
     whitenoise_thumbs = WhiteNoise(application=api._default_wsgi_app)
-    whitenoise_thumbs.add_files(store.thumbnails_dir)
+
+    if thumbnail_manager.root.exists():
+        whitenoise_thumbs.add_files(thumbnail_manager.root)
+
     api.mount("/thumbnails", whitenoise_thumbs)
 
     api.thumbnail_url = lambda doc: "thumbnails/" + str(doc["thumbnail_identifier"])
@@ -126,7 +137,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
             sort_order=tuple(sort_order.split(":"))
         )
 
-        matching_documents = store.underlying.query(tag_query)
+        matching_documents = tagged_store.query(tag_query)
 
         sort_field, sort_order = tuple(sort_order.split(":"))
         display_documents = sorted(
@@ -162,7 +173,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
         try:
             resp.media = {
                 k: (str(v) if isinstance(v, pathlib.Path) else v)
-                for k, v in store.underlying.objects[document_id].items()
+                for k, v in tagged_store.objects[document_id].items()
             }
         except KeyError:
             resp.media = {"error": "Document %s not found!" % document_id}
@@ -170,19 +181,18 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 
     @api.background.task
     def create_doc_thumbnail(doc_id, doc):
-        thumbnail_manager = ThumbnailManager(root=store.thumbnails_dir)
-        absolute_file_identifier = store.files_dir / doc["file_identifier"]
+        absolute_file_identifier = file_manager.root / doc["file_identifier"]
 
         doc["thumbnail_identifier"] = thumbnail_manager.create_thumbnail(
             doc_id,
             absolute_file_identifier
         )
 
-        store.underlying.put(obj_id=doc_id, obj_data=doc)
+        tagged_store.put(obj_id=doc_id, obj_data=doc)
 
         whitenoise_thumbs.add_file_to_dictionary(
             url="/" + str(doc["thumbnail_identifier"]),
-            path=str(store.thumbnails_dir / doc["thumbnail_identifier"])
+            path=str(thumbnail_manager.root / doc["thumbnail_identifier"])
         )
 
     async def _upload_document_api(req, resp):
@@ -201,7 +211,12 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 
             try:
                 prepared_data = prepare_form_data(user_data)
-                doc = index_new_document(store=store, doc_id=doc_id, doc=prepared_data)
+                doc = index_new_document(
+                    tagged_store,
+                    file_manager,
+                    doc_id=doc_id,
+                    doc=prepared_data
+                )
             except UserError as err:
                 resp.media = {"error": str(err)}
                 resp.status_code = api.status_codes.HTTP_400
@@ -209,7 +224,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 
             whitenoise_files.add_file_to_dictionary(
                 url="/" + str(doc["file_identifier"]),
-                path=str(store.files_dir / doc["file_identifier"])
+                path=str(file_manager.root / doc["file_identifier"])
             )
 
             create_doc_thumbnail(doc_id=doc_id, doc=doc)
@@ -237,7 +252,7 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
     @api.route("/api/v1/recreate_thumbnails")
     async def recreate_thumbnails(req, resp):
         if req.method == "post":
-            for doc_id, doc in store.underlying.objects.items():
+            for doc_id, doc in tagged_store.objects.items():
                 create_doc_thumbnail(doc_id=doc_id, doc=doc)
 
             resp.media = {"ok": "true"}
@@ -254,10 +269,16 @@ def create_api(store, display_title="Alex’s documents", default_view="table"):
 @click.option("--title", default="Alex’s documents")
 @click.option("--default_view", default="table", type=click.Choice(["table", "grid"]))
 def run_api(root, title, default_view):
-    root = os.path.normpath(root)
+    root = pathlib.Path(os.path.normpath(root))
 
-    store = TaggedDocumentStore(root)
-    api = create_api(store, display_title=title, default_view=default_view)
+    tagged_store = JsonTaggedObjectStore(root / "documents.json")
+
+    api = create_api(
+        tagged_store,
+        root=root,
+        display_title=title,
+        default_view=default_view
+    )
 
     api.run()
 

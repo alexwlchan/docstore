@@ -9,12 +9,13 @@ import pytest
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
 import api as service  # noqa
-from tagged_store import TaggedDocumentStore  # noqa
+from file_manager import FileManager  # noqa
+from storage import MemoryTaggedObjectStore  # noqa
 
 
 @pytest.fixture
-def store(tmpdir):
-    return TaggedDocumentStore(root=tmpdir)
+def store_root(tmpdir):
+    return pathlib.Path(tmpdir)
 
 
 @pytest.fixture
@@ -24,17 +25,28 @@ def pdf_path():
 
 @pytest.fixture
 def pdf_file(pdf_path):
-    return pdf_path.open("rb")
+    with pdf_path.open("rb") as f:
+        yield f
 
 
 @pytest.fixture
-def file_identifier(store, pdf_path):
-    p = store.files_dir / "s/snakes.pdf"
-    p.parent.mkdir(exist_ok=True)
+def file_identifier(store_root, pdf_path):
+    p = store_root / "files" / "s/snakes.pdf"
+    p.parent.mkdir(exist_ok=True, parents=True)
     shutil.copyfile(pdf_path, p)
     return "s/snakes.pdf"
 
 
 @pytest.fixture()
-def api(store):
-    return service.create_api(store)
+def api(tagged_store, store_root):
+    return service.create_api(tagged_store, root=store_root)
+
+
+@pytest.fixture
+def tagged_store():
+    return MemoryTaggedObjectStore(initial_objects={})
+
+
+@pytest.fixture
+def file_manager(store_root):
+    return FileManager(root=store_root)

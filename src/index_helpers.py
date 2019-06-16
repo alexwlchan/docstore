@@ -4,18 +4,15 @@ import datetime as dt
 import hashlib
 
 from exceptions import UserError
-from file_manager import FileManager
 
 
-def index_new_document(store, doc_id, doc):
+def index_new_document(tagged_object_store, file_manager, doc_id, doc):
     assert "date_created" not in doc
     doc["date_created"] = dt.datetime.now().isoformat()
 
     file_data = doc.pop("file")
 
-    manager = FileManager(store.files_dir)
-
-    file_identifier = manager.write_bytes(
+    file_identifier = file_manager.write_bytes(
         file_id=doc_id,
         buffer=file_data,
         original_filename=doc.get("filename")
@@ -38,5 +35,5 @@ def index_new_document(store, doc_id, doc):
     except KeyError:
         doc["sha256_checksum"] = actual_sha256
 
-    store.underlying.init(obj_id=doc_id, obj_data=doc)
+    tagged_object_store.init(obj_id=doc_id, obj_data=doc)
     return doc

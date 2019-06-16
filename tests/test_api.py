@@ -3,7 +3,6 @@
 import io
 import json
 import hashlib
-import pathlib
 import time
 
 import bs4
@@ -23,11 +22,6 @@ def sha256(f):
         h.update(next_buffer)
 
     return h.hexdigest()
-
-
-@pytest.fixture()
-def api(store):
-    return service.create_api(store)
 
 
 def test_non_post_to_upload_is_405(api):
@@ -59,12 +53,16 @@ def test_uploading_file_with_wrong_name_is_400(api):
     }
 
 
+with open("tests/files/snakes.pdf", "rb") as f:
+    snake_sha256 = sha256(f)
+
+
 @pytest.mark.parametrize('data', [
     {},
     {"title": "Hello world"},
     {"tags": ["foo"]},
     {"filename": "foo.pdf"},
-    {"sha256_checksum": sha256(pathlib.Path("tests/files/snakes.pdf").open("rb"))},
+    {"sha256_checksum": snake_sha256},
 ])
 def test_can_upload_without_all_parameters(api, data, pdf_file):
     resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
@@ -80,7 +78,7 @@ def test_incorrect_checksum_is_400(api, pdf_file):
     assert resp.status_code == 400
 
 
-def test_stores_document_in_store(api, store, pdf_file, pdf_path):
+def test_stores_document_in_store(api, tagged_store, pdf_file, pdf_path):
     hex_hash = sha256(pdf_path.open("rb"))
 
     data = {
@@ -94,14 +92,14 @@ def test_stores_document_in_store(api, store, pdf_file, pdf_path):
     assert list(resp.json().keys()) == ["id"]
 
     docid = resp.json()["id"]
-    stored_doc = store.underlying.objects[docid]
+    stored_doc = tagged_store.objects[docid]
     assert stored_doc["title"] == data["title"]
     assert stored_doc["tags"] == data["tags"].split()
     assert stored_doc["filename"] == data["filename"]
     assert stored_doc["sha256_checksum"] == data["sha256_checksum"]
 
 
-def test_extra_keys_are_kept_in_store(api, store, pdf_file):
+def test_extra_keys_are_kept_in_store(api, tagged_store, pdf_file):
     data = {
         "title": "Hello world",
         "tags": "foo bar baz",
@@ -114,39 +112,39 @@ def test_extra_keys_are_kept_in_store(api, store, pdf_file):
     assert list(resp.json().keys()) == ["id"]
 
     docid = resp.json()["id"]
-    stored_doc = store.underlying.objects[docid]
+    stored_doc = tagged_store.objects[docid]
     assert stored_doc["user_data"] == {
         "key1": "value1",
         "key2": "value2",
     }
 
 
-def test_calls_create_thumbnail(api, store, pdf_file):
+def test_calls_create_thumbnail(api, tagged_store, pdf_file):
     resp = api.requests.post("/upload", files={"file": pdf_file})
     assert resp.status_code == 201
     doc_id = resp.json()["id"]
 
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
-        stored_doc = store.underlying.objects[doc_id]
+        stored_doc = tagged_store.objects[doc_id]
         if "thumbnail_identifier" in stored_doc:
             break
 
     assert "thumbnail_identifier" in stored_doc
 
 
-def test_recreates_thumbnail(api, store, pdf_file):
+def test_recreates_thumbnail(api, tagged_store, store_root, pdf_file):
     resp = api.requests.post("/upload", files={"file": pdf_file})
     assert resp.status_code == 201
     doc_id = resp.json()["id"]
 
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
-        stored_doc = store.underlying.objects[doc_id]
+        stored_doc = tagged_store.objects[doc_id]
         if "thumbnail_identifier" in stored_doc:
             break
 
-    thumb_path = store.thumbnails_dir / stored_doc["thumbnail_identifier"]
+    thumb_path = store_root / "thumbnails" / stored_doc["thumbnail_identifier"]
     assert thumb_path.exists()
     original_mtime = thumb_path.stat().st_mtime
 
@@ -223,6 +221,53 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
             break
 
     img_resp = api.requests.get(img_src)
+    assert img_resp.status_code == 200
+
+
+def test_can_view_existing_file_and_thumbnail(
+    api, tagged_store, store_root, pdf_file, pdf_path, file_identifier
+):
+    api.requests.post("/upload", files={"file": pdf_file})
+
+    # Wait for the document to index, then create a fresh API at the same root
+    time.sleep(1)
+    new_api = service.create_api(tagged_store, root=store_root)
+
+    resp = new_api.requests.get("/")
+    assert resp.status_code == 200
+    assert resp.text != "null"
+
+    soup = bs4.BeautifulSoup(resp.text, "html.parser")
+
+    all_links = soup.find_all("a", attrs={"target": "_blank"})
+    pdf_links = list(set(
+        link.attrs["href"]
+        for link in all_links
+        if link.attrs.get("href", "").endswith(".pdf")
+    ))
+    assert len(pdf_links) == 1
+    pdf_href = pdf_links[0]
+
+    thumbnails_td = soup.find_all("td", attrs={"class": "thumbnail"})
+    assert len(thumbnails_td) == 1
+    thumbnails_img = thumbnails_td[0].find_all("img")
+    assert len(thumbnails_img) == 1
+    img_src = thumbnails_img[0].attrs["src"]
+
+    pdf_resp = new_api.requests.get(pdf_href, stream=True)
+    assert pdf_resp.status_code == 200
+    assert pdf_resp.raw.read() == open(pdf_path, "rb").read()
+
+    now = time.time()
+    while time.time() - now < 3:  # pragma: no cover
+        try:
+            new_api.requests.get(img_src)
+        except TypeError:
+            pass
+        else:
+            break
+
+    img_resp = new_api.requests.get(img_src)
     assert img_resp.status_code == 200
 
 
@@ -307,14 +352,14 @@ class TestBrowser:
         assert resp.status_code == 302
         assert resp.headers["Location"].startswith(original_page)
 
-    def test_includes_document_in_store(self, api, store, pdf_file):
+    def test_includes_document_in_store(self, api, tagged_store, pdf_file):
         resp = self.upload(api=api, file_contents=pdf_file)
 
         location = hyperlink.URL.from_text(resp.headers["Location"])
         message = json.loads(dict(location.query)["_message"])
 
         docid = message["id"]
-        stored_doc = store.underlying.objects[docid]
+        stored_doc = tagged_store.objects[docid]
         assert stored_doc["filename"] == "mydocument.pdf"
 
     def test_includes_error_message_in_response(self, api, pdf_file):

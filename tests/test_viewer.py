@@ -47,8 +47,8 @@ class TestViewOptions:
         assert '<div class="row">' in resp.text
         assert '<table class="table">' not in resp.text
 
-    def test_table_view(self, sess, store):
-        index_new_document(store=store, doc_id="1", doc={
+    def test_table_view(self, sess, tagged_store, file_manager):
+        index_new_document(tagged_store, file_manager, doc_id="1", doc={
             "file": b"hello world",
             "title": "foo",
             "tags": ["bar", "baz", "bat"]
@@ -56,57 +56,64 @@ class TestViewOptions:
         resp = sess.get("/", params={"view": "table"})
         self._assert_is_table(resp)
 
-    def test_grid_view(self, sess, store):
+    def test_grid_view(self, sess, tagged_store, file_manager):
         index_new_document(
-            store=store,
+            tagged_store,
+            file_manager,
             doc_id="1",
             doc={"file": b"hello world", "title": "foo"}
         )
         resp = sess.get("/", params={"view": "grid"})
         self._assert_is_grid(resp)
 
-    def test_default_is_table_view(self, store):
+    def test_default_is_table_view(self, store_root, tagged_store, file_manager):
         index_new_document(
-            store=store,
+            tagged_store,
+            file_manager,
             doc_id="1",
             doc={"file": b"hello world", "title": "xyz"}
         )
-        api = service.create_api(store)
+        api = service.create_api(tagged_store, store_root)
         resp = api.requests.get("/")
         self._assert_is_table(resp)
 
-    def test_can_set_default_as_table_view(self, store):
+    def test_can_set_default_table_view(self, store_root, tagged_store, file_manager):
         index_new_document(
-            store=store,
+            tagged_store,
+            file_manager,
             doc_id="1",
             doc={"file": b"hello world", "title": "xyz"}
         )
-        api = service.create_api(store, default_view="table")
+        api = service.create_api(tagged_store, store_root, default_view="table")
         resp = api.requests.get("/")
         self._assert_is_table(resp)
 
-    def test_can_set_default_as_grid_view(self, store):
+    def test_can_set_default_grid_view(self, store_root, tagged_store, file_manager):
         index_new_document(
-            store=store,
+            tagged_store,
+            file_manager,
             doc_id="1",
             doc={"file": b"hello world", "title": "xyz"}
         )
-        api = service.create_api(store, default_view="grid")
+        api = service.create_api(tagged_store, store_root, default_view="grid")
         resp = api.requests.get("/")
         self._assert_is_grid(resp)
 
 
-def test_uses_display_title(store):
-    resp = service.create_api(store).requests.get("/")
+def test_uses_display_title(tagged_store, store_root):
+    api = service.create_api(tagged_store, store_root)
+    resp = api.requests.get("/")
     assert "Alex’s documents" in resp.text
 
-    resp = service.create_api(store, display_title="Manuals").requests.get("/")
+    api = service.create_api(tagged_store, store_root, display_title="Manuals")
+    resp = api.requests.get("/")
     assert "Manuals" in resp.text
 
 
-def test_can_filter_by_tag(sess, store):
+def test_can_filter_by_tag(sess, tagged_store, file_manager):
     index_new_document(
-        store=store,
+        tagged_store,
+        file_manager,
         doc_id="1",
         doc={
             "file": b"hello world",
@@ -115,7 +122,8 @@ def test_can_filter_by_tag(sess, store):
         }
     )
     index_new_document(
-        store=store,
+        tagged_store,
+        file_manager,
         doc_id="2",
         doc={
             "file": b"hi world",
@@ -134,9 +142,10 @@ def test_can_filter_by_tag(sess, store):
 
 
 @pytest.mark.parametrize("params", PARAMS)
-def test_shows_column_headers(sess, store, params):
+def test_shows_column_headers(sess, tagged_store, file_manager, params):
     index_new_document(
-        store=store,
+        tagged_store,
+        file_manager,
         doc_id="1",
         doc={
             "file": b"hello world",
@@ -154,9 +163,10 @@ def test_shows_column_headers(sess, store, params):
 
 
 @pytest.mark.parametrize("params", PARAMS)
-def test_all_urls_are_relative(sess, store, params):
+def test_all_urls_are_relative(sess, tagged_store, file_manager, params):
     index_new_document(
-        store=store,
+        tagged_store,
+        file_manager,
         doc_id="1",
         doc={
             "file": b"hello world",
@@ -183,9 +193,10 @@ def test_version_is_shown_in_footer(sess):
     assert re.search(r'docstore v\d+\.\d+\.\d+', str(footer)) is not None
 
 
-def test_includes_created_date(store, sess):
+def test_includes_created_date(sess, tagged_store, file_manager):
     index_new_document(
-        store=store,
+        tagged_store,
+        file_manager,
         doc_id="1",
         doc={
             "file": b"hello world",
