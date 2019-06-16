@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.7.6 - 2019-06-16
+
+Further refactoring of the underlying code to make it simpler and easier to work with.
+
 ## v1.7.5 - 2019-06-09
 
 This is a big internal refactoring to make the code easier to work with and easier to test, but with no user-facing changes.  At best, there should be some mild performance improvements.
