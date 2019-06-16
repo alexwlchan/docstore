@@ -225,6 +225,53 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
     assert img_resp.status_code == 200
 
 
+def test_can_view_existing_file_and_thumbnail(
+    api, tagged_store, store_root, pdf_file, pdf_path, file_identifier
+):
+    api.requests.post("/upload", files={"file": pdf_file})
+
+    # Wait for the document to index, then create a fresh API at the same root
+    time.sleep(1)
+    new_api = service.create_api(tagged_store, root=store_root)
+
+    resp = new_api.requests.get("/")
+    assert resp.status_code == 200
+    assert resp.text != "null"
+
+    soup = bs4.BeautifulSoup(resp.text, "html.parser")
+
+    all_links = soup.find_all("a", attrs={"target": "_blank"})
+    pdf_links = list(set(
+        link.attrs["href"]
+        for link in all_links
+        if link.attrs.get("href", "").endswith(".pdf")
+    ))
+    assert len(pdf_links) == 1
+    pdf_href = pdf_links[0]
+
+    thumbnails_td = soup.find_all("td", attrs={"class": "thumbnail"})
+    assert len(thumbnails_td) == 1
+    thumbnails_img = thumbnails_td[0].find_all("img")
+    assert len(thumbnails_img) == 1
+    img_src = thumbnails_img[0].attrs["src"]
+
+    pdf_resp = new_api.requests.get(pdf_href, stream=True)
+    assert pdf_resp.status_code == 200
+    assert pdf_resp.raw.read() == open(pdf_path, "rb").read()
+
+    now = time.time()
+    while time.time() - now < 3:  # pragma: no cover
+        try:
+            new_api.requests.get(img_src)
+        except TypeError:
+            pass
+        else:
+            break
+
+    img_resp = new_api.requests.get(img_src)
+    assert img_resp.status_code == 200
+
+
 def test_can_lookup_document(api, pdf_file):
     data = {
         "title": "Hello world"
