@@ -25,11 +25,6 @@ def sha256(f):
     return h.hexdigest()
 
 
-@pytest.fixture()
-def api(store):
-    return service.create_api(store)
-
-
 def test_non_post_to_upload_is_405(api):
     resp = api.requests.get("/upload")
     assert resp.status_code == 405
