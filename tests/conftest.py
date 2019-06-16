@@ -9,8 +9,8 @@ import pytest
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
 import api as service  # noqa
-from file_manager import FileManager
-from storage import MemoryTaggedObjectStore
+from file_manager import FileManager  # noqa
+from storage import MemoryTaggedObjectStore  # noqa
 
 
 @pytest.fixture
