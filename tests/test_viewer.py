@@ -66,45 +66,47 @@ class TestViewOptions:
         resp = sess.get("/", params={"view": "grid"})
         self._assert_is_grid(resp)
 
-    def test_default_is_table_view(self, store, tagged_store, file_manager):
+    def test_default_is_table_view(self, store_root, tagged_store, file_manager):
         index_new_document(
             tagged_store,
             file_manager,
             doc_id="1",
             doc={"file": b"hello world", "title": "xyz"}
         )
-        api = service.create_api(store)
+        api = service.create_api(tagged_store, store_root)
         resp = api.requests.get("/")
         self._assert_is_table(resp)
 
-    def test_can_set_default_as_table_view(self, store, tagged_store, file_manager):
+    def test_can_set_default_table_view(self, store_root, tagged_store, file_manager):
         index_new_document(
             tagged_store,
             file_manager,
             doc_id="1",
             doc={"file": b"hello world", "title": "xyz"}
         )
-        api = service.create_api(store, default_view="table")
+        api = service.create_api(tagged_store, store_root, default_view="table")
         resp = api.requests.get("/")
         self._assert_is_table(resp)
 
-    def test_can_set_default_as_grid_view(self, store, tagged_store, file_manager):
+    def test_can_set_default_grid_view(self, store_root, tagged_store, file_manager):
         index_new_document(
             tagged_store,
             file_manager,
             doc_id="1",
             doc={"file": b"hello world", "title": "xyz"}
         )
-        api = service.create_api(store, default_view="grid")
+        api = service.create_api(tagged_store, store_root, default_view="grid")
         resp = api.requests.get("/")
         self._assert_is_grid(resp)
 
 
-def test_uses_display_title(store):
-    resp = service.create_api(store).requests.get("/")
+def test_uses_display_title(tagged_store, store_root):
+    api = service.create_api(tagged_store, store_root)
+    resp = api.requests.get("/")
     assert "Alex’s documents" in resp.text
 
-    resp = service.create_api(store, display_title="Manuals").requests.get("/")
+    api = service.create_api(tagged_store, store_root, display_title="Manuals")
+    resp = api.requests.get("/")
     assert "Manuals" in resp.text
 
 

@@ -42,8 +42,8 @@ def file_identifier(store, pdf_path):
 
 
 @pytest.fixture()
-def api(store):
-    return service.create_api(store)
+def api(tagged_store, store_root):
+    return service.create_api(tagged_store, root=store_root)
 
 
 @pytest.fixture
@@ -52,5 +52,5 @@ def tagged_store(store):
 
 
 @pytest.fixture
-def file_manager(tmpdir):
-    return FileManager(root=pathlib.Path(tmpdir))
+def file_manager(store_root):
+    return FileManager(root=store_root)

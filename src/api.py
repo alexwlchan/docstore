@@ -19,7 +19,7 @@ from exceptions import UserError
 from file_manager import FileManager, ThumbnailManager
 from index_helpers import index_new_document
 import search_helpers
-from tagged_store import TaggedDocumentStore
+from storage import JsonTaggedObjectStore
 from version import __version__
 
 
@@ -61,16 +61,9 @@ def prepare_form_data(user_data):
     return prepared_data
 
 
-def create_api(store, *args, **kwargs):
-    return crt_api(
-        store.underlying,
-        store.root,
-        *args, **kwargs
-    )
-
-
-
-def crt_api(tagged_store, root, display_title="Alex’s documents", default_view="table"):
+def create_api(
+    tagged_store, root, display_title="Alex’s documents", default_view="table"
+):
     file_manager = FileManager(root / "files")
     thumbnail_manager = ThumbnailManager(root / "thumbnails")
 
@@ -270,10 +263,16 @@ def crt_api(tagged_store, root, display_title="Alex’s documents", default_view
 @click.option("--title", default="Alex’s documents")
 @click.option("--default_view", default="table", type=click.Choice(["table", "grid"]))
 def run_api(root, title, default_view):
-    root = os.path.normpath(root)
+    root = pathlib.Path(os.path.normpath(root))
 
-    store = TaggedDocumentStore(root)
-    api = create_api(store, display_title=title, default_view=default_view)
+    tagged_store = JsonTaggedObjectStore(root / "documents.json")
+
+    api = create_api(
+        tagged_store,
+        root=root,
+        display_title=title,
+        default_view=default_view
+    )
 
     api.run()
 
