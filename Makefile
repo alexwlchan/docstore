@@ -42,7 +42,7 @@ test_requirements.txt: $(ROOT)/.docker/pip_tools requirements.txt test_requireme
 	docker run -v $(ROOT):/src --workdir /src docstore_piptools test_requirements.in
 
 check_release_file:
-	python .travis/autorelease.py check_release_file
+	python scripts/autorelease.py check_release_file
 
 autorelease:
-	python .travis/autorelease.py release
+	python scripts/autorelease.py release
