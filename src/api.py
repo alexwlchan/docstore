@@ -109,13 +109,19 @@ def create_api(
         application=api._default_wsgi_app,
         add_headers_function=add_headers_function
     )
-    whitenoise_files.add_files(file_manager.root)
+
+    if file_manager.root.exists():
+        whitenoise_files.add_files(file_manager.root)
+
     api.mount("/files", whitenoise_files)
 
     api.file_url = lambda doc: "files/" + str(doc["file_identifier"])
 
     whitenoise_thumbs = WhiteNoise(application=api._default_wsgi_app)
-    whitenoise_thumbs.add_files(thumbnail_manager.root)
+
+    if thumbnail_manager.root.exists():
+        whitenoise_thumbs.add_files(thumbnail_manager.root)
+
     api.mount("/thumbnails", whitenoise_thumbs)
 
     api.thumbnail_url = lambda doc: "thumbnails/" + str(doc["thumbnail_identifier"])

@@ -54,12 +54,16 @@ def test_uploading_file_with_wrong_name_is_400(api):
     }
 
 
+with open("tests/files/snakes.pdf", "rb") as f:
+    snake_sha256 = sha256(f)
+
+
 @pytest.mark.parametrize('data', [
     {},
     {"title": "Hello world"},
     {"tags": ["foo"]},
     {"filename": "foo.pdf"},
-    {"sha256_checksum": sha256(pathlib.Path("tests/files/snakes.pdf").open("rb"))},
+    {"sha256_checksum": snake_sha256},
 ])
 def test_can_upload_without_all_parameters(api, data, pdf_file):
     resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)

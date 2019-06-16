@@ -25,7 +25,8 @@ def pdf_path():
 
 @pytest.fixture
 def pdf_file(pdf_path):
-    return pdf_path.open("rb")
+    with pdf_path.open("rb") as f:
+        yield f
 
 
 @pytest.fixture
