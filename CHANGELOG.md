@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v1.7.7 - 2019-06-16
+
+This fixes a bug introduced in v1.7.6, where trying to store a document while running inside a Docker container could throw an error:
+
+```
+OSError: [Errno 18] Invalid cross-device link
+```
+
 ## v1.7.6 - 2019-06-16
 
 Further refactoring of the underlying code to make it simpler and easier to work with.
