@@ -262,9 +262,6 @@ def configure_secrets():
     git("config", "user.name", "Azure Pipelines on behalf of alexwlchan")
     git("config", "user.email", "azure@alexwlchan.fastmail.co.uk")
 
-    print("SSH public key:")
-    subprocess.check_call(["ssh-keygen", "-y", "-f", "id_rsa"])
-
 
 def release():
     last_release = latest_version()
