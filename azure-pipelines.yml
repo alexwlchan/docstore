@@ -17,7 +17,7 @@ steps:
   inputs:
     secureFile: "id_rsa_docstore"
 
-- task: "DownloadSecureFile@2"
+- task: "DownloadSecureFile@1"
   inputs:
     secureFile: "docker_password.txt"
 
