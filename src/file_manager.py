@@ -2,7 +2,6 @@
 
 import errno
 import mimetypes
-import os
 import pathlib
 import shutil
 import tempfile
