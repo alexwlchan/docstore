@@ -1,6 +1,7 @@
 # -*- encoding: utf-8
 
 import abc
+import os
 import pathlib
 
 import pytest
@@ -63,6 +64,18 @@ class FileManagerTestMixin(abc.ABC):
         jpg_data = pathlib.Path("tests/files/bridge.jpg").read_bytes()
         resp = manager.write_bytes(file_id="1234", buffer=jpg_data)
         assert resp.suffix == ".jpg"
+
+    @pytest.mark.skipif(
+        os.environ.get("DOCKER") != "true",
+        reason="This test can only be run inside Docker"
+    )
+    def test_can_write_file_across_fs_boundary(self):
+        # The temporary location used by the file manager and the directories
+        # created for tests are on the same partition.  What if they're on
+        # different partitions?
+        manager = self.create_manager("/documents")
+        jpg_data = pathlib.Path("tests/files/bridge.jpg").read_bytes()
+        manager.write_bytes(file_id="1234", buffer=jpg_data)
 
 
 class TestFileManager(FileManagerTestMixin):
