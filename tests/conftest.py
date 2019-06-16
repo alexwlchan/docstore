@@ -13,8 +13,13 @@ from tagged_store import TaggedDocumentStore  # noqa
 
 
 @pytest.fixture
-def store(tmpdir):
-    return TaggedDocumentStore(root=tmpdir)
+def store_root(tmpdir):
+    return pathlib.Path(tmpdir)
+
+
+@pytest.fixture
+def store(store_root):
+    return TaggedDocumentStore(root=store_root)
 
 
 @pytest.fixture
