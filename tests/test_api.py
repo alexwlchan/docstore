@@ -75,7 +75,7 @@ def test_incorrect_checksum_is_400(api, pdf_file):
     assert resp.status_code == 400
 
 
-def test_stores_document_in_store(api, store, pdf_file, pdf_path):
+def test_stores_document_in_store(api, tagged_store, pdf_file, pdf_path):
     hex_hash = sha256(pdf_path.open("rb"))
 
     data = {
@@ -89,14 +89,14 @@ def test_stores_document_in_store(api, store, pdf_file, pdf_path):
     assert list(resp.json().keys()) == ["id"]
 
     docid = resp.json()["id"]
-    stored_doc = store.underlying.objects[docid]
+    stored_doc = tagged_store.objects[docid]
     assert stored_doc["title"] == data["title"]
     assert stored_doc["tags"] == data["tags"].split()
     assert stored_doc["filename"] == data["filename"]
     assert stored_doc["sha256_checksum"] == data["sha256_checksum"]
 
 
-def test_extra_keys_are_kept_in_store(api, store, pdf_file):
+def test_extra_keys_are_kept_in_store(api, tagged_store, pdf_file):
     data = {
         "title": "Hello world",
         "tags": "foo bar baz",
@@ -109,39 +109,39 @@ def test_extra_keys_are_kept_in_store(api, store, pdf_file):
     assert list(resp.json().keys()) == ["id"]
 
     docid = resp.json()["id"]
-    stored_doc = store.underlying.objects[docid]
+    stored_doc = tagged_store.objects[docid]
     assert stored_doc["user_data"] == {
         "key1": "value1",
         "key2": "value2",
     }
 
 
-def test_calls_create_thumbnail(api, store, pdf_file):
+def test_calls_create_thumbnail(api, tagged_store, pdf_file):
     resp = api.requests.post("/upload", files={"file": pdf_file})
     assert resp.status_code == 201
     doc_id = resp.json()["id"]
 
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
-        stored_doc = store.underlying.objects[doc_id]
+        stored_doc = tagged_store.objects[doc_id]
         if "thumbnail_identifier" in stored_doc:
             break
 
     assert "thumbnail_identifier" in stored_doc
 
 
-def test_recreates_thumbnail(api, store, pdf_file):
+def test_recreates_thumbnail(api, tagged_store, store_root, pdf_file):
     resp = api.requests.post("/upload", files={"file": pdf_file})
     assert resp.status_code == 201
     doc_id = resp.json()["id"]
 
     now = time.time()
     while time.time() - now < 10:  # pragma: no cover
-        stored_doc = store.underlying.objects[doc_id]
+        stored_doc = tagged_store.objects[doc_id]
         if "thumbnail_identifier" in stored_doc:
             break
 
-    thumb_path = store.thumbnails_dir / stored_doc["thumbnail_identifier"]
+    thumb_path = store_root / "thumbnails" / stored_doc["thumbnail_identifier"]
     assert thumb_path.exists()
     original_mtime = thumb_path.stat().st_mtime
 
@@ -302,14 +302,14 @@ class TestBrowser:
         assert resp.status_code == 302
         assert resp.headers["Location"].startswith(original_page)
 
-    def test_includes_document_in_store(self, api, store, pdf_file):
+    def test_includes_document_in_store(self, api, tagged_store, pdf_file):
         resp = self.upload(api=api, file_contents=pdf_file)
 
         location = hyperlink.URL.from_text(resp.headers["Location"])
         message = json.loads(dict(location.query)["_message"])
 
         docid = message["id"]
-        stored_doc = store.underlying.objects[docid]
+        stored_doc = tagged_store.objects[docid]
         assert stored_doc["filename"] == "mydocument.pdf"
 
     def test_includes_error_message_in_response(self, api, pdf_file):
