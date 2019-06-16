@@ -3,7 +3,6 @@
 import io
 import json
 import hashlib
-import pathlib
 import time
 
 import bs4
