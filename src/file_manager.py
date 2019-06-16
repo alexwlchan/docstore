@@ -1,7 +1,9 @@
 # -*- encoding: utf-8
 
+import errno
 import mimetypes
 import pathlib
+import shutil
 import tempfile
 
 import attr
@@ -19,7 +21,17 @@ class FileManager:
 
         complete_file_identifier = self.root / file_identifier
         complete_file_identifier.parent.mkdir(exist_ok=True, parents=True)
-        original_file.rename(complete_file_identifier)
+
+        # This can throw an error if we try to do a rename across devices;
+        # in that case fall back to a non-atomic copy operation.
+        try:
+            original_file.rename(complete_file_identifier)
+        except OSError as err:
+            if err.errno == errno.EXDEV:
+                shutil.copyfile(original_file, complete_file_identifier)
+                original_file.unlink()
+            else:  # pragma: no cover
+                raise
 
         return file_identifier
 
