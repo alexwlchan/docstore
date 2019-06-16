@@ -14,11 +14,16 @@ from thumbnails import create_thumbnail
 class FileManager:
     root = attr.ib()
 
+    # Whitenoise drops a warning if you initialise it against a non-existent
+    # directory, so create it just to be sure.
+    def __attrs_post_init__(self):
+        self.root.mkdir(exist_ok=True, parents=True)
+
     def _store_file(self, file_id, original_file):
         file_identifier = pathlib.Path(file_id[0]) / (file_id + original_file.suffix)
 
         complete_file_identifier = self.root / file_identifier
-        complete_file_identifier.parent.mkdir(exist_ok=True, parents=True)
+        complete_file_identifier.parent.mkdir(exist_ok=True)
         original_file.rename(complete_file_identifier)
 
         return file_identifier
