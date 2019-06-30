@@ -29,9 +29,9 @@
         main {
           display: grid;
           grid-gap: 30px;
-        	grid-template-columns: repeat(6,auto);
+        	grid-template-columns: repeat( auto-fit, minmax(250px, 1fr) );
         	grid-template-rows: repeat(4,auto);
-          width: 550px;
+          width: 100%;
 /*          background: yellow;*/
         	justify-content: center;
         }
@@ -41,7 +41,7 @@
           box-shadow: 0 3px 15px rgba(#bbb, 0.05);
           border-radius: 6px;
           transition: .2s ease;
-          width: 300px;
+          max-width: 300px;
 
           overflow: hidden;
           display: grid;
@@ -124,8 +124,7 @@
 
         section {
           justify-self: end;
-          align-self: end;
-          grid-column: 1 / 7;
+          align-self: start;
         }
       </style>
 
