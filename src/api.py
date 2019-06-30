@@ -62,7 +62,11 @@ def prepare_form_data(user_data):
 
 
 def create_api(
-    tagged_store, root, display_title="Alex’s documents", default_view="table"
+    tagged_store,
+    root,
+    display_title="Alex’s documents",
+    default_view="table",
+    tag_view="list"
 ):
     file_manager = FileManager(root / "files")
     thumbnail_manager = ThumbnailManager(root / "thumbnails")
@@ -165,7 +169,7 @@ def create_api(
             req_url=req_url,
             params=params,
             cookies=req.cookies,
-            tag_list=True
+            tag_view=tag_view
         )
 
     @api.route("/documents/{document_id}")
@@ -268,7 +272,8 @@ def create_api(
 @click.argument("root", required=True)
 @click.option("--title", default="Alex’s documents")
 @click.option("--default_view", default="table", type=click.Choice(["table", "grid"]))
-def run_api(root, title, default_view):
+@click.option("--tag_view", default="list", type=click.Choice(["list", "cloud"]))
+def run_api(root, title, default_view, tag_view):
     root = pathlib.Path(os.path.normpath(root))
 
     tagged_store = JsonTaggedObjectStore(root / "documents.json")
@@ -277,7 +282,8 @@ def run_api(root, title, default_view):
         tagged_store,
         root=root,
         display_title=title,
-        default_view=default_view
+        default_view=default_view,
+        tag_view=tag_view
     )
 
     api.run()

@@ -2,7 +2,7 @@
 <div class="collapse{% if cookies.get('tags-collapse__show') == 'true' %} show{% endif %}" id="collapseTagList">
   <div class="card card-body">
 
-    {% if tag_list %}
+    {% if tag_view == "list" %}
       <ul style="margin-bottom: 0;">
       {% for tag in tag_aggregation|sort %}
         {% if not loop.first %}
@@ -32,7 +32,7 @@
         {% endif %}
       {% endfor %}
       </ul>
-    {% else %}
+    {% elif tag_view == "cloud" %}
       <div id="tag_cloud" style="margin-bottom: 0;">
         {% for tag in tag_aggregation|sort %}
           {% if tag not in search_options.tag_query %}<a href="{{ req_url.add('tag', tag) | query_str_only }}">{% endif %}
