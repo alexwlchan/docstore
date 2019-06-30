@@ -49,13 +49,14 @@
         }
 
         .document__info {
+          background: white;
           max-height: 0;
           overflow: hidden;
           transition: max-height 0.35s ease-out;
         }
 
         .document__metadata {
-          margin: 10px 25px;
+          padding: 10px 25px;
 
 /*          transition-duration: 200ms, 200ms, 0;
           transition-property: opacity, top, visibility;
@@ -88,17 +89,37 @@
           position: absolute;
           bottom: 0;
           left: 0;
-          background: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0));
+          background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
         }
 
-        .document__title {
-          z-index: 5;
+        .document__panel {
+          z-index: 7;
           grid-row: 1 / 2;
           grid-column: 1 / 2;
           align-self: end;
+          margin-bottom: 0;
+          max-height;
+        }
+
+        .document__metadata h5 {
+          margin-bottom: 0;
+        }
+
+        .document__title {
+/*          z-index: 7;
+          grid-row: 1 / 2;
+          grid-column: 1 / 2;
+          align-self: end;*/
 /*          margin: 10px 20px;*/
           color: #fff;
-          text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+          text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .document__info {
+          z-index: 6;
+          grid-row: 2 / 2;
+          grid-column: 1 / 2;
+          align-self: end;
         }
 
         .document__title a {
@@ -141,29 +162,31 @@
             {% endif %}
             </a>
           </div>
-          {% if doc.title %}
 
-          <div class="document__title">
-            <a href="{{ api.file_url(doc) }}" target="_blank">
-            <h3>{{ doc.title }}</h3>
-            </a>
-          </div>
-          {% endif %}
-          <div class="document__info">
+          <div class="document__panel">
 
-
-            <div class="document__metadata">
-              <p class="document__metadata__title">date created</p>
-              <h5 class="document__metadata__info">{{ doc["date_created"] | since_now_date_str }}</h5>
-            </div>
-
-            {% if "user_data" in doc and "source_url" in doc["user_data"] and doc["user_data"]["source_url"] %}
-            <div class="document__metadata">
-              <p class="document__metadata__title">source</p>
-              <h5 class="document__metadata__info"><a href="{{ doc['user_data']['source_url'] }}">{{ doc['user_data']['source_url'] | short_url }}</a></h5>
+            {% if doc.title %}
+            <div class="document__title">
+              <a href="{{ api.file_url(doc) }}" target="_blank">
+              <h3>{{ doc.title }}</h3>
+              </a>
             </div>
             {% endif %}
 
+            <div class="document__info">
+              <div class="document__metadata">
+                <p class="document__metadata__title">date created</p>
+                <h5 class="document__metadata__info">{{ doc["date_created"] | since_now_date_str }}</h5>
+              </div>
+
+              {% if "user_data" in doc and "source_url" in doc["user_data"] and doc["user_data"]["source_url"] %}
+              <div class="document__metadata">
+                <p class="document__metadata__title">source</p>
+                <h5 class="document__metadata__info"><a href="{{ doc['user_data']['source_url'] }}">{{ doc['user_data']['source_url'] | short_url }}</a></h5>
+              </div>
+              {% endif %}
+
+            </div>
           </div>
         </div>
       </section>
