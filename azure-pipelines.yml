@@ -13,6 +13,10 @@ steps:
     make check_release_file
   displayName: "Linting"
 
+- script:
+    make test
+  displayName: "Run tests"
+
 - task: "DownloadSecureFile@1"
   inputs:
     secureFile: "id_rsa_docstore"
