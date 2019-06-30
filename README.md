@@ -1,5 +1,7 @@
 # docstore
 
+[![Build Status](https://dev.azure.com/alexwlchan/alexwlchan/_apis/build/status/alexwlchan.docstore?branchName=development)](https://dev.azure.com/alexwlchan/alexwlchan/_build/latest?definitionId=4&branchName=development)
+
 This is a small Python web app for managing my scanned documents and other files.
 
 You can upload files through a web UI or HTTP endpoint, add a few tags, then filter by those tags.
