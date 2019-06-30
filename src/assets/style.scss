@@ -1,5 +1,9 @@
 a {
   color: $accent-color;
+
+  &:hover {
+    color: darken($accent-color, 15%);
+  }
 }
 
 .table td {

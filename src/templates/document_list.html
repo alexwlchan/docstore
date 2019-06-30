@@ -25,6 +25,152 @@
 
       <p></p>
 
+      <style>
+        main {
+          display: grid;
+          grid-gap: 30px;
+        	grid-template-columns: repeat(6,auto);
+        	grid-template-rows: repeat(4,auto);
+          width: 550px;
+/*          background: yellow;*/
+        	justify-content: center;
+        }
+
+        .document {
+          position: relative;
+          box-shadow: 0 3px 15px rgba(#bbb, 0.05);
+          border-radius: 6px;
+          transition: .2s ease;
+          width: 300px;
+
+          overflow: hidden;
+          display: grid;
+/*          grid: 390px 0px / 100%;*/
+        }
+
+        .document__info {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.35s ease-out;
+        }
+
+        .document__metadata {
+          margin: 10px 25px;
+
+/*          transition-duration: 200ms, 200ms, 0;
+          transition-property: opacity, top, visibility;
+          transition-delay: 0, 0, 200ms;*/
+        }
+
+        .document__image img {
+          width: 100%;
+        }
+
+        .document__image {
+          position: relative;
+          grid-row: 1 / 2;
+          grid-column: 1 / 2;
+        }
+
+        .document:hover {
+/*          transition: max-height .3s ease, opacity .3s ease .3s, margin .3s ease;*/
+        }
+
+        .document:hover .document__info {
+          max-height: 500px;
+          transition: max-height 0.65s ease-in;
+        }
+
+        .document__image::after {
+          content: "";
+          width: 100%;
+          height: 30%;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          background: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0));
+        }
+
+        .document__title {
+          z-index: 5;
+          grid-row: 1 / 2;
+          grid-column: 1 / 2;
+          align-self: end;
+/*          margin: 10px 20px;*/
+          color: #fff;
+          text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .document__title a {
+          color: white;
+          padding: 10px 20px;
+          display: block;
+        }
+
+        .document__title a:hover {
+          text-decoration: none;
+        }
+
+        .document__metadata__title {
+          color: #bbb;
+          font-size: 11px;
+          margin-bottom: 2px;
+          text-transform: uppercase;
+        }
+
+        .document__metadata__info {
+          font-size: 16px;
+        }
+
+        section {
+          justify-self: end;
+          align-self: end;
+          grid-column: 1 / 7;
+        }
+      </style>
+
+      <main>
+      {% for doc in display_documents %}
+      <section>
+        <div class="document">
+          <div class="document__image">
+            <a href="{{ api.file_url(doc) }}" target="_blank">
+            {% if "thumbnail_identifier" in doc %}
+              <img src="{{ api.thumbnail_url(doc) }}">
+            {% else %}
+              <img src="{{ api.static_url('placeholder.jpg') }}">
+            {% endif %}
+            </a>
+          </div>
+          {% if doc.title %}
+
+          <div class="document__title">
+            <a href="{{ api.file_url(doc) }}" target="_blank">
+            <h3>{{ doc.title }}</h3>
+            </a>
+          </div>
+          {% endif %}
+          <div class="document__info">
+
+
+            <div class="document__metadata">
+              <p class="document__metadata__title">date created</p>
+              <h5 class="document__metadata__info">{{ doc["date_created"] | since_now_date_str }}</h5>
+            </div>
+
+            {% if "user_data" in doc and "source_url" in doc["user_data"] and doc["user_data"]["source_url"] %}
+            <div class="document__metadata">
+              <p class="document__metadata__title">source</p>
+              <h5 class="document__metadata__info"><a href="{{ doc['user_data']['source_url'] }}">{{ doc['user_data']['source_url'] | short_url }}</a></h5>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+      </section>
+      {% endfor %}
+      </main>
+
       {% if display_documents %}
         {% if view_option == 'grid' %}
           {% include "_grid.html" %}
