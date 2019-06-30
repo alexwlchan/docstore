@@ -66,7 +66,8 @@ def create_api(
     root,
     display_title="Alex’s documents",
     default_view="table",
-    tag_view="list"
+    tag_view="list",
+    accent_color="#007bff"
 ):
     file_manager = FileManager(root / "files")
     thumbnail_manager = ThumbnailManager(root / "thumbnails")
@@ -75,7 +76,13 @@ def create_api(
     static_dir = src_root / "static"
 
     # Compile the CSS file before the API starts
-    css = scss.Compiler(root = src_root / "assets").compile("style.scss")
+    from scss.namespace import Namespace
+    from scss.types import Color
+    namespace = Namespace()
+    namespace.set_variable("$accent_color", Color.from_hex(accent_color))
+    css = scss.Compiler(
+        root=src_root / "assets",
+        namespace=namespace).compile("style.scss")
 
     css_path = static_dir / "style.css"
     css_path.write_text(css)
@@ -169,7 +176,8 @@ def create_api(
             req_url=req_url,
             params=params,
             cookies=req.cookies,
-            tag_view=tag_view
+            tag_view=tag_view,
+            accent_color=accent_color
         )
 
     @api.route("/documents/{document_id}")
@@ -273,7 +281,8 @@ def create_api(
 @click.option("--title", default="Alex’s documents")
 @click.option("--default_view", default="table", type=click.Choice(["table", "grid"]))
 @click.option("--tag_view", default="list", type=click.Choice(["list", "cloud"]))
-def run_api(root, title, default_view, tag_view):
+@click.option("--accent_color", default="#007bff")
+def run_api(root, title, default_view, tag_view, accent_color):
     root = pathlib.Path(os.path.normpath(root))
 
     tagged_store = JsonTaggedObjectStore(root / "documents.json")
@@ -283,7 +292,8 @@ def run_api(root, title, default_view, tag_view):
         root=root,
         display_title=title,
         default_view=default_view,
-        tag_view=tag_view
+        tag_view=tag_view,
+        accent_color=accent_color
     )
 
     api.run()
