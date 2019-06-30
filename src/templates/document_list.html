@@ -27,99 +27,6 @@
 
       <style>
 
-        main {
-          display: grid;
-          grid-gap: 30px;
-          justify-content: center;
-          width: 100%;
-          grid-auto-columns: 100%;
-        }
-
-        section {
-          align-self: start;
-          width: 100%;
-          grid-column: 1 / 1;
-        }
-
-        .document {
-          position: relative;
-          border-radius: 3px;
-          box-shadow: 0 3px 7px #888888;;
-          width: 100%;
-          overflow: hidden;
-          display: grid;
-          grid-gap: 15px;
-          height: 138px;
-          grid-template-columns: 110px auto;
-        }
-
-        .document__image {
-          overflow: hidden;
-        }
-
-        .document__image img {
-/*          height: 95px;*/
-          grid-column: 1 / 2;
-          grid-row: 1 / 1;
-          object-fit: cover;
-          width: 100%;
-          height: 100%;
-        }
-
-        .document__panel {
-          grid-row: 1 / 1;
-          grid-column: 2 / 2;
-
-          display: inline-block;
-          margin-top:    auto;
-          margin-bottom: auto;
-        }
-
-        .document__info {
-          display: grid;
-          grid-template-columns: 150px auto;
-          margin-top:    10px;
-          margin-bottom: 10px;
-        }
-
-        .document__title {
-          margin-top: 14px;
-        }
-
-        #document__metadata__source_url {
-          grid-column: 2 / 2;
-          grid-row: 1 / 2;
-        }
-
-        #document__metadata__date_created {
-          grid-column: 1 / 2;
-          grid-row: 1 / 2;
-        }
-
-        .document__title a {
-          color: black;
-        }
-
-        .document__title h3 {
-          font-size: 1.25rem;
-        }
-
-        #document__metadata__tags {
-          grid-column: 1 / 2;
-          grid-row: 2 / 2;
-        }
-
-        .document__metadata__title {
-          color: #bbb;
-          font-size: 10px;
-          margin-bottom: 2px;
-          text-transform: uppercase;
-        }
-
-        .document__metadata__info {
-          font-size: 14px;
-        }
-
 
         .grid {
           main {
@@ -232,7 +139,7 @@
       </style>
 
     {% if display_documents %}
-      <main>
+      <main class="documents documents__view_{{ view_option }}">
       {% for doc in display_documents %}
       <section>
         <div class="document">
