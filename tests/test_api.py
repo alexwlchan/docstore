@@ -201,9 +201,9 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
     assert len(pdf_links) == 1
     pdf_href = pdf_links[0]
 
-    thumbnails_td = soup.find_all("td", attrs={"class": "thumbnail"})
-    assert len(thumbnails_td) == 1
-    thumbnails_img = thumbnails_td[0].find_all("img")
+    thumbnails_div = soup.find_all("div", attrs={"class": "document__image"})
+    assert len(thumbnails_div) == 1
+    thumbnails_img = thumbnails_div[0].find_all("img")
     assert len(thumbnails_img) == 1
     img_src = thumbnails_img[0].attrs["src"]
 
@@ -248,9 +248,9 @@ def test_can_view_existing_file_and_thumbnail(
     assert len(pdf_links) == 1
     pdf_href = pdf_links[0]
 
-    thumbnails_td = soup.find_all("td", attrs={"class": "thumbnail"})
-    assert len(thumbnails_td) == 1
-    thumbnails_img = thumbnails_td[0].find_all("img")
+    thumbnails_div = soup.find_all("div", attrs={"class": "document__image"})
+    assert len(thumbnails_div) == 1
+    thumbnails_img = thumbnails_div[0].find_all("img")
     assert len(thumbnails_img) == 1
     img_src = thumbnails_img[0].attrs["src"]
 
