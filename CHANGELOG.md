@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.9.1 - 2019-06-30
+
+Fix a bug where tags in the table view would wrap unnecessarily.
+
 ## v1.9.0 - 2019-06-30
 
 This is a major refactor of the viewer.  Everything now uses CSS Grid (inspired by a CodePen [by Olivia Ng](https://codepen.io/oliviale/pen/WqwOzv)) and has a more consistent layout.  The underlying code is much simpler, yay.
