@@ -26,6 +26,8 @@ steps:
     cp $DOWNLOADSECUREFILE1_SECUREFILEPATH ~/.ssh/id_rsa
     chmod 600 ~/.ssh/id_rsa
 
+    ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
     cp $DOWNLOADSECUREFILE2_SECUREFILEPATH docker_password.txt
 
     make autorelease
