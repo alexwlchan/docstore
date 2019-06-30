@@ -10,7 +10,7 @@ main.documents {
   .document {
     position: relative;
     border-radius: 3px;
-    box-shadow: 0 3px 7px #888888;
+    box-shadow: 0 3px 7px #aaa;
     overflow: hidden;
     display: grid;
 
@@ -37,6 +37,7 @@ main.documents {
 
     .document {
       max-width: 300px;
+      border-radius: 6px;
 
       &__info {
         background: white;
