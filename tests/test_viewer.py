@@ -39,13 +39,13 @@ class TestViewOptions:
 
     @staticmethod
     def _assert_is_table(resp):
-        assert '<div class="row">' not in resp.text
-        assert '<table class="table">' in resp.text
+        assert '<main class="documents documents__view_grid">' not in resp.text
+        assert '<main class="documents documents__view_table">' in resp.text
 
     @staticmethod
     def _assert_is_grid(resp):
-        assert '<div class="row">' in resp.text
-        assert '<table class="table">' not in resp.text
+        assert '<main class="documents documents__view_grid">' in resp.text
+        assert '<main class="documents documents__view_table">' not in resp.text
 
     def test_table_view(self, sess, tagged_store, file_manager):
         index_new_document(tagged_store, file_manager, doc_id="1", doc={
@@ -142,27 +142,6 @@ def test_can_filter_by_tag(sess, tagged_store, file_manager):
 
 
 @pytest.mark.parametrize("params", PARAMS)
-def test_shows_column_headers(sess, tagged_store, file_manager, params):
-    index_new_document(
-        tagged_store,
-        file_manager,
-        doc_id="1",
-        doc={
-            "file": b"hello world",
-            "title": "hello world",
-            "tags": ["x", "y"]
-        }
-    )
-
-    resp = sess.get("/", params=params)
-    assert "Date saved" in resp.text
-    assert "Name" in resp.text
-    assert resp.text.count("&Darr;") <= 1
-    assert resp.text.count("&Uarr;") <= 1
-    assert resp.text.count("&Darr;") + resp.text.count("&Uarr;") == 1
-
-
-@pytest.mark.parametrize("params", PARAMS)
 def test_all_urls_are_relative(sess, tagged_store, file_manager, params):
     index_new_document(
         tagged_store,
@@ -207,8 +186,10 @@ def test_includes_created_date(sess, tagged_store, file_manager):
     resp = sess.get("/")
 
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
-    date_created_td = soup.find("td", attrs={"class": "date__created"})
-    assert date_created_td.text == "just now"
+    date_created_div = soup.find(
+        "div", attrs={"id": "document__metadata__date_created"})
+    assert date_created_div.find(
+        "h5", attrs={"class": "document__metadata__info"}).text == "just now"
 
 
 class TestStoreDocumentForm:
@@ -242,5 +223,5 @@ def test_omits_source_url_if_empty(sess, pdf_file):
     resp = sess.get("/")
 
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
-    assert len(soup.find_all("tr")) == 2  # header + single row
-    assert soup.find("span", attrs={"class": "source_url"}) is None
+    assert len(soup.find_all("section")) == 1  # header + single row
+    assert soup.find("div", attrs={"id": "document__metadata__source_url"}) is None

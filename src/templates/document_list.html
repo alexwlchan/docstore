@@ -25,15 +25,68 @@
 
       <p></p>
 
-      {% if display_documents %}
-        {% if view_option == 'grid' %}
-          {% include "_grid.html" %}
-        {% else %}
-          {% include "_table.html" %}
-        {% endif %}
-      {% else %}
-        No documents found!
-      {% endif %}
+    {% if display_documents %}
+      <main class="documents documents__view_{{ view_option }}">
+      {% for doc in display_documents %}
+      <section>
+        <div class="document">
+          <div class="document__image">
+            <a href="{{ api.file_url(doc) }}" target="_blank">
+            {% if "thumbnail_identifier" in doc %}
+              <img src="{{ api.thumbnail_url(doc) }}">
+            {% else %}
+              <img src="{{ api.static_url('placeholder.jpg') }}">
+            {% endif %}
+            </a>
+          </div>
+
+          <div class="document__panel">
+
+            {% if doc.title %}
+            <div class="document__title">
+              <a href="{{ api.file_url(doc) }}" target="_blank">
+              <h3>{{ doc.title }}</h3>
+              </a>
+            </div>
+            {% endif %}
+
+            <div class="document__info">
+              <div class="document__metadata" id="document__metadata__date_created">
+                <p class="document__metadata__title">date created</p>
+                <h5 class="document__metadata__info">{{ doc["date_created"] | since_now_date_str }}</h5>
+              </div>
+
+              {% if "user_data" in doc and "source_url" in doc["user_data"] and doc["user_data"]["source_url"] %}
+              <div class="document__metadata" id="document__metadata__source_url">
+                <p class="document__metadata__title">source</p>
+                <h5 class="document__metadata__info"><a href="{{ doc['user_data']['source_url'] }}">{{ doc['user_data']['source_url'] | short_url }}</a></h5>
+              </div>
+              {% endif %}
+
+              {% if doc["tags"] %}
+              <div class="document__metadata" id="document__metadata__tags">
+                <p class="document__metadata__title">tags</p>
+                <h5 class="document__metadata__info">
+                {% for tag in doc["tags"]|sort %}
+                {% if tag not in search_options.tag_query %}
+                  <a href="{{ req_url.add('tag', tag) | query_str_only }}">
+                {% endif %}
+                #{{ tag }}
+                {% if tag not in search_options.tag_query %}</a>{% endif %}
+                {% endfor %}
+                </h5>
+              </div>
+              {% endif %}
+
+            </div>
+          </div>
+        </div>
+      </section>
+      {% endfor %}
+      </main>
+    {% else %}
+      No documents found!
+    {% endif %}
     </div>
   </body>
 
