@@ -26,126 +26,203 @@
       <p></p>
 
       <style>
+
         main {
           display: grid;
           grid-gap: 30px;
-        	grid-template-columns: repeat( auto-fit, minmax(250px, 1fr) );
-        	grid-template-rows: repeat(4,auto);
+          justify-content: center;
           width: 100%;
-/*          background: yellow;*/
-        	justify-content: center;
+          grid-auto-columns: 100%;
+        }
+
+        section {
+          align-self: start;
+          width: 100%;
+          grid-column: 1 / 1;
         }
 
         .document {
           position: relative;
-          box-shadow: 0 3px 15px rgba(#bbb, 0.05);
-          border-radius: 6px;
-          transition: .2s ease;
-          max-width: 300px;
-
+          border-radius: 3px;
+          box-shadow: 0 3px 7px #888888;;
+          width: 100%;
           overflow: hidden;
           display: grid;
-/*          grid: 390px 0px / 100%;*/
-        }
-
-        .document__info {
-          background: white;
-          max-height: 0;
-          overflow: hidden;
-          transition: max-height 0.35s ease-out;
-        }
-
-        .document__metadata {
-          padding: 10px 25px;
-
-/*          transition-duration: 200ms, 200ms, 0;
-          transition-property: opacity, top, visibility;
-          transition-delay: 0, 0, 200ms;*/
-        }
-
-        .document__image img {
-          width: 100%;
+          grid-gap: 15px;
+          height: 138px;
+          grid-template-columns: 110px auto;
         }
 
         .document__image {
-          position: relative;
-          grid-row: 1 / 2;
+          overflow: hidden;
+        }
+
+        .document__image img {
+/*          height: 95px;*/
           grid-column: 1 / 2;
-        }
-
-        .document:hover {
-/*          transition: max-height .3s ease, opacity .3s ease .3s, margin .3s ease;*/
-        }
-
-        .document:hover .document__info {
-          max-height: 500px;
-          transition: max-height 0.65s ease-in;
-        }
-
-        .document__image::after {
-          content: "";
+          grid-row: 1 / 1;
+          object-fit: cover;
           width: 100%;
-          height: 30%;
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
+          height: 100%;
         }
 
         .document__panel {
-          z-index: 7;
-          grid-row: 1 / 2;
-          grid-column: 1 / 2;
-          align-self: end;
-          margin-bottom: 0;
-          max-height;
-        }
-
-        .document__metadata h5 {
-          margin-bottom: 0;
-        }
-
-        .document__title {
-/*          z-index: 7;
-          grid-row: 1 / 2;
-          grid-column: 1 / 2;
-          align-self: end;*/
-/*          margin: 10px 20px;*/
-          color: #fff;
-          text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+          grid-row: 1 / 1;
+          grid-column: 2 / 2;
         }
 
         .document__info {
-          z-index: 6;
-          grid-row: 2 / 2;
+          display: grid;
+          margin-top:    10px;
+          margin-bottom: 10px;
+        }
+
+        .document__title {
+          margin-top: 14px;
+        }
+
+        #document__metadata__source_url {
+          grid-column: 2 / 2;
+          grid-row: 1 / 2;
+        }
+
+        #document__metadata__date_created {
           grid-column: 1 / 2;
-          align-self: end;
+          grid-row: 1 / 2;
         }
 
         .document__title a {
-          color: white;
-          padding: 10px 20px;
-          display: block;
+          color: black;
         }
 
-        .document__title a:hover {
-          text-decoration: none;
+        .document__title h3 {
+          font-size: 1.25rem;
+        }
+
+        #document__metadata__tags {
+          grid-column: 1 / 2;
+          grid-row: 2 / 2;
         }
 
         .document__metadata__title {
           color: #bbb;
-          font-size: 11px;
+          font-size: 10px;
           margin-bottom: 2px;
           text-transform: uppercase;
         }
 
         .document__metadata__info {
-          font-size: 16px;
+          font-size: 14px;
         }
 
-        section {
-          justify-self: end;
-          align-self: start;
+
+        .grid {
+          main {
+          	grid-template-columns: repeat( auto-fit, minmax(250px, 1fr) );
+/*            grid-template-rows: repeat(4,auto);*/
+          }
+
+          section {
+/*            justify-self: end;*/
+            align-self: start;
+          }
+
+          .document {
+/*            position: relative;*/
+/*            box-shadow: 0 3px 7px rgba(#bbb, 0.05);*/
+/*            border-radius: 6px;*/
+/*            transition: .2s ease;*/
+            max-width: 300px;
+
+            overflow: hidden;
+            display: grid;
+  /*          grid: 390px 0px / 100%;*/
+          }
+
+          .document__info {
+            background: white;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease-out;
+          }
+
+          .document__metadata {
+            padding: 10px 25px;
+
+  /*          transition-duration: 200ms, 200ms, 0;
+            transition-property: opacity, top, visibility;
+            transition-delay: 0, 0, 200ms;*/
+          }
+
+          .document__image img {
+            width: 100%;
+          }
+
+          .document__image {
+            position: relative;
+            grid-row: 1 / 2;
+            grid-column: 1 / 2;
+          }
+
+          .document:hover {
+  /*          transition: max-height .3s ease, opacity .3s ease .3s, margin .3s ease;*/
+          }
+
+          .document:hover .document__info {
+            max-height: 500px;
+            transition: max-height 0.65s ease-in;
+          }
+
+          .document__image::after {
+            content: "";
+            width: 100%;
+            height: 30%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
+          }
+
+          .document__panel {
+            z-index: 7;
+            grid-row: 1 / 2;
+            grid-column: 1 / 2;
+            align-self: end;
+            margin-bottom: 0;
+            max-height;
+          }
+
+          .document__metadata h5 {
+            margin-bottom: 0;
+          }
+
+          .document__title {
+  /*          z-index: 7;
+            grid-row: 1 / 2;
+            grid-column: 1 / 2;
+            align-self: end;*/
+  /*          margin: 10px 20px;*/
+            color: #fff;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+          }
+
+          .document__info {
+            z-index: 6;
+            grid-row: 2 / 2;
+            grid-column: 1 / 2;
+            align-self: end;
+          }
+
+          .document__title a {
+            color: white;
+            padding: 10px 20px;
+            display: block;
+          }
+
+          .document__title a:hover {
+            text-decoration: none;
+          }
+
         }
       </style>
 
@@ -174,20 +251,20 @@
             {% endif %}
 
             <div class="document__info">
-              <div class="document__metadata">
-                <p class="document__metadata__title">date created</p>
-                <h5 class="document__metadata__info">{{ doc["date_created"] | since_now_date_str }}</h5>
-              </div>
-
               {% if "user_data" in doc and "source_url" in doc["user_data"] and doc["user_data"]["source_url"] %}
-              <div class="document__metadata">
+              <div class="document__metadata" id="document__metadata__source_url">
                 <p class="document__metadata__title">source</p>
                 <h5 class="document__metadata__info"><a href="{{ doc['user_data']['source_url'] }}">{{ doc['user_data']['source_url'] | short_url }}</a></h5>
               </div>
               {% endif %}
 
+              <div class="document__metadata" id="document__metadata__date_created">
+                <p class="document__metadata__title">date created</p>
+                <h5 class="document__metadata__info">{{ doc["date_created"] | since_now_date_str }}</h5>
+              </div>
+
               {% if doc["tags"] %}
-              <div class="document__metadata">
+              <div class="document__metadata" id="document__metadata__tags">
                 <p class="document__metadata__title">tags</p>
                 <h5 class="document__metadata__info">
                 {% for tag in doc["tags"]|sort %}
