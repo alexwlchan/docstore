@@ -71,8 +71,7 @@ def create_api(
     static_dir = src_root / "static"
 
     # Compile the CSS file before the API starts
-    scss_path = src_root / "assets/style.scss"
-    css = scss.Compiler().compile_string(scss_path.read_text())
+    css = scss.Compiler(root = src_root / "assets").compile("style.scss")
 
     css_path = static_dir / "style.css"
     css_path.write_text(css)
