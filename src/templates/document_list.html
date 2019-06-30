@@ -231,6 +231,7 @@
         }
       </style>
 
+    {% if display_documents %}
       <main>
       {% for doc in display_documents %}
       <section>
@@ -289,16 +290,9 @@
       </section>
       {% endfor %}
       </main>
-
-      {% if display_documents %}
-        {% if view_option == 'grid' %}
-          {% include "_grid.html" %}
-        {% else %}
-          {% include "_table.html" %}
-        {% endif %}
-      {% else %}
-        No documents found!
-      {% endif %}
+    {% else %}
+      No documents found!
+    {% endif %}
     </div>
   </body>
 
