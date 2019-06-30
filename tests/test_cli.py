@@ -65,3 +65,16 @@ def test_sets_default_view_option(runner, store_root, view_option):
 def test_unrecognised_view_option_is_rejected(runner, store_root):
     result = runner.invoke(api.run_api, [str(store_root), "--default_view", "mosaic"])
     assert result.exit_code == 2
+
+
+@pytest.mark.parametrize("tag_view_option", ["cloud", "list"])
+def test_sets_default_tag_view_option(runner, store_root, tag_view_option):
+    result = runner.invoke(api.run_api, [
+        str(store_root), "--tag_view", tag_view_option])
+    assert result.exit_code == 0
+    assert "'tag_view': %r" % tag_view_option in result.output
+
+
+def test_unrecognised_tag_view_is_rejected(runner, store_root):
+    result = runner.invoke(api.run_api, [str(store_root), "--tag_view", "mosaic"])
+    assert result.exit_code == 2
