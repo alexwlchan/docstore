@@ -164,7 +164,8 @@ def create_api(
             title=display_title,
             req_url=req_url,
             params=params,
-            cookies=req.cookies
+            cookies=req.cookies,
+            tag_list=True
         )
 
     @api.route("/documents/{document_id}")

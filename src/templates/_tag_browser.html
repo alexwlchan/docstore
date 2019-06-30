@@ -3,57 +3,56 @@
   <div class="card card-body">
 
     {% if tag_list %}
-    <ul style="margin-bottom: 0;">
-    {% for tag in tag_aggregation|sort %}
-      {% if not loop.first %}
-        {% if tag.count(":") > loop.previtem.count(":") %}
-          {% if tag.startswith(loop.previtem) %}<ul>
-          {% else %}
+      <ul style="margin-bottom: 0;">
+      {% for tag in tag_aggregation|sort %}
+        {% if not loop.first %}
+          {% if tag.count(":") > loop.previtem.count(":") %}
+            {% if tag.startswith(loop.previtem) %}<ul>
+            {% else %}
+            <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
+            {% endif %}
+          {% endif %}
+          {% if tag.count(":") < loop.previtem.count(":") %}</ul>{% endif %}
+          {% if tag.count(":") == loop.previtem.count(":") and tag.count(":") > 0 and tag.rsplit(":", 1)[0] != loop.previtem.rsplit(":", 1)[0] %}</ul><li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>{% endif %}
+        {% else %}
+          {% if tag.count(":") > 0 %}
           <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
           {% endif %}
         {% endif %}
-        {% if tag.count(":") < loop.previtem.count(":") %}</ul>{% endif %}
-        {% if tag.count(":") == loop.previtem.count(":") and tag.count(":") > 0 and tag.rsplit(":", 1)[0] != loop.previtem.rsplit(":", 1)[0] %}</ul><li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>{% endif %}
-      {% else %}
-        {% if tag.count(":") > 0 %}
-        <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
+        <li>
+          {% if tag not in search_options.tag_query %}
+            <a href="{{ req_url.add('tag', tag) | query_str_only }}">{{ tag }}</a>
+          {%- else %}
+            {{ tag }}
+          {%- endif %} ({{ tag_aggregation[tag] }})
+        </li>
+
+        {% if loop.last %}
+          {% for i in range(tag.count(":")) %}</ul>{% endfor %}
         {% endif %}
-      {% endif %}
-      <li>
-        {% if tag not in search_options.tag_query %}
-          <a href="{{ req_url.add('tag', tag) | query_str_only }}">{{ tag }}</a>
-        {%- else %}
-          {{ tag }}
-        {%- endif -%} ({{ tag_aggregation[tag] }})
-      </li>
-
-      {% if loop.last %}
-        {% for i in range(tag.count(":")) %}</ul>{% endfor %}
-      {% endif %}
-    {% endfor %}
-    </ul>
-    {% endif %}
-
-    <div id="tag_cloud" style="margin-bottom: 0;">
-      {% for tag in tag_aggregation|sort %}
-        {% if tag not in search_options.tag_query %}<a href="{{ req_url.add('tag', tag) | query_str_only }}">{% endif %}
-        <span rel="{{ tag_aggregation[tag] }}">{{ tag }}</span>
-        </a>
       {% endfor %}
-    </div>
+      </ul>
+    {% else %}
+      <div id="tag_cloud" style="margin-bottom: 0;">
+        {% for tag in tag_aggregation|sort %}
+          {% if tag not in search_options.tag_query %}<a href="{{ req_url.add('tag', tag) | query_str_only }}">{% endif %}
+          <span rel="{{ tag_aggregation[tag] }}">{{ tag }}</span>
+          </a>
+        {% endfor %}
+      </div>
 
-    <script src="{{ api.static_url('jquery.tagcloud.js') }}"></script>
-    <script>
-      $.fn.tagcloud.defaults = {
-        size: { start: 12, end: 24, unit: 'pt' },
-        color: { start: '#cde', end: '#f52' },
-      };
+      <script src="{{ api.static_url('jquery.tagcloud.js') }}"></script>
+      <script>
+        $.fn.tagcloud.defaults = {
+          size: { start: 12, end: 24, unit: 'pt' },
+          color: { start: '#cde', end: '#f52' },
+        };
 
-      $(function() {
-        $('#tag_cloud span').tagcloud();
-      })
-    </script>
-
+        $(function() {
+          $('#tag_cloud span').tagcloud();
+        })
+      </script>
+    {% endif %}
   </div>
 </div>
 {% endif %}
