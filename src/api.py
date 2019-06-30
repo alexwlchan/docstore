@@ -62,7 +62,12 @@ def prepare_form_data(user_data):
 
 
 def create_api(
-    tagged_store, root, display_title="Alex’s documents", default_view="table"
+    tagged_store,
+    root,
+    display_title="Alex’s documents",
+    default_view="table",
+    tag_view="list",
+    accent_color="#007bff"
 ):
     file_manager = FileManager(root / "files")
     thumbnail_manager = ThumbnailManager(root / "thumbnails")
@@ -71,8 +76,13 @@ def create_api(
     static_dir = src_root / "static"
 
     # Compile the CSS file before the API starts
-    scss_path = src_root / "assets/style.scss"
-    css = scss.Compiler().compile_string(scss_path.read_text())
+    from scss.namespace import Namespace
+    from scss.types import Color
+    namespace = Namespace()
+    namespace.set_variable("$accent_color", Color.from_hex(accent_color))
+    css = scss.Compiler(
+        root=src_root / "assets",
+        namespace=namespace).compile("style.scss")
 
     css_path = static_dir / "style.css"
     css_path.write_text(css)
@@ -165,7 +175,9 @@ def create_api(
             title=display_title,
             req_url=req_url,
             params=params,
-            cookies=req.cookies
+            cookies=req.cookies,
+            tag_view=tag_view,
+            accent_color=accent_color
         )
 
     @api.route("/documents/{document_id}")
@@ -268,7 +280,9 @@ def create_api(
 @click.argument("root", required=True)
 @click.option("--title", default="Alex’s documents")
 @click.option("--default_view", default="table", type=click.Choice(["table", "grid"]))
-def run_api(root, title, default_view):
+@click.option("--tag_view", default="list", type=click.Choice(["list", "cloud"]))
+@click.option("--accent_color", default="#007bff")
+def run_api(root, title, default_view, tag_view, accent_color):
     root = pathlib.Path(os.path.normpath(root))
 
     tagged_store = JsonTaggedObjectStore(root / "documents.json")
@@ -277,7 +291,9 @@ def run_api(root, title, default_view):
         tagged_store,
         root=root,
         display_title=title,
-        default_view=default_view
+        default_view=default_view,
+        tag_view=tag_view,
+        accent_color=accent_color
     )
 
     api.run()

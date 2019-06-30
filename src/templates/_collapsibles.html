@@ -45,39 +45,7 @@
   </div>
 </div>
 
-{% if tag_aggregation %}
-<div class="collapse{% if cookies.get('tags-collapse__show') == 'true' %} show{% endif %}" id="collapseTagList">
-  <div class="card card-body">
-    <ul style="margin-bottom: 0;">
-    {% for tag in tag_aggregation|sort %}
-      {% if not loop.first %}
-        {% if tag.count(":") > loop.previtem.count(":") %}
-          {% if tag.startswith(loop.previtem) %}<ul>
-          {% else %}
-          <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
-          {% endif %}
-        {% endif %}
-        {% if tag.count(":") < loop.previtem.count(":") %}</ul>{% endif %}
-        {% if tag.count(":") == loop.previtem.count(":") and tag.count(":") > 0 and tag.rsplit(":", 1)[0] != loop.previtem.rsplit(":", 1)[0] %}</ul><li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>{% endif %}
-      {% else %}
-        {% if tag.count(":") > 0 %}
-        <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
-        {% endif %}
-      {% endif %}
-      <li>{% if tag not in search_options.tag_query %}
-        <a href="{{ req_url.add('tag', tag) | query_str_only }}">{{ tag }}</a>
-      {% else %}
-        {{ tag }}
-      {% endif %} ({{ tag_aggregation[tag] }})</li>
-
-      {% if loop.last %}
-        {% for i in range(tag.count(":")) %}</ul>{% endfor %}
-      {% endif %}
-    {% endfor %}
-    </ul>
-  </div>
-</div>
-{% endif %}
+{% include "_tag_browser.html" %}
 
 <script>
   $("#collapseDocumentForm")

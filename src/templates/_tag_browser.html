@@ -1,0 +1,57 @@
+{% if tag_aggregation %}
+<div class="collapse{% if cookies.get('tags-collapse__show') == 'true' %} show{% endif %}" id="collapseTagList">
+  <div class="card card-body">
+
+    {% if tag_view == "list" %}
+      <ul style="margin-bottom: 0;">
+      {% for tag in tag_aggregation|sort %}
+        {% if not loop.first %}
+          {% if tag.count(":") > loop.previtem.count(":") %}
+            {% if tag.startswith(loop.previtem) %}<ul>
+            {% else %}
+            <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
+            {% endif %}
+          {% endif %}
+          {% if tag.count(":") < loop.previtem.count(":") %}</ul>{% endif %}
+          {% if tag.count(":") == loop.previtem.count(":") and tag.count(":") > 0 and tag.rsplit(":", 1)[0] != loop.previtem.rsplit(":", 1)[0] %}</ul><li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>{% endif %}
+        {% else %}
+          {% if tag.count(":") > 0 %}
+          <li>{{ tag.rsplit(":", 1)[0] }}:</li><ul>
+          {% endif %}
+        {% endif %}
+        <li>
+          {% if tag not in search_options.tag_query %}
+            <a href="{{ req_url.add('tag', tag) | query_str_only }}">{{ tag }}</a>
+          {%- else %}
+            {{ tag }}
+          {%- endif %} ({{ tag_aggregation[tag] }})
+        </li>
+
+        {% if loop.last %}
+          {% for i in range(tag.count(":")) %}</ul>{% endfor %}
+        {% endif %}
+      {% endfor %}
+      </ul>
+    {% elif tag_view == "cloud" %}
+      <div id="tag_cloud" style="margin-bottom: 0;">
+        {% for tag in tag_aggregation|sort %}
+          <a href="{% if tag not in search_options.tag_query %}{{ req_url.add('tag', tag) | query_str_only }}{% else %}#{% endif %}"  rel="{{ tag_aggregation[tag] }}">{{ tag }}</a>
+        {% endfor %}
+      </div>
+
+      <script src="{{ api.static_url('jquery.tagcloud.js') }}"></script>
+      <script>
+        $.fn.tagcloud.defaults = {
+          size: { start: 12, end: 24, unit: 'pt' },
+          color: { start: '#ccc', end: '{{ accent_color }}' },
+        };
+
+        $(function() {
+          $('#tag_cloud a').tagcloud();
+        })
+      </script>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
