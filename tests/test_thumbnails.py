@@ -38,3 +38,13 @@ def test_creates_animated_gif_thumbnail():
     im = Image.open(result)
     assert im.format == "GIF"
     im.seek(1)  # throws an EOFError if not animated
+
+
+def test_creates_mobi_thumbnail():
+    path = pathlib.Path("tests/files/grundfragen.mobi")
+    result = create_thumbnail(path)
+
+    assert result.suffix == ".jpeg"
+    im = Image.open(result)
+    assert im.format == "JPEG"
+    assert im.size == (400, 631)
