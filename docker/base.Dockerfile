@@ -8,3 +8,5 @@ RUN apt-get install --yes \
   poppler-utils
 
 RUN pip3 install --upgrade pip
+
+RUN git clone https://github.com/alexwlchan/get-mobi-cover-image.git /get-mobi-cover-image

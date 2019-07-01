@@ -47,6 +47,20 @@ def _get_epub_cover(path):
         return pathlib.Path(epub.extract(biggest_image, path=tempfile.mkdtemp()))
 
 
+def _get_mobi_cover(path):
+    # Calling https://github.com/alexwlchan/get-mobi-cover-image
+    # This gets installed into /usr/local/bin, and I shell out to it with
+    # subprocess so docstore doesn't get roped into using GPLv2.
+    working_dir = pathlib.Path(tempfile.mkdtemp())
+
+    result = subprocess.check_output(
+        ["python", "/get-mobi-cover-image/get_mobi_cover.py", path.resolve()],
+        cwd=working_dir
+    ).decode("utf-8").strip()
+
+    return working_dir / result
+
+
 def _get_imagemagick_preview(path):
     assert isinstance(path, pathlib.Path)
     _, out_path = tempfile.mkstemp(suffix=path.suffix)
@@ -78,6 +92,12 @@ def create_thumbnail(path):
         epub_thumbnail_path = _get_epub_cover(path)
         thumbnail_path = _get_imagemagick_preview(epub_thumbnail_path)
         epub_thumbnail_path.unlink()
+        return thumbnail_path
+
+    elif path.suffix == ".mobi":
+        mobi_thumbnail_path = _get_mobi_cover(path)
+        thumbnail_path = _get_imagemagick_preview(mobi_thumbnail_path)
+        mobi_thumbnail_path.unlink()
         return thumbnail_path
 
     # You can't pass a Pathlib.Path instance into mimetypes.guess_type yet.

@@ -44,7 +44,7 @@ def test_creates_mobi_thumbnail():
     path = pathlib.Path("tests/files/grundfragen.mobi")
     result = create_thumbnail(path)
 
-    assert result.suffix == ".jpg"
+    assert result.suffix == ".jpeg"
     im = Image.open(result)
-    assert im.format == "JPG"
-    assert im.size == (507, 800)
+    assert im.format == "JPEG"
+    assert im.size == (400, 631)
