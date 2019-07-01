@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.10.0 - 2019-07-01
+
+Add support for creating thumbnails from MOBI ebook files.
+
 ## v1.9.1 - 2019-06-30
 
 Fix a bug where tags in the table view would wrap unnecessarily.
