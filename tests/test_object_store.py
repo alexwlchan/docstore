@@ -52,7 +52,6 @@ class ObjectStoreTestCasesMixin(abc.ABC):
         (None, "None"),
         ({"es": "uno"}, {"de": "eins"}),
         (["a", "b", "c"], ["a", "b", "c", "d", "e"]),
-        (("cat", "dog"), ("cat", "dog", "fox")),
     ])
     def test_is_consistent(self, initial_value, updated_value):
         with self.create_store(initial_objects={}) as s:
@@ -86,16 +85,17 @@ class TestJsonObjectStore(ObjectStoreTestCasesMixin):
 
         path.unlink()
 
-    def test_gets_empty_documents_if_no_file_at_path(self):
+    def test_errors_if_no_file_at_path(self):
         s = JsonObjectStore(pathlib.Path("/does/not/exist"))
-        assert s.objects == {}
+        with pytest.raises(FileNotFoundError):
+            s.objects
 
     def test_errors_if_json_file_is_malformed(self):
         path = self.temp_path()
         path.write_text("not a JSON object")
 
         with pytest.raises(json.JSONDecodeError):
-            JsonObjectStore(path)
+            JsonObjectStore(path).objects
 
     def test_persists_objects_to_disk(self):
         path = self.temp_path()
