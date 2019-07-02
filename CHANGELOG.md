@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.10.2 - 2019-07-02
+
+This fixes a bug where links to tags with ampersands (`&`) would be broken.
+
+See [alexwlchan/docstore#60](https://github.com/alexwlchan/docstore/issues/60).
+
 ## v1.10.1 - 2019-07-02
 
 Improve the thumbnails you get from EPUB ebook files.
