@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.10.3 - 2019-07-02
+
+Change the behaviour of the underlying JSON parser so it picks up changes to the database file if edited outside the application.
+
 ## v1.10.2 - 2019-07-02
 
 This fixes a bug where links to tags with ampersands (`&`) would be broken.
