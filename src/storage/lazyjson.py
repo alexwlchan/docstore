@@ -6,6 +6,18 @@ import pathlib
 
 
 class LazyJsonObject:
+    """
+    This is a wrapper around a JSON file on disk that tries to balance speed
+    and freshness.
+
+    If the file hasn't changed, we don't need to reload it from disk.  Reads are
+    (relatively) slow -- better to cache the contents in-memory.  But if the
+    file changes under our feet, we need to pick up the changes.
+
+    This isn't safe to use in a multi-threaded environment; writes might overlap
+    with each other, but concurrent read should be fine.
+
+    """
     def __init__(self, path, **encode_kwargs):
         self.path = pathlib.Path(path)
         self._encode_kwargs = encode_kwargs
