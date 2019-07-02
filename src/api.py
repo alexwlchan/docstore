@@ -95,9 +95,15 @@ def create_api(
 
     api.static_url = lambda asset: "static/" + asset
 
+    def query_str_only(url):
+        if not url.query:
+            return "?"
+        else:
+            return "?" + str(url).split("?")[1]
+
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
     api.jinja_env.filters["short_url"] = lambda u: urllib.parse.urlparse(u).netloc
-    api.jinja_env.filters["query_str_only"] = lambda url: "?" + "&".join(f"{k}={v}" for k, v in url.query)
+    api.jinja_env.filters["query_str_only"] = query_str_only
 
     def add_headers_function(headers, path, url):
         # Add the Content-Disposition header to file requests, so they can

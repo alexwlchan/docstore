@@ -223,5 +223,24 @@ def test_omits_source_url_if_empty(sess, pdf_file):
     resp = sess.get("/")
 
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
-    assert len(soup.find_all("section")) == 1  # header + single row
+    assert len(soup.find_all("section")) == 1
     assert soup.find("div", attrs={"id": "document__metadata__source_url"}) is None
+
+
+@pytest.mark.parametrize("tag", ["x-y", "x-&-y"])
+def test_can_navigate_to_tag(sess, pdf_file, tag):
+    # Regression test for https://github.com/alexwlchan/docstore/issues/60
+    resp = sess.post(
+        "/upload",
+        files={"file": ("mydocument.pdf", pdf_file)},
+        data={"tags": [tag], "title": "hello world"}
+    )
+
+    resp = sess.get("/")
+    soup = bs4.BeautifulSoup(resp.text, "html.parser")
+
+    tag_div = soup.find("div", attrs={"id": "collapseTagList"})
+    link_to_tag = tag_div.find("ul").find("li").find("a").attrs["href"]
+
+    resp = sess.get("/" + link_to_tag)
+    assert "hello world" in resp.text
