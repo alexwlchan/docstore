@@ -5,6 +5,7 @@ import json
 import pathlib
 
 from .exceptions import AlreadyExistsError, NoSuchObject
+from .lazyjson import LazyJsonObject
 
 
 class ObjectStore(abc.ABC):
@@ -58,35 +59,21 @@ class PosixPathEncoder(json.JSONEncoder):
 
 class JsonObjectStore(ObjectStore):
     def __init__(self, path):
-        self.path = path
+        self.lazy_json = LazyJsonObject(path, cls=PosixPathEncoder)
 
-        try:
-            self._objects = json.load(self.path.open())
-        except FileNotFoundError:
-            self._objects = {}
+    @property
+    def path(self):
+        return self.lazy_json.path
 
     @property
     def objects(self):
-        return self._objects
+        return self.lazy_json.read()
 
     def put(self, obj_id, obj_data):
         if not isinstance(obj_id, str):
             raise TypeError(f"Expected type str, got {type(obj_id)}: {obj_id!r}")
 
-        updated_objects = self._objects.copy()
-        updated_objects[obj_id] = obj_data
+        all_objects = self.objects
+        all_objects[obj_id] = obj_data
 
-        json_string = json.dumps(
-            updated_objects,
-            indent=2,
-            sort_keys=True,
-            cls=PosixPathEncoder
-        )
-
-        # Write to the database atomically
-        tmp_path = self.path.with_suffix(".json.tmp")
-        tmp_path.write_text(json_string)
-        tmp_path.rename(self.path)
-
-        # Don't write to the in-memory database until it's been saved to disk
-        self._objects = updated_objects
+        self.lazy_json.write(all_objects)
