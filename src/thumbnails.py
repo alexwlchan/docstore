@@ -5,7 +5,6 @@ import mimetypes
 import pathlib
 import subprocess
 import tempfile
-import zipfile
 
 from preview_generator.manager import PreviewManager
 from preview_generator.utils import LOGGER_NAME as PREVIEW_GENERATOR_LOGGER_NAME
@@ -34,27 +33,33 @@ PREVIEW_MANAGER = create_preview_manager()
 
 
 def _get_epub_cover(path):
-    # Based on https://github.com/marianosimone/epub-thumbnailer
-    # An epub is a zipfile, so look inside it for a cover image.
-    with zipfile.ZipFile(path.open("rb")) as epub:
-        images = [
-            f
-            for f in epub.filelist
-            if f.filename.endswith((".jpg", ".jpeg", ".png"))
-        ]
+    # Calling https://github.com/marianosimone/epub-thumbnailer
+    # This gets installed into /tools, and I shell out to it with subprocess
+    # so docstore doesn't get roped into using GPLv2.
+    working_dir = pathlib.Path(tempfile.mkdtemp())
 
-        biggest_image = max(images, key=lambda f: f.file_size)
-        return pathlib.Path(epub.extract(biggest_image, path=tempfile.mkdtemp()))
+    out_file = working_dir / "cover.jpg"
+
+    subprocess.check_call(
+        [
+            "python", "/tools/epub-thumbnailer/src/epub-thumbnailer.py",
+
+            # In file, out file, size (not used)
+            path.resolve(), out_file, "1000"
+        ]
+    )
+
+    return out_file
 
 
 def _get_mobi_cover(path):
     # Calling https://github.com/alexwlchan/get-mobi-cover-image
-    # This gets installed into /usr/local/bin, and I shell out to it with
-    # subprocess so docstore doesn't get roped into using GPLv2.
+    # This gets installed into /tools, and I shell out to it with subprocess
+    # so docstore doesn't get roped into using GPLv2.
     working_dir = pathlib.Path(tempfile.mkdtemp())
 
     result = subprocess.check_output(
-        ["python", "/get-mobi-cover-image/get_mobi_cover.py", path.resolve()],
+        ["python", "/tools/get-mobi-cover-image/get_mobi_cover.py", path.resolve()],
         cwd=working_dir
     ).decode("utf-8").strip()
 
