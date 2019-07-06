@@ -6,6 +6,16 @@ a {
   }
 }
 
+button.btn-primary {
+  background-color: $accent-color;
+  border-color: $accent-color;
+
+  &:hover {
+    background-color: darken($accent-color, 15%);
+    border-color: darken($accent-color, 15%);
+  }
+}
+
 button.tag {
   border-radius: .75rem;
   padding: .075rem .4rem;
