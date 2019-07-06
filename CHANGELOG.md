@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v1.10.4 - 2019-07-06
+
+Styling improvements:
+
+*   More consistency, less box shadows on the cards for each document
+*   The "add document" button now uses your accent colour
+*   The tag filter info box is grey, not a weird blue
+*   The "new document added" alert is now dismissable
+*   Tweak the appearance of the tag list and metadata
+
 ## v1.10.3 - 2019-07-02
 
 Change the behaviour of the underlying JSON parser so it picks up changes to the database file if edited outside the application.
