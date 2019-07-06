@@ -1,6 +1,5 @@
 main.documents {
   display: grid;
-  grid-gap: 30px;
   width: 100%;
 
   section {
@@ -10,7 +9,7 @@ main.documents {
   .document {
     position: relative;
     border-radius: 3px;
-    box-shadow: 0 3px 7px #aaa;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     display: grid;
 
@@ -38,6 +37,7 @@ main.documents {
 
   &.documents__view_grid {
     grid-template-columns: unquote("repeat(auto-fit, minmax(250px, 1fr))");
+    grid-gap: 30px;
 
     .document {
       max-width: 300px;
@@ -108,6 +108,7 @@ main.documents {
 
   &.documents__view_table {
     grid-auto-columns: 100%;
+    grid-gap: 20px;
 
     section {
       width: 100%;
