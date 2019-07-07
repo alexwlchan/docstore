@@ -114,6 +114,8 @@ def create_api(
         file_identifier = "/".join(hyperlink.DecodedURL.from_text(url).path)
 
         try:
+            # Because file identifiers are only ever a UUID or a slugified
+            # value, we don't need to worry about weird encoding issues in URLs.
             matching_obj = [
                 obj
                 for obj in tagged_store.objects.values()
