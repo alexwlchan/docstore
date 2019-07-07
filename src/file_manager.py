@@ -37,6 +37,7 @@ class FileManager:
         return file_identifier
 
     def write_bytes(self, file_id, buffer, original_filename=None):
+        # Try to store the file with a human-readable filename if supplied.
         if original_filename is not None:
             extension = pathlib.Path(original_filename).suffix
         else:
