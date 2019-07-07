@@ -39,6 +39,27 @@ class FileManagerTestMixin(abc.ABC):
         resp = manager.write_bytes(file_id="1234", buffer=b"hello world")
         assert (manager.root / resp).read_bytes() == b"hello world"
 
+    def test_stores_with_original_filename_if_possible(self, store_root):
+        manager = self.create_manager(store_root)
+        resp = manager.write_bytes(
+            file_id="1234", buffer=b"hello world", original_filename="example.jpg"
+        )
+        assert resp == pathlib.Path("e/example.jpg")
+
+    def test_stores_with_safe_filename(self, store_root):
+        manager = self.create_manager(store_root)
+        resp = manager.write_bytes(
+            file_id="1234", buffer=b"hello world", original_filename="Çingleton.txt"
+        )
+        assert resp == pathlib.Path("c/cingleton.txt")
+
+    def test_stores_with_uuid_if_no_safe_filename(self, store_root):
+        manager = self.create_manager(store_root)
+        resp = manager.write_bytes(
+            file_id="1234", buffer=b"hello world", original_filename="|"
+        )
+        assert resp == pathlib.Path("1/1234")
+
     @pytest.mark.parametrize("filename, expected_extension", [
         ("example.jpg", ".jpg"),
         ("document.pdf", ".pdf"),
