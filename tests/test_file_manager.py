@@ -21,6 +21,12 @@ class FileManagerTestMixin(abc.ABC):
         assert resp.parent == pathlib.Path("1")
         assert str(resp).startswith("1/1234")
 
+    def test_lowercases_shard(self, store_root):
+        manager = self.create_manager(store_root)
+        resp = manager.write_bytes(file_id="ABCD", buffer=b"hello world")
+        assert resp.parent == pathlib.Path("a")
+        assert str(resp).startswith("a/ABCD")
+
     def test_writes_bytes_to_disk(self, store_root):
         manager = self.create_manager(store_root)
         resp = manager.write_bytes(file_id="1234", buffer=b"hello world")

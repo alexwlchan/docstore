@@ -17,7 +17,8 @@ class FileManager:
     root = attr.ib()
 
     def _store_file(self, file_id, original_file):
-        file_identifier = pathlib.Path(file_id[0]) / (file_id + original_file.suffix)
+        shard = file_id[0].lower()
+        file_identifier = pathlib.Path(shard) / (file_id + original_file.suffix)
 
         complete_file_identifier = self.root / file_identifier
         complete_file_identifier.parent.mkdir(exist_ok=True, parents=True)
