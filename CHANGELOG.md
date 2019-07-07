@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.10.5 - 2019-07-07
+
+Internal documentation improvement.
+
 ## v1.10.4 - 2019-07-06
 
 Styling improvements:
