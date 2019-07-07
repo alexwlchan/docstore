@@ -9,6 +9,7 @@ import tempfile
 import attr
 import magic
 
+from slugify import slugify
 from thumbnails import create_thumbnail
 
 
@@ -40,7 +41,11 @@ class FileManager:
         # Try to store the file with a human-readable filename if supplied.
         if original_filename is not None:
             pth = pathlib.Path(original_filename)
-            base_name = pth.stem
+            base_name = slugify(pth.stem)
+
+            if not base_name:
+                base_name = file_id
+
             extension = pth.suffix
         else:
             # If we didn't get a filename from the user, try to guess one based

@@ -111,10 +111,16 @@ def create_api(
         # (if specified).
         #
         # For encoding as UTF-8, see https://stackoverflow.com/a/49481671/1558022
-        doc_id, _ = os.path.splitext(os.path.basename(url))
+        file_identifier = "/".join(hyperlink.DecodedURL.from_text(url).path)
+
         try:
-            filename = tagged_store.objects[doc_id]["filename"]
-        except KeyError:
+            matching_obj = [
+                obj
+                for obj in tagged_store.objects.values()
+                if str(obj["file_identifier"]) == file_identifier
+            ][0]
+            filename = matching_obj["filename"]
+        except (IndexError, KeyError):
             pass
         else:
             encoded_filename = urllib.parse.quote(filename, encoding="utf-8")
