@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.11.2 - 2019-07-08
+
+Fix a bug that meant thumbnails weren't being created in v1.11.x.
+
 ## v1.11.1 - 2019-07-08
 
 Fix a cosmetic bug in the grid view with items that had a very small vertical height -- hovering over to see the info panel would obscure the entire thumbnail, and make it impossible to click through!
