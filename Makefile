@@ -39,10 +39,10 @@ test-fast:
 		--entrypoint "coverage" docstore_tests report
 
 requirements.txt: $(ROOT)/.docker/pip_tools requirements.in
-	docker run -v $(ROOT):/src --workdir /src docstore_piptools requirements.in
+	docker run -v $(ROOT):/src --workdir /src docstore_pip_tools requirements.in
 
 test_requirements.txt: $(ROOT)/.docker/pip_tools requirements.txt test_requirements.in
-	docker run -v $(ROOT):/src --workdir /src docstore_piptools test_requirements.in
+	docker run -v $(ROOT):/src --workdir /src docstore_pip_tools test_requirements.in
 
 check_release_file:
 	python scripts/autorelease.py check_release_file

@@ -1,7 +1,7 @@
 # -*- encoding: utf-8
 
 import abc
-import os
+from concurrent.futures import as_completed, ThreadPoolExecutor
 import pathlib
 
 import pytest
@@ -21,6 +21,12 @@ class FileManagerTestMixin(abc.ABC):
         assert resp.parent == pathlib.Path("1")
         assert str(resp).startswith("1/1234")
 
+    def test_lowercases_shard(self, store_root):
+        manager = self.create_manager(store_root)
+        resp = manager.write_bytes(file_id="ABCD", buffer=b"hello world")
+        assert resp.parent == pathlib.Path("a")
+        assert str(resp).startswith("a/ABCD")
+
     def test_writes_bytes_to_disk(self, store_root):
         manager = self.create_manager(store_root)
         resp = manager.write_bytes(file_id="1234", buffer=b"hello world")
@@ -32,6 +38,49 @@ class FileManagerTestMixin(abc.ABC):
 
         resp = manager.write_bytes(file_id="1234", buffer=b"hello world")
         assert (manager.root / resp).read_bytes() == b"hello world"
+
+    def test_stores_with_original_filename_if_possible(self, store_root):
+        manager = self.create_manager(store_root)
+        resp = manager.write_bytes(
+            file_id="1234", buffer=b"hello world", original_filename="example.jpg"
+        )
+        assert resp == pathlib.Path("e/example.jpg")
+
+    def test_stores_with_safe_filename(self, store_root):
+        manager = self.create_manager(store_root)
+        resp = manager.write_bytes(
+            file_id="1234", buffer=b"hello world", original_filename="Çingleton.txt"
+        )
+        assert resp == pathlib.Path("c/cingleton.txt")
+
+    def test_stores_with_uuid_if_no_safe_filename(self, store_root):
+        manager = self.create_manager(store_root)
+        resp = manager.write_bytes(
+            file_id="1234", buffer=b"hello world", original_filename="|"
+        )
+        assert resp == pathlib.Path("1/1234")
+
+    def test_stores_similar_files_with_distinct_names(self, store_root):
+        manager = self.create_manager(store_root)
+        original_filename = "greeting.txt"
+        thread_count = 10
+
+        futures = []
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            for i in range(thread_count):
+                future = executor.submit(
+                    manager.write_bytes,
+                    file_id=str(i),
+                    buffer=b"hello world",
+                    original_filename="greeting.txt"
+                )
+                futures.append(future)
+
+        filenames = set()
+        for future in as_completed(futures):
+            filenames.add(future.result())
+
+        assert len(filenames) == thread_count
 
     @pytest.mark.parametrize("filename, expected_extension", [
         ("example.jpg", ".jpg"),
@@ -64,17 +113,6 @@ class FileManagerTestMixin(abc.ABC):
         jpg_data = pathlib.Path("tests/files/bridge.jpg").read_bytes()
         resp = manager.write_bytes(file_id="1234", buffer=jpg_data)
         assert resp.suffix == ".jpg"
-
-    @pytest.mark.skipif(
-        os.environ.get("DOCKER") != "true",
-        reason="This test can only be run inside Docker"
-    )
-    def test_can_write_file_across_fs_boundary(self):
-        # The temporary location used by the file manager and the directories
-        # created for tests are on the same partition.  What if they're on
-        # different partitions?
-        manager = self.create_manager("/documents")
-        manager.write_bytes(file_id="1234", buffer=b"hello world")
 
 
 class TestFileManager(FileManagerTestMixin):

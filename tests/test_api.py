@@ -318,7 +318,11 @@ def test_sets_content_disposition_header(api, pdf_file, filename, expected_heade
     )
 
     doc_id = resp.json()["id"]
-    resp = api.requests.get(f"/files/{doc_id[0]}/{doc_id}.pdf")
+
+    resp = api.requests.get(f"/documents/{doc_id}")
+
+    file_identifier = resp.json()["file_identifier"]
+    resp = api.requests.get(f"/files/{file_identifier}")
     assert resp.headers["Content-Disposition"] == expected_header
 
 
