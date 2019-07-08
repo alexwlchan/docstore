@@ -72,7 +72,7 @@
                   <a href="{{ req_url.add('tag', tag) | query_str_only }}">
                 {% endif %}
                 #{{ tag }}
-                {% if tag not in search_options.tag_query %}</a>{% endif %}
+                {%- if tag not in search_options.tag_query %}</a>{% endif %}
                 {% endfor %}
                 </h5>
               </div>
