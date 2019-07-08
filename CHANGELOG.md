@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.11.1 - 2019-07-08
+
+Fix a cosmetic bug in the grid view with items that had a very small vertical height -- hovering over to see the info panel would obscure the entire thumbnail, and make it impossible to click through!
+
 ## v1.11.0 - 2019-07-08
 
 This release changes the underlying storage to be more human-readable.
