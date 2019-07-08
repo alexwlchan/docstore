@@ -26,7 +26,6 @@ def safe_write(initial_path, data):
 
     while True:
         path = pathlib.Path(base + random_part + ext)
-        print(path)
         try:
             # Opening in exclusive write mode means we'll get an error if
             # the file already exists.

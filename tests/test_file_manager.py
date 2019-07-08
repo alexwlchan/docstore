@@ -2,6 +2,7 @@
 
 import abc
 from concurrent.futures import as_completed, ThreadPoolExecutor
+import os
 import pathlib
 
 import pytest
@@ -126,6 +127,22 @@ class TestThumbnailManager(FileManagerTestMixin):
 
     def test_creates_thumbnail(self, store_root):
         manager = self.create_manager(store_root)
+        resp = manager.create_thumbnail(
+            file_id="1234",
+            original_file=pathlib.Path("tests/files/bridge.jpg")
+        )
+        assert resp == pathlib.Path("1/1234.jpg")
+        assert (manager.root / resp).exists()
+
+    @pytest.mark.skipif(
+        os.environ.get("DOCKER") != "true",
+        reason="This test can only be run inside Docker"
+    )
+    def test_can_write_file_across_fs_boundary(self):
+        # The temporary location used by the file manager and the directories
+        # created for tests are on the same partition.  What if they're on
+        # different partitions?
+        manager = self.create_manager("/documents")
         resp = manager.create_thumbnail(
             file_id="1234",
             original_file=pathlib.Path("tests/files/bridge.jpg")
