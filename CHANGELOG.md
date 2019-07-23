@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.11.4 - 2019-07-23
+
+Titles in the document list are now rendered with [SmartyPants](https://daringfireball.net/projects/smartypants/), including curly quotes and nice dashes.
+
 ## v1.11.3 - 2019-07-08
 
 Fix a tiny cosmetic issue in the display of tags on an individual document.
