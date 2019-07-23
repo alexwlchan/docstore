@@ -12,6 +12,7 @@ import hyperlink
 from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
 import responder
 import scss
+import smartypants
 from whitenoise import WhiteNoise
 
 import date_helpers
@@ -104,6 +105,7 @@ def create_api(
     api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
     api.jinja_env.filters["short_url"] = lambda u: urllib.parse.urlparse(u).netloc
     api.jinja_env.filters["query_str_only"] = query_str_only
+    api.jinja_env.filters["smartypants"] = smartypants.smartypants
 
     def add_headers_function(headers, path, url):
         # Add the Content-Disposition header to file requests, so they can
