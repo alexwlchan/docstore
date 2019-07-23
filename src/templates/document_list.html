@@ -45,7 +45,7 @@
             {% if doc.title %}
             <div class="document__title">
               <a href="{{ api.file_url(doc) }}" target="_blank">
-              <h3>{{ doc.title }}</h3>
+              <h3>{{ doc.title | smartypants }}</h3>
               </a>
             </div>
             {% endif %}

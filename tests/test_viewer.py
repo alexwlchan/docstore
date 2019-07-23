@@ -244,3 +244,17 @@ def test_can_navigate_to_tag(sess, pdf_file, tag):
 
     resp = sess.get("/" + link_to_tag)
     assert "hello world" in resp.text
+
+
+def test_renders_titles_with_pretty_quotes(sess, pdf_file):
+    resp = sess.post(
+        "/upload",
+        files={"file": ("mydocument.pdf", pdf_file)},
+        data={"title": "Isn't it a wonderful day? -- an optimist"}
+    )
+
+    resp = sess.get("/")
+
+    soup = bs4.BeautifulSoup(resp.text, "html.parser")
+    title = soup.find("div", attrs={"class": "document__title"})
+    assert "Isn&#8217;t it a wonderful day? &#8212; an optimist" in title.text
