@@ -257,4 +257,4 @@ def test_renders_titles_with_pretty_quotes(sess, pdf_file):
 
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
     title = soup.find("div", attrs={"class": "document__title"})
-    assert "Isn&#8217;t it a wonderful day? &#8212; an optimist" in title.text
+    assert "Isn’t it a wonderful day? — an optimist" in title.text
