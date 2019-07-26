@@ -16,7 +16,7 @@ $(ROOT)/.docker/pip_tools: $(ROOT)/.docker/base
 	mkdir -p $(ROOT)/.docker
 	touch $(ROOT)/.docker/pip_tools
 
-$(ROOT)/.docker/app: $(ROOT)/.docker/base
+$(ROOT)/.docker/app: $(ROOT)/.docker/base $(wildcard $(ROOT)/src/*)
 	docker build --tag docstore --file docker/app.Dockerfile .
 	mkdir -p $(ROOT)/.docker
 	touch $(ROOT)/.docker/app
