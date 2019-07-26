@@ -11,14 +11,6 @@ $(ROOT)/.docker/tests: build test_requirements.txt
 	mkdir -p $(ROOT)/.docker
 	touch $(ROOT)/.docker/tests
 
-$(ROOT)/.docker/pip_tools: $(ROOT)/.docker/base
-	docker build --tag docstore_pip_tools --file docker/pip_tools.Dockerfile .
-	mkdir -p $(ROOT)/.docker
-	touch $(ROOT)/.docker/pip_tools
-
-deps = $(ROOT)/.docker/base docker/app.Dockerfile requirements.txt $(wildcard $(ROOT)/src/*)
-
-
 lint:
 	docker run --rm --volume $(ROOT):/src wellcome/flake8:65 --ignore=E501,W504
 
@@ -36,10 +28,12 @@ test-fast:
 	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT) \
 		--entrypoint "coverage" docstore_tests report
 
-requirements.txt: $(ROOT)/.docker/pip_tools requirements.in
+requirements.txt:
+	docker build --tag docstore_pip_tools --file docker/pip_tools.Dockerfile .
 	docker run -v $(ROOT):/src --workdir /src docstore_pip_tools requirements.in
 
-test_requirements.txt: $(ROOT)/.docker/pip_tools requirements.txt test_requirements.in
+test_requirements.txt:
+	docker build --tag docstore_pip_tools --file docker/pip_tools.Dockerfile .
 	docker run -v $(ROOT):/src --workdir /src docstore_pip_tools test_requirements.in
 
 check_release_file:
