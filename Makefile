@@ -6,7 +6,7 @@ $(ROOT)/.docker/base: docker/base.Dockerfile
 	mkdir -p $(ROOT)/.docker
 	touch $(ROOT)/.docker/base
 
-$(ROOT)/.docker/tests: $(ROOT)/.docker/app
+$(ROOT)/.docker/tests: $(ROOT)/.docker/app test_requirements.txt
 	docker build --tag docstore_tests --file docker/tests.Dockerfile .
 	mkdir -p $(ROOT)/.docker
 	touch $(ROOT)/.docker/tests
@@ -16,7 +16,9 @@ $(ROOT)/.docker/pip_tools: $(ROOT)/.docker/base
 	mkdir -p $(ROOT)/.docker
 	touch $(ROOT)/.docker/pip_tools
 
-$(ROOT)/.docker/app: $(ROOT)/.docker/base $(wildcard $(ROOT)/src/*)
+deps = $(ROOT)/.docker/base docker/app.Dockerfile requirements.txt $(wildcard $(ROOT)/src/*)
+
+$(ROOT)/.docker/app: $(deps)
 	docker build --tag docstore --file docker/app.Dockerfile .
 	mkdir -p $(ROOT)/.docker
 	touch $(ROOT)/.docker/app
