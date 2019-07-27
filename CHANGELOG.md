@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.11.6 - 2019-07-27
+
+Fix a cosmetic bug introduced in v1.11.4 where special characters would be displayed as unescaped, e.g. `It&#8217;s time for your next eye test` instead of `It’s time for your next eye test`.
+
 ## v1.11.5 - 2019-07-27
 
 Fix a bug where the version in the footer would always show the previous version, not the current version.
