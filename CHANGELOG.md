@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.11.5 - 2019-07-27
+
+Fix a bug where the version in the footer would always show the previous version, not the current version.
+
 ## v1.11.4 - 2019-07-23
 
 Titles in the document list are now rendered with [SmartyPants](https://daringfireball.net/projects/smartypants/), including curly quotes and nice dashes.
