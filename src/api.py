@@ -130,6 +130,8 @@ def create_api(
             encoded_filename = urllib.parse.quote(filename, encoding="utf-8")
             headers["Content-Disposition"] = f"filename*=utf-8''{encoded_filename}"
 
+        headers["Cache-Control"] = "public, max-age=31536000"
+
     # Add routes for serving the static files/thumbnails
     whitenoise_files = WhiteNoise(
         application=api._default_wsgi_app,
@@ -143,7 +145,13 @@ def create_api(
 
     api.file_url = lambda doc: "files/" + str(doc["file_identifier"])
 
-    whitenoise_thumbs = WhiteNoise(application=api._default_wsgi_app)
+    def add_cache_control_headers(headers, path, url):
+        headers["Cache-Control"] = "public, max-age=31536000"
+
+    whitenoise_thumbs = WhiteNoise(
+        application=api._default_wsgi_app,
+        add_headers_function=add_cache_control_headers
+    )
 
     if thumbnail_manager.root.exists():
         whitenoise_thumbs.add_files(thumbnail_manager.root)

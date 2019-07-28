@@ -1,6 +1,7 @@
 # -*- encoding: utf-8
 
 import re
+import time
 
 import bs4
 import pytest
@@ -258,3 +259,28 @@ def test_renders_titles_with_pretty_quotes(sess, pdf_file):
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
     title = soup.find("div", attrs={"class": "document__title"})
     assert "Isn’t it a wonderful day? — an optimist" in title.text
+
+
+def test_sets_caching_headers_on_file(sess, pdf_file):
+    resp = sess.post(
+        "/upload",
+        files={"file": ("mydocument.pdf", pdf_file)}
+    )
+
+    doc_id = resp.json()["id"]
+
+    now = time.time()
+
+    while time.time() - now < 5:  # pragma: no cover
+        resp = sess.get(f"/documents/{doc_id}")
+
+        if "thumbnail_identifier" in resp.json():
+            break
+
+    data = resp.json()
+
+    file_resp = sess.head(f"/files/{data['file_identifier']}")
+    assert file_resp.headers["Cache-Control"] == "public, max-age=31536000"
+
+    thumb_resp = sess.head(f"/thumbnails/{data['thumbnail_identifier']}")
+    assert thumb_resp.headers["Cache-Control"] == "public, max-age=31536000"
