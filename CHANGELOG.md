@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.11.7 - 2019-07-28
+
+Static assets (files, thumbnails) now specify a much longer caching time, which should improve performance.
+
 ## v1.11.6 - 2019-07-27
 
 Fix a cosmetic bug introduced in v1.11.4 where special characters would be displayed as unescaped, e.g. `It&#8217;s time for your next eye test` instead of `It’s time for your next eye test`.
