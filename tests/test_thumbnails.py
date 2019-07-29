@@ -48,3 +48,8 @@ def test_creates_mobi_thumbnail():
     im = Image.open(result)
     assert im.format == "JPEG"
     assert im.size == (400, 631)
+
+
+def test_creates_qpdf_thumbnail():
+    path = pathlib.Path("tests/files/qpdfconvert.pdf")
+    create_thumbnail(path)

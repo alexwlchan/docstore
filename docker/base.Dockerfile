@@ -1,11 +1,12 @@
 FROM python:3.6-jessie
 
-RUN apt-get update
-RUN apt-get install --yes \
+RUN apt-get update && \
+  apt-get install --yes \
   imagemagick \
   libimage-exiftool-perl \
   libmagickwand-dev \
-  poppler-utils
+  poppler-utils \
+  qpdf
 
 RUN pip3 install --upgrade pip
 
