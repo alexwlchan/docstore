@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.11.8 - 2019-07-29
+
+The app now creates thumbnails for some PDFs where previously thumbnail creation would fail.
+
+Specifically, it now includes `qpdf`, which is used by the preview-generator library to create thumbnails of some PDFs.
+
 ## v1.11.7 - 2019-07-28
 
 Static assets (files, thumbnails) now specify a much longer caching time, which should improve performance.
