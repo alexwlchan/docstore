@@ -16,7 +16,7 @@ This document explains the available options when running docstore.
 *   [-&#8203;-default_view: Selecting between table/grid view](#--default_view-selecting-between-tablegrid-view)
 *   [-&#8203;-accent_color: Change the tint colour in the app](#--accent_color-change-the-tint-colour-in-the-app)
 
----
+<br/>
 
 ## Running on a different port
 
@@ -31,7 +31,7 @@ docker run \
   greengloves/docstore
 ```
 
----
+<br/>
 
 ## Run a specific version
 
@@ -45,7 +45,7 @@ docker run \
   greengloves/docstore:v1.13.1
 ```
 
----
+<br/>
 
 ## -&#8203;-title: Changing the title
 
@@ -68,7 +68,7 @@ This is what it looks like:
 
 ![A dark grey header with the phrase "my documents"](title_custom.png)
 
----
+<br/>
 
 ## -&#8203;-default_view: Selecting between table/grid view
 
@@ -92,7 +92,7 @@ docker run \
   --default_view=grid
 ```
 
----
+<br/>
 
 ## -&#8203;-accent_color: Change the tint colour in the app
 
