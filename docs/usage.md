@@ -23,6 +23,18 @@ docker run \
   greengloves/docstore
 ```
 
+## Run a specific version
+
+If you want to run a specific version of docstore, add `:VERSION` to the name of the image in your `docker run` command.
+For example, if you want to run v1.13.1, use the command:
+
+```
+docker run \
+  --publish 8072:8072 \
+  --volume /path/to/documents:/documents \
+  greengloves/docstore:v1.13.1
+```
+
 ## -&#8203;-title: Changing the title
 
 By default, the title shown in the web app is "docstore":
