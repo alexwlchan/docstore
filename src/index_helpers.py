@@ -26,14 +26,7 @@ def index_new_document(tagged_object_store, file_manager, doc_id, doc):
     h.update(file_data)
     actual_sha256 = h.hexdigest()
 
-    try:
-        if doc["sha256_checksum"] != actual_sha256:
-            raise UserError(
-                "Incorrect SHA256 hash on upload!  Got %s, calculated %s." %
-                (doc['sha256_checksum'], actual_sha256)
-            )
-    except KeyError:
-        doc["sha256_checksum"] = actual_sha256
+    doc["sha256_checksum"] = actual_sha256
 
     tagged_object_store.init(obj_id=doc_id, obj_data=doc)
     return doc

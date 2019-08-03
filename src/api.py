@@ -41,7 +41,7 @@ def prepare_form_data(user_data):
 
     assert isinstance(prepared_data["file"], bytes), type(prepared_data["file"])
 
-    for key in ("title", "tags", "filename", "sha256_checksum"):
+    for key in ("title", "tags", "filename"):
         try:
             prepared_data[key] = user_data.pop(key).decode("utf8")
         except KeyError:
