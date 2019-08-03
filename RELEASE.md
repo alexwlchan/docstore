@@ -2,7 +2,7 @@ RELEASE_TYPE: minor
 
 docstore no longer checks the `"sha256_checksum"` value in a POST request to `/upload`.
 
-As far as I know, nobody is routinely uploading documents with this field, so it's simpler to take it out.
+As far as I know, nobody is routinely uploading documents with this field, so it's simpler to take it out.  I upload all my documents through the web interface, and it doesn't send this value.
 
 If you do send a value for `"sha256_checksum"`, it will be stored in the database separate to the one that gets computed by docstore, like so:
 
