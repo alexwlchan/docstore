@@ -25,8 +25,8 @@ def test_adds_sha256_hash_of_document(tagged_store, file_manager, file_identifie
 
     # sha256(b"hello world")
     assert (
-        doc["sha256_checksum"] ==
-        "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+        doc["checksum"] ==
+        "sha256:b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
     )
 
 

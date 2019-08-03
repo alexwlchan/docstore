@@ -62,7 +62,6 @@ with open("tests/files/snakes.pdf", "rb") as f:
     {"title": "Hello world"},
     {"tags": ["foo"]},
     {"filename": "foo.pdf"},
-    {"sha256_checksum": snake_sha256},
 ])
 def test_can_upload_without_all_parameters(api, data, pdf_file):
     resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
@@ -76,7 +75,6 @@ def test_stores_document_in_store(api, tagged_store, pdf_file, pdf_path):
         "title": "Hello world",
         "tags": "foo bar baz",
         "filename": "foo.pdf",
-        "sha256_checksum": hex_hash,
     }
     resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
     assert resp.status_code == 201
@@ -87,7 +85,7 @@ def test_stores_document_in_store(api, tagged_store, pdf_file, pdf_path):
     assert stored_doc["title"] == data["title"]
     assert stored_doc["tags"] == data["tags"].split()
     assert stored_doc["filename"] == data["filename"]
-    assert stored_doc["sha256_checksum"] == data["sha256_checksum"]
+    assert "checksum" in stored_doc
 
 
 def test_extra_keys_are_kept_in_store(api, tagged_store, pdf_file):
