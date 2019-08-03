@@ -53,8 +53,7 @@ POST /upload
   "file": "<Body of PDF file to store>",
   "title": "My great document",
   "tags": "tag1 tag2 tag3",
-  "filename": "Document1.pdf",
-  "sha256_checksum": "<SHA256 checksum of PDF>"
+  "filename": "Document1.pdf"
 }
 ```
 
@@ -67,8 +66,6 @@ Optional parameters:
 *   `title` -- the title of the document to display in the viewer.
 *   `tags` -- a list of tags to apply to the document.
 *   `filename` -- the name of the original PDF file.
-*   `sha256_checksum` -- the SHA256 checksum of the original file.
-    The upload will fail if the checksum does not match the upload file.
 
 Extra parameters in the request will also be stored in the database, although they aren't used by the viewer right now.
 

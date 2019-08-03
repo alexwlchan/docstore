@@ -30,27 +30,6 @@ def test_adds_sha256_hash_of_document(tagged_store, file_manager, file_identifie
     )
 
 
-def test_leaves_correct_checksum_unmodified(tagged_store, file_manager):
-    doc = {
-        "path": "foo.pdf",
-        "file": b"hello world",
-
-        # sha256(b"hello world")
-        "sha256_checksum": "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
-    }
-    index_helpers.index_new_document(tagged_store, file_manager, doc_id="1", doc=doc)
-
-    assert doc["sha256_checksum"] == "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
-
-
-def test_raises_error_if_checksum_mismatch(tagged_store, file_manager):
-    doc = {"path": "foo.pdf", "file": b"hello world", "sha256_checksum": "123"}
-
-    with pytest.raises(UserError, match="Incorrect SHA256 hash on upload"):
-        index_helpers.index_new_document(
-            tagged_store, file_manager, doc_id="1", doc=doc)
-
-
 @pytest.mark.parametrize('filename, extension', [
     ("bridge.jpg", ".jpg"),
     ("cluster.png", ".png"),

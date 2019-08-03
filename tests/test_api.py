@@ -69,15 +69,6 @@ def test_can_upload_without_all_parameters(api, data, pdf_file):
     assert resp.status_code == 201
 
 
-def test_incorrect_checksum_is_400(api, pdf_file):
-    resp = api.requests.post(
-        "/upload",
-        files={"file": pdf_file},
-        data={"sha256_checksum": "123...abc"}
-    )
-    assert resp.status_code == 400
-
-
 def test_stores_document_in_store(api, tagged_store, pdf_file, pdf_path):
     hex_hash = sha256(pdf_path.open("rb"))
 
@@ -366,18 +357,6 @@ class TestBrowser:
         stored_doc = tagged_store.objects[docid]
         assert stored_doc["filename"] == "mydocument.pdf"
 
-    def test_includes_error_message_in_response(self, api, pdf_file):
-        resp = self.upload(
-            api=api,
-            file_contents=pdf_file,
-            data={"sha256_checksum": "123"}
-        )
-
-        location = hyperlink.URL.from_text(resp.headers["Location"])
-        message = json.loads(dict(location.query)["_message"])
-
-        assert "error" in message
-
     @pytest.mark.parametrize("view_option", ["table", "grid"])
     def test_includes_source_url_in_page(self, api, view_option, pdf_file):
         self.upload(
@@ -418,3 +397,14 @@ class TestPrepareData:
 
         prepared_data = service.prepare_form_data(user_data)
         assert "user_data" not in prepared_data
+
+    def test_moves_sha256_checksum_to_user_data(self):
+        user_data = {
+            "file": b"hello world",
+            "sha256_checksum": b"123456"
+        }
+
+        prepared_data = service.prepare_form_data(user_data)
+        assert prepared_data["user_data"] == {
+            "sha256_checksum": "123456"
+        }
