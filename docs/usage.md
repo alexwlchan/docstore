@@ -10,6 +10,14 @@ This saves your data in `/path/to/documents` and makes the app available at <htt
 
 This document explains the available options when running docstore.
 
+*   [Running on a different port](#running-on-a-different-port)
+*   [Run a specific version](#run-a-specific-version)
+*   [-&#8203;-title: Changing the title](#--title-changing-the-title)
+*   [-&#8203;-default_view: Selecting between table/grid view](#--default_view-selecting-between-tablegrid-view)
+*   [-&#8203;-accent_color: Change the tint colour in the app](#--accent_color-change-the-tint-colour-in-the-app)
+
+---
+
 ## Running on a different port
 
 If you want to run docstore on a different port, add `--env PORT=XYZ --publish XYZ:XYZ` to the `docker run` command.
@@ -23,6 +31,8 @@ docker run \
   greengloves/docstore
 ```
 
+---
+
 ## Run a specific version
 
 If you want to run a specific version of docstore, add `:VERSION` to the name of the image in your `docker run` command.
@@ -34,6 +44,8 @@ docker run \
   --volume /path/to/documents:/documents \
   greengloves/docstore:v1.13.1
 ```
+
+---
 
 ## -&#8203;-title: Changing the title
 
@@ -56,6 +68,8 @@ This is what it looks like:
 
 ![A dark grey header with the phrase "my documents"](title_custom.png)
 
+---
+
 ## -&#8203;-default_view: Selecting between table/grid view
 
 There are two viewing modes in docstore: table view and grid view.
@@ -77,6 +91,8 @@ docker run \
   greengloves/docstore \
   --default_view=grid
 ```
+
+---
 
 ## -&#8203;-accent_color: Change the tint colour in the app
 
