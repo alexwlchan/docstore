@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.13.1 - 2019-08-03
+
+The Docker image is now significantly smaller (482MB rather than 832MB).
+
+This is because it's now using `alpine` as its base image, rather than `python/3.6-jessie`.
+
 ## v1.13.0 - 2019-08-03
 
 docstore now stores checksums in a different format.  Previously it wrote a field like:
