@@ -24,9 +24,9 @@ def index_new_document(tagged_object_store, file_manager, doc_id, doc):
     # and makes it easy to detect duplicates.
     h = hashlib.sha256()
     h.update(file_data)
-    actual_sha256 = h.hexdigest()
+    checksum_value = h.hexdigest()
 
-    doc["sha256_checksum"] = actual_sha256
+    doc["checksum"] = f"sha256:{checksum_value}"
 
     tagged_object_store.init(obj_id=doc_id, obj_data=doc)
     return doc

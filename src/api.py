@@ -19,6 +19,7 @@ import date_helpers
 from exceptions import UserError
 from file_manager import FileManager, ThumbnailManager
 from index_helpers import index_new_document
+import migrations
 import search_helpers
 from storage import JsonTaggedObjectStore
 from version import __version__
@@ -310,6 +311,8 @@ def run_api(root, title, default_view, tag_view, accent_color):
     root = pathlib.Path(os.path.normpath(root))
 
     tagged_store = JsonTaggedObjectStore(root / "documents.json")
+
+    migrations.apply_migrations(tagged_store)
 
     api = create_api(
         tagged_store,

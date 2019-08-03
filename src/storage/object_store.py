@@ -67,7 +67,10 @@ class JsonObjectStore(ObjectStore):
 
     @property
     def objects(self):
-        return self.lazy_json.read()
+        try:
+            return self.lazy_json.read()
+        except FileNotFoundError:
+            return {}
 
     def put(self, obj_id, obj_data):
         if not isinstance(obj_id, str):

@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import json
 import re
 
 from click.testing import CliRunner
@@ -78,3 +79,27 @@ def test_sets_default_tag_view_option(runner, store_root, tag_view_option):
 def test_unrecognised_tag_view_is_rejected(runner, store_root):
     result = runner.invoke(api.run_api, [str(store_root), "--tag_view", "mosaic"])
     assert result.exit_code == 2
+
+
+class TestMigrations:
+    def test_changes_checksums_to_sha256(self, runner, store_root):
+        json_string = json.dumps({
+            "1": {"name": "alex"},
+            "2": {"name": "lexie", "sha256_checksum": "abcdef"},
+            "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
+        })
+
+        db_root = store_root / "documents.json"
+        db_root.open("w").write(json_string)
+
+        runner.invoke(api.run_api, [str(store_root)])
+
+        expected_data = {
+            "1": {"name": "alex"},
+            "2": {"name": "lexie", "checksum": "sha256:abcdef"},
+            "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
+        }
+
+        actual_data = json.load(db_root.open())
+
+        assert actual_data == expected_data
