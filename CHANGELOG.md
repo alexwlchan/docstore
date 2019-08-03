@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.12.1 - 2019-08-03
+
+Add a link to the GitHub repo in the footer.
+
 ## v1.12.0 - 2019-08-03
 
 docstore no longer checks the `"sha256_checksum"` value in a POST request to `/upload`.
