@@ -1,0 +1,10 @@
+.footer {
+  a {
+    color: #6c757d;
+    text-decoration: underline;
+
+    &:hover {
+      color: darken(#6c757d, 25%);
+    }
+  }
+}

@@ -158,7 +158,7 @@ def test_all_urls_are_relative(sess, tagged_store, file_manager, params):
     resp = sess.get("/", params=params)
 
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
-    links = [a.attrs["href"] for a in soup.find_all("a")]
+    links = [a.attrs["href"] for a in soup.find("main").find_all("a")]
 
     for href in links:
         assert href.startswith(("?", "#", "files/")), href
