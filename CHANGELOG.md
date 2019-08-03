@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## v1.13.0 - 2019-08-03
+
+docstore now stores checksums in a different format.  Previously it wrote a field like:
+
+```json
+{
+  ...
+  "sha256_checksum": "abc...def"
+}
+```
+
+It now writes a field `"checksum"` with the algorithm prepended, for example:
+
+```json
+{
+  ...
+  "checksum": "sha256:abc...def"
+}
+```
+
+which is more future-proof if I ever decide to change the checksum algorithm.
+
+Old databases will be migrated to the new format when you first run a release with the new code.
+
 ## v1.12.1 - 2019-08-03
 
 Add a link to the GitHub repo in the footer.
