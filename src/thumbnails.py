@@ -42,7 +42,7 @@ def _get_epub_cover(path):
 
     subprocess.check_call(
         [
-            "python", "/tools/epub-thumbnailer/src/epub-thumbnailer.py",
+            "python3", "/tools/epub-thumbnailer/src/epub-thumbnailer.py",
 
             # In file, out file, size (not used)
             path.resolve(), out_file, "1000"
@@ -59,7 +59,7 @@ def _get_mobi_cover(path):
     working_dir = pathlib.Path(tempfile.mkdtemp())
 
     result = subprocess.check_output(
-        ["python", "/tools/get-mobi-cover-image/get_mobi_cover.py", path.resolve()],
+        ["python3", "/tools/get-mobi-cover-image/get_mobi_cover.py", path.resolve()],
         cwd=working_dir
     ).decode("utf-8").strip()
 
@@ -111,8 +111,11 @@ def create_thumbnail(path):
     #   https://bugs.python.org/issue34926
     #   https://github.com/python/cpython/pull/9777
     #
-    elif mimetypes.guess_type(str(path))[0].startswith("image/"):
-        return _get_imagemagick_preview(path)
-
     else:
-        return _get_preview_manager_preview(path)
+        guessed_type = mimetypes.guess_type(str(path))[0]
+
+        if guessed_type is not None and guessed_type.startswith("image/"):
+            return _get_imagemagick_preview(path)
+
+        else:
+            return _get_preview_manager_preview(path)
