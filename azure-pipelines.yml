@@ -10,8 +10,11 @@ pool:
 steps:
 - script: |
     make lint
-    make check_release_file
   displayName: "Linting"
+
+- script:
+    make check_release_file
+  displayName: "Checking release file"
 
 - script:
     make test
