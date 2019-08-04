@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.13.2 - 2019-08-04
+
+Improve the user documentation, and change the default title from "Alex's documents" to "docstore".
+
 ## v1.13.1 - 2019-08-03
 
 The Docker image is now significantly smaller (482MB rather than 832MB).
