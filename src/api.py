@@ -303,7 +303,7 @@ def create_api(
 @click.command()
 @click.version_option(version=__version__, prog_name="docstore")
 @click.argument("root", required=True)
-@click.option("--title", default="Alex’s documents")
+@click.option("--title", default="docstore")
 @click.option("--default_view", default="table", type=click.Choice(["table", "grid"]))
 @click.option("--tag_view", default="list", type=click.Choice(["list", "cloud"]))
 @click.option("--accent_color", default="#007bff")

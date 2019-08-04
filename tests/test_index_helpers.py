@@ -5,7 +5,6 @@ import pathlib
 
 import pytest
 
-from exceptions import UserError
 import index_helpers
 from storage import AlreadyExistsError
 

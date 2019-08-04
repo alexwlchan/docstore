@@ -73,7 +73,7 @@ class FileManagerTestMixin(abc.ABC):
                     manager.write_bytes,
                     file_id=str(i),
                     buffer=b"hello world",
-                    original_filename="greeting.txt"
+                    original_filename=original_filename
                 )
                 futures.append(future)
 
@@ -81,6 +81,7 @@ class FileManagerTestMixin(abc.ABC):
         for future in as_completed(futures):
             filenames.add(future.result())
 
+        assert pathlib.Path("g/greeting.txt") in filenames
         assert len(filenames) == thread_count
 
     @pytest.mark.parametrize("filename, expected_extension", [

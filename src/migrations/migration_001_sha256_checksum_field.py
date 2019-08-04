@@ -10,6 +10,7 @@ with a generic "checksum" field that includes an algorithm:
 
 """
 
+
 def replace_sha256_checksum_with_generic_field(object_store):
     for obj_id, obj_data in object_store.objects.items():
         if "sha256_checksum" in obj_data and "checksum" not in obj_data:

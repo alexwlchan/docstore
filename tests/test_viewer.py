@@ -104,7 +104,7 @@ class TestViewOptions:
 def test_uses_display_title(tagged_store, store_root):
     api = service.create_api(tagged_store, store_root)
     resp = api.requests.get("/")
-    assert "Alex’s documents" in resp.text
+    assert "docstore" in resp.text
 
     api = service.create_api(tagged_store, store_root, display_title="Manuals")
     resp = api.requests.get("/")

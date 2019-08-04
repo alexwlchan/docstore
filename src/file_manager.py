@@ -4,7 +4,6 @@ import errno
 import mimetypes
 import pathlib
 import shutil
-import tempfile
 
 import attr
 import magic

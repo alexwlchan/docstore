@@ -69,8 +69,6 @@ def test_can_upload_without_all_parameters(api, data, pdf_file):
 
 
 def test_stores_document_in_store(api, tagged_store, pdf_file, pdf_path):
-    hex_hash = sha256(pdf_path.open("rb"))
-
     data = {
         "title": "Hello world",
         "tags": "foo bar baz",

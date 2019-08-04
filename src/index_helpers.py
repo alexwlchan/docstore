@@ -3,8 +3,6 @@
 import datetime as dt
 import hashlib
 
-from exceptions import UserError
-
 
 def index_new_document(tagged_object_store, file_manager, doc_id, doc):
     assert "date_created" not in doc

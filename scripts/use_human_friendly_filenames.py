@@ -20,8 +20,8 @@ import sys
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
-from file_manager import FileManager
-from storage.object_store import PosixPathEncoder
+from file_manager import FileManager  # noqa
+from storage.object_store import PosixPathEncoder  # noqa
 
 
 if __name__ == "__main__":
