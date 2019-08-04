@@ -42,7 +42,7 @@ $ docker run --publish 8072:8072 --volume /path/to/documents:/documents greenglo
 Replace `/path/to/documents` with the name of a folder on your computer where you want docstore to keep its data.
 
 This will start a web app, which you can view by opening <http://localhost:8072> in a browser.
-Within the app, you can upload new files or browse your stored files.
+Within the app, you can upload new files by clicking "Store a document", or browse your stored files.
 
 I've written some documents that explain a bit about how to use docstore:
 
