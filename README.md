@@ -31,56 +31,25 @@ You can read some of what I learnt in the [what I learnt](what-i-learnt.md) file
 
 ## Usage
 
-You can run the published Docker images like so:
+You need to install [Docker](https://hub.docker.com/search/?type=edition&offering=community) to run docstore.
+
+Once you have Docker installed, you start docstore like so:
 
 ```console
-$ docker run --publish 8072:8072 --volume $(pwd)/documents:/documents greengloves/docstore:<VERSION>
+$ docker run --publish 8072:8072 --volume /path/to/documents:/documents greengloves/docstore
 ```
 
-You can see the versions in [the changelog](CHANGELOG.md).
+Replace `/path/to/documents` with the name of a folder on your computer where you want docstore to keep its data.
 
-To view your documents, open <http://localhost:8072> in a browser.
+This will start a web app, which you can view by opening <http://localhost:8072> in a browser.
+Within the app, you can upload new files or browse your stored files.
 
+I've written some documents that explain a bit about how to use docstore:
 
-
-## Uploading documents
-
-To index a PDF document, make a POST request to `/upload`:
-
-```http
-POST /upload
-{
-  "file": "<Body of PDF file to store>",
-  "title": "My great document",
-  "tags": "tag1 tag2 tag3",
-  "filename": "Document1.pdf"
-}
-```
-
-Required parameters:
-
-*   `file` -- the contents of the PDF file to store, sent as an HTTP multipart request
-
-Optional parameters:
-
-*   `title` -- the title of the document to display in the viewer.
-*   `tags` -- a list of tags to apply to the document.
-*   `filename` -- the name of the original PDF file.
-
-Extra parameters in the request will also be stored in the database, although they aren't used by the viewer right now.
-
-This will return a 201 Created if the upload succeeds, or a 400 Bad Request if not.
-For the latter, the body of the response will include an explanation, for example:
-
-```http
-POST /upload
-400 Bad Request
-{
-  "error": "The SHA256 checksum (123…abc) does not match the checksum of the uploaded document (456…def)."
-}
-```
-
-For one implementation of this upload API, see the `bin/index_document.py` script in the repo.
+*   [Running docstore with Docker Compose](docs/docker-compose.md)
+*   [Uploading documents with curl](docs/uploading-with-curl.md) -- how to upload documents if you don't want to use the web app.
+    These instructions can be adapted for any tool that can make HTTP requests.
+*   [Usage options](docs/usage.md) -- setting title, accent color, changing the port, and so on
 
 
 
