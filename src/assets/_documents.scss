@@ -31,11 +31,11 @@ main.documents {
         font-weight: 400;
       }
     }
-  }
 
-  #document__metadata__tags {
-    a {
-      margin-right: 2px;
+    &__metadata__tags {
+      &_tag {
+        margin-right: 2px;
+      }
     }
   }
 
@@ -167,31 +167,31 @@ main.documents {
 
       &__metadata {
         @media screen and (max-width: 600px) {
-          &#document__metadata__date_created {
+          &.document__metadata__date_created {
             grid-row:    1;
           }
 
-          &#document__metadata__source_url {
+          &.document__metadata__source_url {
             grid-row:    2;
           }
 
-          &#document__metadata__tags {
+          &.document__metadata__tags {
             grid-row:    3;
           }
         }
 
         @media screen and (min-width: 600px) {
-          &#document__metadata__date_created {
+          &.document__metadata__date_created {
             grid-column: 1 / 2;
             grid-row:    1 / 2;
           }
 
-          &#document__metadata__source_url {
+          &.document__metadata__source_url {
             grid-column: 2 / 2;
             grid-row:    1 / 2;
           }
 
-          &#document__metadata__tags {
+          &.document__metadata__tags {
             grid-column: 1 / span 2;
             grid-row:    2 / 2;
           }
