@@ -1,11 +1,11 @@
 FROM alpine
 
 RUN apk add --update \
-    build-base \
     exiftool \
     imagemagick \
     imagemagick-dev \
     jpeg-dev \
+    libmagic \
     poppler-utils \
     python3 \
     python3-dev \
