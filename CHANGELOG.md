@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.13.3 - 2019-08-09
+
+Fix a tiny cosmetic bug where selecting a tag in the document list would cause the spacing of the tags to change.
+
 ## v1.13.2 - 2019-08-04
 
 Improve the user documentation, and change the default title from "Alex's documents" to "docstore".
