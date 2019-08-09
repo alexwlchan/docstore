@@ -20,7 +20,7 @@ def _query_str_only(url):
     return "?" + str(url).split("?")[1]
 
 
-def render_tags(req_url, tag_counter):
+def render_tags(tag_counter, req_url):
     if not tag_counter:
         return ""
 

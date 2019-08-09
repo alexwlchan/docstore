@@ -13,7 +13,7 @@ from multilevel_tag_list import render_tags
 
 def test_empty_tags_is_empty_string():
     req_url = hyperlink.URL.from_text("http://localhost:1234/")
-    assert render_tags(req_url, tag_counter={}) == ""
+    assert render_tags(tag_counter={}, req_url=req_url) == ""
 
 
 @pytest.mark.parametrize("tag_counter, expected_html", [

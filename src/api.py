@@ -20,6 +20,7 @@ from exceptions import UserError
 from file_manager import FileManager, ThumbnailManager
 from index_helpers import index_new_document
 import migrations
+import multilevel_tag_list
 import search_helpers
 from storage import JsonTaggedObjectStore
 from version import __version__
@@ -107,6 +108,7 @@ def create_api(
     api.jinja_env.filters["short_url"] = lambda u: urllib.parse.urlparse(u).netloc
     api.jinja_env.filters["query_str_only"] = query_str_only
     api.jinja_env.filters["smartypants"] = smartypants.smartypants
+    api.jinja_env.filters["render_multilevel_tags"] = multilevel_tag_list.render_tags
 
     def add_headers_function(headers, path, url):
         # Add the Content-Disposition header to file requests, so they can
