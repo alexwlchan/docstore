@@ -16,6 +16,7 @@ https://github.com/dreamwidth/dw-free/blob/6ec1e146d3c464e506a77913f0abf0d51a944
 
 """
 
+
 def _query_str_only(url):
     return "?" + str(url).split("?")[1]
 
