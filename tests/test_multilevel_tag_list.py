@@ -24,13 +24,13 @@ def test_empty_tags_is_empty_string():
           <li>
             <span class="non-link-tag">alfa</span>
             <ul>
-              <li><a href="?tag=alfa:alfa">alfa (0)</a></li>
+              <li><a href="?tag=alfa:alfa">alfa</a> (0)</li>
             </ul>
           </li>
           <li>
             <span class="non-link-tag">bravo</span>
             <ul>
-              <li><a href="?tag=bravo:alfa">alfa (0)</a></li>
+              <li><a href="?tag=bravo:alfa">alfa</a> (0)</li>
             </ul>
           </li>
         </ul>
@@ -41,9 +41,9 @@ def test_empty_tags_is_empty_string():
         """
         <ul>
           <li>
-            <a href="?tag=alfa">alfa (0)</a>
+            <a href="?tag=alfa">alfa</a> (0)
             <ul>
-              <li><a href="?tag=alfa:alfa">alfa (0)</a></li>
+              <li><a href="?tag=alfa:alfa">alfa</a> (0)</li>
             </ul>
           </li>
         </ul>
@@ -54,12 +54,12 @@ def test_empty_tags_is_empty_string():
         """
         <ul>
           <li>
-            <a href="?tag=seasons">seasons (3)</a>
+            <a href="?tag=seasons">seasons</a> (3)
             <ul>
-              <li><a href="?tag=seasons:autumn">autumn (4)</a></li>
+              <li><a href="?tag=seasons:autumn">autumn</a> (4)</li>
             </ul>
           </li>
-          <li><a href="?tag=trees">trees (2)</a></li>
+          <li><a href="?tag=trees">trees</a> (2)</li>
         </ul>
         """
     ),
@@ -68,17 +68,17 @@ def test_empty_tags_is_empty_string():
         """
         <ul>
           <li>
-            <a href="?tag=seasons">seasons (3)</a>
+            <a href="?tag=seasons">seasons</a> (3)
             <ul>
               <li>
-                <a href="?tag=seasons:autumn">autumn (4)</a>
+                <a href="?tag=seasons:autumn">autumn</a> (4)
                 <ul>
-                  <li><a href="?tag=seasons:autumn:orange">orange (1)</a></li>
+                  <li><a href="?tag=seasons:autumn:orange">orange</a> (1)</li>
                 </ul>
               </li>
             </ul>
           </li>
-          <li><a href="?tag=trees">trees (2)</a></li>
+          <li><a href="?tag=trees">trees</a> (2)</li>
         </ul>
         """
     ),
@@ -87,13 +87,13 @@ def test_empty_tags_is_empty_string():
         """
         <ul>
           <li>
-            <a href="?tag=seasons">seasons (3)</a>
+            <a href="?tag=seasons">seasons</a> (3)
             <ul>
-              <li><a href="?tag=seasons:autumn">autumn (4)</a></li>
-              <li><a href="?tag=seasons:winter">winter (2)</a></li>
+              <li><a href="?tag=seasons:autumn">autumn</a> (4)</li>
+              <li><a href="?tag=seasons:winter">winter</a> (2)</li>
             </ul>
           </li>
-          <li><a href="?tag=trees">trees (2)</a></li>
+          <li><a href="?tag=trees">trees</a> (2)</li>
         </ul>
         """
     ),
@@ -108,14 +108,14 @@ def test_empty_tags_is_empty_string():
             <span class="non-link-tag">seasons</span>
             <ul>
               <li>
-                <a href="?tag=seasons:autumn">autumn (4)</a>
+                <a href="?tag=seasons:autumn">autumn</a> (4)
                 <ul>
-                  <li><a href="?tag=seasons:autumn:orange">orange (1)</a></li>
+                  <li><a href="?tag=seasons:autumn:orange">orange</a> (1)</li>
                 </ul>
               </li>
             </ul>
           </li>
-          <li><a href="?tag=trees">trees (2)</a></li>
+          <li><a href="?tag=trees">trees</a> (2)</li>
         </ul>
         """
     ),
@@ -132,9 +132,9 @@ def test_empty_tags_is_empty_string():
             <span class="non-link-tag">seasons</span>
             <ul>
               <li>
-                <a href="?tag=seasons:autumn">autumn (4)</a>
+                <a href="?tag=seasons:autumn">autumn</a> (4)
                 <ul>
-                  <li><a href="?tag=seasons:autumn:orange">orange (1)</a></li>
+                  <li><a href="?tag=seasons:autumn:orange">orange</a> (1)</li>
                 </ul>
               </li>
             </ul>
@@ -142,8 +142,8 @@ def test_empty_tags_is_empty_string():
           <li>
             <span class="non-link-tag">trees</span>
             <ul>
-              <li><a href="?tag=trees:ash">ash (2)</a></li>
-              <li><a href="?tag=trees:oak">oak (2)</a></li>
+              <li><a href="?tag=trees:ash">ash</a> (2)</li>
+              <li><a href="?tag=trees:oak">oak</a> (2)</li>
             </ul>
           </li>
         </ul>
@@ -166,12 +166,12 @@ def test_empty_tags_is_empty_string():
                   <li>
                     <span class="non-link-tag">c</span>
                     <ul>
-                      <li><a href="?tag=a:b:c:d">d (4)</a></li>
-                      <li><a href="?tag=a:b:c:e">e (1)</a></li>
+                      <li><a href="?tag=a:b:c:d">d</a> (4)</li>
+                      <li><a href="?tag=a:b:c:e">e</a> (1)</li>
                     </ul>
                   </li>
                   <li>
-                    <a href="?tag=a:b:f">f (2)</a>
+                    <a href="?tag=a:b:f">f</a> (2)
                   </li>
                 </ul>
               </li>
@@ -195,17 +195,17 @@ def test_empty_tags_is_empty_string():
               <li>
                 <span class="non-link-tag">ash</span>
                 <ul>
-                  <li><a href="?tag=trees:ash:branch">branch (3)</a></li>
-                  <li><a href="?tag=trees:ash:flower">flower (4)</a></li>
+                  <li><a href="?tag=trees:ash:branch">branch</a> (3)</li>
+                  <li><a href="?tag=trees:ash:flower">flower</a> (4)</li>
                 </ul>
               </li>
-              <li><a href="?tag=trees:oak">oak (2)</a></li>
+              <li><a href="?tag=trees:oak">oak</a> (2)</li>
             </ul>
           </li>
           <li>
             <span class="non-link-tag">unicorns</span>
             <ul>
-              <li><a href="?tag=unicorns:horn">horn (5)</a></li>
+              <li><a href="?tag=unicorns:horn">horn</a> (5)</li>
             </ul>
           </li>
         </ul>
@@ -223,9 +223,9 @@ def test_empty_tags_is_empty_string():
             <span class="non-link-tag">trees</span>
             <ul>
               <li>
-                <a href="?tag=trees:ash">ash (7)</a>
+                <a href="?tag=trees:ash">ash</a> (7)
                 <ul>
-                  <li><a href="?tag=trees:ash:leaf">leaf (3)</a></li>
+                  <li><a href="?tag=trees:ash:leaf">leaf</a> (3)</li>
                 </ul>
               </li>
             </ul>
@@ -233,7 +233,7 @@ def test_empty_tags_is_empty_string():
           <li>
             <span class="non-link-tag">unicorns</span>
             <ul>
-              <li><a href="?tag=unicorns:horn">horn (5)</a></li>
+              <li><a href="?tag=unicorns:horn">horn</a> (5)</li>
             </ul>
           </li>
         </ul>

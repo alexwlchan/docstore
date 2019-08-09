@@ -44,7 +44,7 @@ def render_tags(tag_counter, req_url):
             # If we're on a tag's last tier, we need to return a link to the tag,
             # otherwise plain text is returned.
             if len(tags) == pos + 1:
-                tier_code = f'<a href="{_format_tag(tag_name)}">{tier} ({count})</a>'
+                tier_code = f'<a href="{_format_tag(tag_name)}">{tier}</a> ({count})'
             else:
                 tier_code = f'<span class="non-link-tag">{tier}</span>'
 
