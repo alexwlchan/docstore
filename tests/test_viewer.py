@@ -188,7 +188,7 @@ def test_includes_created_date(sess, tagged_store, file_manager):
 
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
     date_created_div = soup.find(
-        "div", attrs={"id": "document__metadata__date_created"})
+        "div", attrs={"class": "document__metadata__date_created"})
     assert date_created_div.find(
         "h5", attrs={"class": "document__metadata__info"}).text == "just now"
 
