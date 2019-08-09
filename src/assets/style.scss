@@ -80,5 +80,11 @@ button.tag {
   }
 }
 
+#collapseTagList {
+  & > .card > ul {
+    margin-bottom: 0;
+  }
+}
+
 @import "_documents.scss";
 @import "_footer.scss";
