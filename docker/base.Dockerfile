@@ -8,7 +8,6 @@ RUN apk add --update \
     libmagic \
     poppler-utils \
     python3 \
-    python3-dev \
     qpdf \
     zlib-dev && \
     rm -rf /var/cache/apk/*
