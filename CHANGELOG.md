@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.13.5 - 2019-08-09
+
+Another tweak to reduce the size of the final image.  This takes the size of the image from 518MB to 322MB.
+
 ## v1.13.4 - 2019-08-09
 
 This fixes a small bug in the tag list if you had a heavily nested hierarchy of tags, where the hierarchy wouldn't de-nest correctly.
