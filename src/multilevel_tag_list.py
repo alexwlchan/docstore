@@ -20,6 +20,8 @@ def _query_str_only(url):
     return "?" + str(url).split("?")[1]
 
 
+import q
+
 def render_tags(req_url, tag_counter):
     if not tag_counter:
         return ""
@@ -100,5 +102,10 @@ def render_tags(req_url, tag_counter):
         if levels_to_close > 0:
             result += "</li></ul>"
             levels_to_close -= 1
+        else:  # pragma: no cover
+            # I haven't been able to find a test case that triggers this
+            # particular branch, so I'm excluding it from coverage.
+            # If it does come up, come back and add a test for this line!
+            assert 0
 
     return result

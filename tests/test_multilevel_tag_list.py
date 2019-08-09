@@ -1,7 +1,11 @@
 # -*- encoding: utf-8
 
+import string
+
 import bs4
 import hyperlink
+from hypothesis import given, settings
+from hypothesis.strategies import dictionaries, integers, lists, text
 import pytest
 
 from multilevel_tag_list import render_tags
@@ -14,11 +18,34 @@ def test_empty_tags_is_empty_string():
 
 @pytest.mark.parametrize("tag_counter, expected_html", [
     (
-        {"seasons": 3, "trees": 2},
+        {"alfa:alfa": 0, "bravo:alfa": 0},
         """
         <ul>
-          <li><a href="?tag=seasons">seasons (3)</a></li>
-          <li><a href="?tag=trees">trees (2)</a></li>
+          <li>
+            <span class="non-link-tag">alfa</span>
+            <ul>
+              <li><a href="?tag=alfa:alfa">alfa (0)</a></li>
+            </ul>
+          </li>
+          <li>
+            <span class="non-link-tag">bravo</span>
+            <ul>
+              <li><a href="?tag=bravo:alfa">alfa (0)</a></li>
+            </ul>
+          </li>
+        </ul>
+        """
+    ),
+    (
+        {"alfa": 0, "alfa:alfa": 0},
+        """
+        <ul>
+          <li>
+            <a href="?tag=alfa">alfa (0)</a>
+            <ul>
+              <li><a href="?tag=alfa:alfa">alfa (0)</a></li>
+            </ul>
+          </li>
         </ul>
         """
     ),
@@ -124,6 +151,37 @@ def test_empty_tags_is_empty_string():
     ),
     (
         {
+            "a:b:c:d": 4,
+            "a:b:c:e": 1,
+            "a:b:f": 2,
+        },
+        """
+        <ul>
+          <li>
+            <span class="non-link-tag">a</span>
+            <ul>
+              <li>
+                <span class="non-link-tag">b</span>
+                <ul>
+                  <li>
+                    <span class="non-link-tag">c</span>
+                    <ul>
+                      <li><a href="?tag=a:b:c:d">d (4)</a></li>
+                      <li><a href="?tag=a:b:c:e">e (1)</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a href="?tag=a:b:f">f (2)</a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        """
+    ),
+    (
+        {
             "trees:ash:branch": 3,
             "trees:ash:flower": 4,
             "trees:oak": 2,
@@ -155,12 +213,23 @@ def test_empty_tags_is_empty_string():
     ),
     (
         {
-            "trees": 7,
+            "trees:ash": 7,
+            "trees:ash:leaf": 3,
             "unicorns:horn": 5,
         },
         """
         <ul>
-          <li><a href="?tag=trees">trees (7)</a></li>
+          <li>
+            <span class="non-link-tag">trees</span>
+            <ul>
+              <li>
+                <a href="?tag=trees:ash">ash (7)</a>
+                <ul>
+                  <li><a href="?tag=trees:ash:leaf">leaf (3)</a></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
           <li>
             <span class="non-link-tag">unicorns</span>
             <ul>
@@ -183,3 +252,22 @@ def test_renders_expected_html(tag_counter, expected_html):
         actual_soup.prettify(formatter="minimal").strip() ==
         expected_soup.prettify(formatter="minimal").strip()
     )
+
+
+def tag_strategy():
+    return lists(
+        text(alphabet=string.ascii_lowercase, min_size=1, max_size=1),
+        min_size=1).map(lambda tags: ":".join(tags))
+
+
+@settings(deadline=None)
+@given(dictionaries(tag_strategy(), integers()))
+def test_can_render_tag_counter(tag_counter):
+    req_url = hyperlink.URL.from_text("http://localhost:1234/")
+
+    html = render_tags(req_url=req_url, tag_counter=tag_counter)
+
+    assert html.count("<ul>") == html.count("</ul>")
+    assert html.count("<li>") == html.count("</li>")
+    assert html.count("<a ") == html.count("</a>")
+    assert html.count("<span ") == html.count("</span>")
