@@ -3,5 +3,6 @@
 bs4
 flake8
 coverage
+hypothesis
 pytest-cov
 pytest

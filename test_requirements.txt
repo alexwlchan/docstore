@@ -15,7 +15,7 @@ bs4==0.0.1
 certifi==2019.6.16
 chardet==3.0.4
 click==7.0
-coverage==4.5.3
+coverage==4.5.4
 docopt==0.6.2
 entrypoints==0.3          # via flake8
 flake8==3.7.8
@@ -26,8 +26,9 @@ graphql-server-core==1.1.1
 h11==0.8.1
 httptools==0.0.13
 hyperlink==19.0.0
+hypothesis==4.32.3
 idna==2.8
-importlib-metadata==0.18  # via pluggy, pytest
+importlib-metadata==0.19  # via pluggy, pytest
 itsdangerous==1.1.0
 jinja2==2.10.1
 markupsafe==1.1.1

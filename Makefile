@@ -32,7 +32,7 @@ requirements.txt:
 	docker build --tag docstore_pip_tools --file docker/pip_tools.Dockerfile .
 	docker run -v $(ROOT):/src --workdir /src docstore_pip_tools requirements.in
 
-test_requirements.txt:
+test_requirements.txt: test_requirements.in
 	docker build --tag docstore_pip_tools --file docker/pip_tools.Dockerfile .
 	docker run -v $(ROOT):/src --workdir /src docstore_pip_tools test_requirements.in
 
