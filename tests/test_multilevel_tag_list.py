@@ -4,7 +4,7 @@ import string
 
 import bs4
 import hyperlink
-from hypothesis import given, settings
+from hypothesis import given, HealthCheck, settings
 from hypothesis.strategies import dictionaries, integers, lists, text
 import pytest
 
@@ -260,7 +260,7 @@ def tag_strategy():
         min_size=1).map(lambda tags: ":".join(tags))
 
 
-@settings(deadline=None)
+@settings(deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(dictionaries(tag_strategy(), integers()))
 def test_can_render_tag_counter(tag_counter):
     req_url = hyperlink.URL.from_text("http://localhost:1234/")
