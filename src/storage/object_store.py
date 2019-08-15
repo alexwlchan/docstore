@@ -27,8 +27,11 @@ class ObjectStore(abc.ABC):
         except KeyError as err:
             raise NoSuchObject(*err.args)
 
-    @abc.abstractmethod
     def put(self, obj_id, obj_data):
+        self.write({obj_id: obj_data})
+
+    @abc.abstractmethod
+    def write(self, writed_objects):
         pass
 
     def init(self, obj_id, *args, **kwargs):
@@ -45,10 +48,8 @@ class MemoryObjectStore(ObjectStore):
     def objects(self):
         return self._objects
 
-    def put(self, obj_id, obj_data):
-        if not isinstance(obj_id, str):
-            raise TypeError(f"Expected type str, got {type(obj_id)}: {obj_id!r}")
-        self._objects[obj_id] = obj_data
+    def write(self, writed_objects):
+        self._objects.update(writed_objects)
 
 
 class PosixPathEncoder(json.JSONEncoder):
@@ -72,11 +73,8 @@ class JsonObjectStore(ObjectStore):
         except FileNotFoundError:
             return {}
 
-    def put(self, obj_id, obj_data):
-        if not isinstance(obj_id, str):
-            raise TypeError(f"Expected type str, got {type(obj_id)}: {obj_id!r}")
-
+    def write(self, writed_objects):
         all_objects = self.objects
-        all_objects[obj_id] = obj_data
+        all_objects.update(writed_objects)
 
         self.lazy_json.write(all_objects)

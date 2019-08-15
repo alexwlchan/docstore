@@ -43,3 +43,20 @@ class TestSha256ChecksumField:
             "1": {"name": "alex", "sha256_checksum": "abcdef", "checksum": "xyz"},
             "2": {"name": "lexie", "checksum": "sha256:ghijkl"}
         }
+
+    def test_migration_is_atomic(self):
+        count = [0]
+
+        class CountingStore(MemoryObjectStore):
+            def write(self, updated_objects):
+                count[0] += 1
+                return super().write(updated_objects)
+
+        store = CountingStore(initial_objects={
+            "1": {"name": "alex", "sha256_checksum": "abcdef"},
+            "2": {"name": "lexie", "sha256_checksum": "ghijkl"}
+        })
+
+        replace_sha256_checksum_with_generic_field(store)
+
+        assert count[0] == 1

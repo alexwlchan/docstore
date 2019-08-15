@@ -33,12 +33,6 @@ class ObjectStoreTestCasesMixin(abc.ABC):
         with self.create_store(initial_objects={}) as s:
             s.put(obj_id="1", obj_data=obj_data)
 
-    @pytest.mark.parametrize("obj_id", [1, None, object])
-    def test_can_only_put_object_id_str(self, obj_id):
-        with self.create_store(initial_objects={}) as s:
-            with pytest.raises(TypeError):
-                s.put(obj_id=obj_id, obj_data="one")
-
     def test_can_only_init_object_that_doesnt_exist(self):
         with self.create_store(initial_objects={}) as s:
             s.init(obj_id="1", obj_data="one")
