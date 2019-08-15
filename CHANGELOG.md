@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.13.6 - 2019-08-15
+
+This changes the way database migrations work, so they should be a lot faster and properly atomic.  When you start an instance docstore and it needs to run a migration, the web server should start a lot faster.
+
 ## v1.13.5 - 2019-08-09
 
 Another tweak to reduce the size of the final image.  This takes the size of the image from 518MB to 322MB.
