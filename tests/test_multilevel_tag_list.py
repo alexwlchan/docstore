@@ -260,6 +260,7 @@ def tag_strategy():
         min_size=1).map(lambda tags: ":".join(tags))
 
 
+@pytest.mark.skip("This test is really slow and mostly not interesting")
 @settings(deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(dictionaries(tag_strategy(), integers()))
 def test_can_render_tag_counter(tag_counter):
