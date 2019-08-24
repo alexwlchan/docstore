@@ -314,7 +314,7 @@ def run_api(root, title, default_view, tag_view, accent_color):
 
     tagged_store = JsonTaggedObjectStore(root / "documents.json")
 
-    migrations.apply_migrations(tagged_store)
+    migrations.apply_migrations(root=root, object_store=tagged_store)
 
     api = create_api(
         tagged_store,
