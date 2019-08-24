@@ -7,4 +7,5 @@ pyscss>=1.3.5,<2
 python-magic==0.4.15
 responder>=1.3.0,<2
 smartypants>=2.0.1,<3
+tqdm>=4.34.0,<5
 Unidecode>=1.1.1,<2
