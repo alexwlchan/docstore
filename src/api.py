@@ -288,17 +288,6 @@ def create_api(
         except KeyError:
             pass
 
-    @api.route("/api/v1/recreate_thumbnails")
-    async def recreate_thumbnails(req, resp):
-        if req.method == "post":
-            for doc_id, doc in tagged_store.objects.items():
-                create_doc_thumbnail(doc_id=doc_id, doc=doc)
-
-            resp.media = {"ok": "true"}
-            resp.status_code = api.status_codes.HTTP_202
-        else:
-            resp.status_code = api.status_codes.HTTP_405
-
     return api
 
 

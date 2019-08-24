@@ -120,41 +120,6 @@ def test_calls_create_thumbnail(api, tagged_store, pdf_file):
     assert "thumbnail_identifier" in stored_doc
 
 
-def test_recreates_thumbnail(api, tagged_store, store_root, pdf_file):
-    resp = api.requests.post("/upload", files={"file": pdf_file})
-    assert resp.status_code == 201
-    doc_id = resp.json()["id"]
-
-    now = time.time()
-    while time.time() - now < 10:  # pragma: no cover
-        stored_doc = tagged_store.objects[doc_id]
-        if "thumbnail_identifier" in stored_doc:
-            break
-
-    thumb_path = store_root / "thumbnails" / stored_doc["thumbnail_identifier"]
-    assert thumb_path.exists()
-    original_mtime = thumb_path.stat().st_mtime
-
-    resp = api.requests.post("/api/v1/recreate_thumbnails")
-    assert resp.status_code == 202
-    assert resp.json() == {"ok": "true"}
-
-    now = time.time()
-    while time.time() - now < 10:  # pragma: no cover
-        try:
-            if thumb_path.stat().st_mtime != original_mtime:
-                break
-        except FileNotFoundError:
-            pass
-
-    assert thumb_path.stat().st_mtime > original_mtime
-
-
-def test_can_only_post_to_recreate_thumbnail(api):
-    resp = api.requests.get("/api/v1/recreate_thumbnails")
-    assert resp.status_code == 405
-
-
 def test_get_view_endpoint(api, pdf_file):
     resp = api.requests.get("/")
     assert resp.status_code == 200
