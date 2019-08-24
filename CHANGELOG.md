@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.14.0 - 2019-08-24
+
+Remove the `/api/v1/recreate_thumbnails` endpoint, because I wasn't using it.
+
 ## v1.13.7 - 2019-08-24
 
 Improve the reporting of database migrations (so you'll see if docstore isn't starting because one is running), and try to recreate missing thumbnails on startup.
