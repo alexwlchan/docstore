@@ -254,7 +254,7 @@ def test_renders_expected_html(tag_counter, expected_html):
     )
 
 
-def tag_strategy():
+def tag_strategy():   # pragma: no cover
     return lists(
         text(alphabet=string.ascii_lowercase, min_size=1, max_size=1),
         min_size=1).map(lambda tags: ":".join(tags))
@@ -263,7 +263,7 @@ def tag_strategy():
 @pytest.mark.skip("This test is really slow and mostly not interesting")
 @settings(deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(dictionaries(tag_strategy(), integers()))
-def test_can_render_tag_counter(tag_counter):
+def test_can_render_tag_counter(tag_counter):  # pragma: no cover
     req_url = hyperlink.URL.from_text("http://localhost:1234/")
 
     html = render_tags(req_url=req_url, tag_counter=tag_counter)

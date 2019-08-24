@@ -1,12 +1,12 @@
 # -*- encoding: utf-8
 
 from .migration_001_sha256_checksum_field import replace_sha256_checksum_with_generic_field
-from .migration_002_add_missing_thumbnails import add_missing_thumbnail
+from .migration_002_add_missing_thumbnails import add_missing_thumbnails
 
 
 ALL_MIGRATIONS = [
     replace_sha256_checksum_with_generic_field,
-    add_missing_thumbnail,
+    add_missing_thumbnails,
 ]
 
 

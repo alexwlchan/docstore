@@ -4,18 +4,20 @@ If there isn't a "thumbnail_identifier" on a record, try to create a thumbnail
 and add it to a record.
 """
 
+import sys
+
 import tqdm
 
 from file_manager import FileManager, ThumbnailManager
 from thumbnails import create_thumbnail
 
 
-def add_missing_thumbnail(root, object_store):
+def add_missing_thumbnails(root, object_store):
     """Add missing thumbnails to documents"""
     missing_thumbnails = {
         obj_id: obj_data
         for obj_id, obj_data in object_store.objects.items()
-        if "thumbnail_identifier" not in obj_data
+        if "thumbnail_identifier" not in obj_data and "file_identifier" in obj_data
     }
 
     if missing_thumbnails:
@@ -30,12 +32,15 @@ def add_missing_thumbnail(root, object_store):
             absolute_file_identifier = file_manager.root / obj_data["file_identifier"]
 
             try:
-                thumbnail_identifier = thumbnail_manager.create_thumbnail(
-                    doc_id,
+                obj_data["thumbnail_identifier"] = thumbnail_manager.create_thumbnail(
+                    obj_id,
                     absolute_file_identifier
                 )
-            except Exception:
-                pass
+            except Exception as exc:
+                print(
+                    f"Error creating thumbnail for {absolute_file_identifier}: {exc}",
+                    file=sys.stderr
+                )
             else:
                 updated_objects[obj_id] = obj_data
 
