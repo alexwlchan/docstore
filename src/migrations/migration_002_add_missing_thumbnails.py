@@ -9,7 +9,6 @@ import sys
 import tqdm
 
 from file_manager import FileManager, ThumbnailManager
-from thumbnails import create_thumbnail
 
 
 def add_missing_thumbnails(root, object_store):

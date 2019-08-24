@@ -107,5 +107,5 @@ class TestMissingThumbnailCreation:
         add_missing_thumbnails(root=store_root, object_store=store)
 
         assert store.objects == {
-            "1": {"file_identifier": "1/1.pdf",}
+            "1": {"file_identifier": "1/1.pdf"}
         }
