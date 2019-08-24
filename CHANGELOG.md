@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.13.7 - 2019-08-24
+
+Improve the reporting of database migrations (so you'll see if docstore isn't starting because one is running), and try to recreate missing thumbnails on startup.
+
 ## v1.13.6 - 2019-08-15
 
 This changes the way database migrations work, so they should be a lot faster and properly atomic.  When you start an instance docstore and it needs to run a migration, the web server should start a lot faster.
