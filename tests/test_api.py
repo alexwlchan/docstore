@@ -2,7 +2,6 @@
 
 import io
 import json
-import hashlib
 import time
 
 import bs4
@@ -10,18 +9,6 @@ import hyperlink
 import pytest
 
 import api as service
-
-
-def sha256(f):
-    h = hashlib.sha256()
-
-    while True:
-        next_buffer = f.read(65536)
-        if not next_buffer:
-            break
-        h.update(next_buffer)
-
-    return h.hexdigest()
 
 
 def test_non_post_to_upload_is_405(api):
@@ -51,10 +38,6 @@ def test_uploading_file_with_wrong_name_is_400(api):
     assert resp.json() == {
         "error": "Unable to find multipart upload 'file'!"
     }
-
-
-with open("tests/files/snakes.pdf", "rb") as f:
-    snake_sha256 = sha256(f)
 
 
 @pytest.mark.parametrize('data', [
