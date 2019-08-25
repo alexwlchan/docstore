@@ -24,7 +24,7 @@ test-fast:
 		--volume $(ROOT):$(ROOT) \
 		--env DOCKER=true \
 		--workdir $(ROOT) \
-		--entrypoint "coverage" docstore_tests run -m py.test --durations=5 tests/test_viewer.py
+		--entrypoint "coverage" docstore_tests run -m py.test --durations=5 tests
 	docker run --tty --volume $(ROOT):$(ROOT) --workdir $(ROOT) \
 		--entrypoint "coverage" docstore_tests report
 

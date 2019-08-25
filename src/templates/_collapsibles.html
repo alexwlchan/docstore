@@ -12,7 +12,7 @@
   </p>
 </div>
 
-<div class="collapse{% if cookies.get('form-collapse__show') == 'true' %} show{% endif %}" id="collapseDocumentForm">
+<div class="collapse{% if view_options.expand_document_form %} show{% endif %}" id="collapseDocumentForm">
   <div class="card">
     <div class="card-header">
       Store a document

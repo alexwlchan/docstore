@@ -23,6 +23,7 @@ import migrations
 import multilevel_tag_list
 import search_helpers
 from storage import JsonTaggedObjectStore
+import viewer
 from version import __version__
 
 
@@ -98,18 +99,6 @@ def create_api(
 
     api.static_url = lambda asset: "static/" + asset
 
-    def query_str_only(url):
-        if not url.query:
-            return "?"
-        else:
-            return "?" + str(url).split("?")[1]
-
-    api.jinja_env.filters["since_now_date_str"] = date_helpers.since_now_date_str
-    api.jinja_env.filters["short_url"] = lambda u: urllib.parse.urlparse(u).netloc
-    api.jinja_env.filters["query_str_only"] = query_str_only
-    api.jinja_env.filters["smartypants"] = smartypants.smartypants
-    api.jinja_env.filters["render_multilevel_tags"] = multilevel_tag_list.render_tags
-
     def add_headers_function(headers, path, url):
         # Add the Content-Disposition header to file requests, so they can
         # be downloaded with the original filename they were uploaded under
@@ -167,7 +156,6 @@ def create_api(
     def list_documents(req, resp):
         tag_query = req.params.get_list("tag", [])
         sort_order = req.params.get("sort", "date_created:desc")
-        view_option = req.params.get("view", default_view)
 
         search_options = search_helpers.SearchOptions(
             tag_query=tag_query,
@@ -193,18 +181,22 @@ def create_api(
         except KeyError:
             pass
 
-        resp.content = api.template(
-            "document_list.html",
-            search_options=search_options,
-            display_documents=display_documents,
+        view_options = viewer.ViewOptions(
+            list_view=req.params.get("view", default_view),
+            tag_view=tag_view,
+            expand_document_form=(cookies.get('tags-collapse__show') == 'true'),
+            expand_tag_list=(cookies.get('tags-collapse__show') == 'true')
+        )
+
+        resp.content = viewer.render_document(
+            documents=display_documents,
             tag_aggregation=tag_aggregation,
-            view_option=view_option,
+            view_options=view_options,
+            search_options=search_options,
             title=display_title,
             req_url=req_url,
-            params=params,
-            cookies=req.cookies,
-            tag_view=tag_view,
-            accent_color=accent_color
+            accent_color=accent_color,
+            api_version=__version__
         )
 
     @api.route("/documents/{document_id}")
@@ -281,9 +273,12 @@ def create_api(
         # a script, redirect back to the original page (which we get
         # in the "referer" header), along with a message to display.
         try:
-            original_url = hyperlink.URL.from_text(req.headers["referer"])
-            new_url = original_url.add("_message", json.dumps(resp.media))
-            resp.headers["Location"] = str(new_url)
+            url = hyperlink.URL.from_text(req.headers["referer"])
+
+            for key, value in resp.media.items():
+                url = url.add(f"_message.{key}", value)
+
+            resp.headers["Location"] = str(url)
             resp.status_code = api.status_codes.HTTP_302
         except KeyError:
             pass

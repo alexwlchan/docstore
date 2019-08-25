@@ -26,13 +26,21 @@ def query_str_only(url):
 @attr.s(frozen=True)
 class ViewOptions:
     list_view = attr.ib(default="table")
-    tag_filter = attr.ib(default=[])
+    tag_view = attr.ib(default="list")
+    expand_document_form = attr.ib(default=False)
+    expand_tag_list = attr.ib(default=False)
 
     @list_view.validator
     def check(self, attribute, value):
         allowed_values = {"table", "grid"}
         if value not in allowed_values:
             raise ValueError(f"Unrecognised value for list_view: {value}")
+
+    @tag_view.validator
+    def check(self, attribute, value):
+        allowed_values = {"cloud", "list"}
+        if value not in allowed_values:
+            raise ValueError(f"Unrecognised value for tag_view: {value}")
 
 
 def create_env(templates_dir):
@@ -59,20 +67,23 @@ ENV = create_env(TEMPLATES_DIR)
 TEMPLATE = ENV.get_template("document_list.html")
 
 
-def render_document_list(documents, view_options, api_version):
+def render_document_list(
+    documents,
+    tag_aggregation,
+    view_options,
+    search_options,
+    title,
+    req_url,
+    api_version,
+    accent_color="#007bff"
+):
     return TEMPLATE.render(
         display_documents=documents,
-        search_options=search_helpers.SearchOptions(
-            tag_query=view_options.tag_filter,
-            sort_order=("date_created", "desc")
-        ),
-        tag_aggregation={},
-        view_option=view_options.list_view,
-        title="whatever",
-        req_url=hyperlink.URL.from_text("http://localhost:9000/request"),
-        params={},
-        cookies={},
-        tag_view="cloud",
-        accent_color="#ff0000",
+        view_options=view_options,
+        search_options=search_options,
+        tag_aggregation=tag_aggregation,
+        title=title,
+        req_url=req_url,
+        accent_color=accent_color,
         api_version=api_version
     )

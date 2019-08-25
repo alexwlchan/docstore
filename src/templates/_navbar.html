@@ -3,13 +3,13 @@
     <a class="navbar-brand" href="?">{{ title }}</a>
 
     <ul class="pagination float-right">
-      <li class="page-item{% if view_option == 'grid' %} disabled{% endif %}">
+      <li class="page-item{% if view_options.list_view == 'grid' %} disabled{% endif %}">
         <a class="page-link text-muted" href="{{ req_url.set('view', 'grid') | query_str_only }}">
           <span aria-hidden="true"><i class="fas fa-grip-horizontal"></i></span>
           <span class="sr-only">Grid view</span>
         </a>
       </li>
-      <li class="page-item{% if view_option == 'table' %} disabled{% endif %}">
+      <li class="page-item{% if view_options.list_view == 'table' %} disabled{% endif %}">
         <a class="page-link text-muted" href="{{ req_url.set('view', 'table') | query_str_only }}">
           <span aria-hidden="true"><i class="fas fa-list"></i></span>
           <span class="sr-only">Table view</span>

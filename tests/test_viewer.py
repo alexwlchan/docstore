@@ -5,10 +5,10 @@ import re
 import time
 
 import bs4
+import hyperlink
 import pytest
 
-import api as service
-from index_helpers import index_new_document
+from search_helpers import SearchOptions
 import viewer
 
 
@@ -23,12 +23,20 @@ PARAMS = [
 
 def get_html(
     documents=[],
+    tag_aggregation={},
     view_options=viewer.ViewOptions(),
+    search_options=SearchOptions(),
+    req_url=hyperlink.URL.from_text("http://localhost:9000/request"),
+    title="docstore test instance",
     api_version="test_1.0.0"
 ):
     return viewer.render_document_list(
         documents=documents,
+        tag_aggregation=tag_aggregation,
         view_options=view_options,
+        search_options=search_options,
+        req_url=req_url,
+        title=title,
         api_version=api_version
     )
 
@@ -39,14 +47,14 @@ def get_html_soup(**kwargs):
     return bs4.BeautifulSoup(html, "html.parser")
 
 
-@pytest.fixture
-def sess(api):
-    def raise_for_status(resp, *args, **kwargs):
-        resp.raise_for_status()
-        assert resp.text != "null"
-
-    api.requests.hooks["response"].append(raise_for_status)
-    return api.requests
+# @pytest.fixture
+# def sess(api):
+#     def raise_for_status(resp, *args, **kwargs):
+#         resp.raise_for_status()
+#         assert resp.text != "null"
+#
+#     api.requests.hooks["response"].append(raise_for_status)
+#     return api.requests
 
 
 def test_empty_state():
@@ -93,68 +101,72 @@ class TestViewOptions:
 
         self._assert_is_table(html)
 
-    def test_can_set_default_table_view(self, store_root, tagged_store, file_manager):
-        index_new_document(
-            tagged_store,
-            file_manager,
-            doc_id="1",
-            doc={"file": b"hello world", "title": "xyz"}
+    def test_tag_list_view(self, document):
+        html_soup = get_html_soup(
+            documents=[document],
+            tag_aggregation={"x": 5, "y": 3},
+            view_options=viewer.ViewOptions(tag_view="list")
         )
-        api = service.create_api(tagged_store, store_root, default_view="table")
-        resp = api.requests.get("/")
-        self._assert_is_table(resp)
 
-    def test_can_set_default_grid_view(self, store_root, tagged_store, file_manager):
-        index_new_document(
-            tagged_store,
-            file_manager,
-            doc_id="1",
-            doc={"file": b"hello world", "title": "xyz"}
+        tag_div = html_soup.find("div", attrs={"id": "collapseTagList"})
+        assert tag_div.find("ul") is not None
+        assert html_soup.find("div", attrs={"id": "tag_cloud"}) is None
+
+    def test_tag_cloud_view(self, document):
+        html_soup = get_html_soup(
+            documents=[document],
+            tag_aggregation={"x": 5, "y": 3},
+            view_options=viewer.ViewOptions(tag_view="cloud")
         )
-        api = service.create_api(tagged_store, store_root, default_view="grid")
-        resp = api.requests.get("/")
-        self._assert_is_grid(resp)
+
+        tag_div = html_soup.find("div", attrs={"id": "collapseTagList"})
+        assert tag_div.find("ul") is None
+        assert html_soup.find("div", attrs={"id": "tag_cloud"}) is not None
+
+    def test_tag_view_default_is_list(self, document):
+        html_soup = get_html_soup(
+            documents=[document],
+            tag_aggregation={"x": 5, "y": 3},
+            view_options=viewer.ViewOptions(tag_view="list")
+        )
+
+        tag_div = html_soup.find("div", attrs={"id": "collapseTagList"})
+        assert tag_div.find("ul") is not None
+        assert html_soup.find("div", attrs={"id": "tag_cloud"}) is None
 
 
-def test_uses_display_title(tagged_store, store_root):
-    api = service.create_api(tagged_store, store_root)
-    resp = api.requests.get("/")
-    assert "docstore" in resp.text
+class TestUserMessages:
 
-    api = service.create_api(tagged_store, store_root, display_title="Manuals")
-    resp = api.requests.get("/")
-    assert "Manuals" in resp.text
+    def test_no_message(self):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text("http://localhost:1234")
+        )
+
+        assert html_soup.find("alert") is None
+
+    def test_no_message(self):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text("http://localhost:1234?_message.id=1234")
+        )
+
+        success_div = html_soup.find("div", attrs={"class": "alert-success"})
+        assert success_div.text.strip().startswith("Stored new document as 1234!")
+
+    def test_error_message(self):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text("http://localhost:1234?_message.error=BOOM")
+        )
+
+        danger_div = html_soup.find("div", attrs={"class": "alert-danger"})
+        assert danger_div.text.strip().startswith("Unable to store document: BOOM")
 
 
-def test_can_filter_by_tag(sess, tagged_store, file_manager):
-    index_new_document(
-        tagged_store,
-        file_manager,
-        doc_id="1",
-        doc={
-            "file": b"hello world",
-            "title": "hello world",
-            "tags": ["bar", "baz"]
-        }
-    )
-    index_new_document(
-        tagged_store,
-        file_manager,
-        doc_id="2",
-        doc={
-            "file": b"hi world",
-            "title": "hi world",
-            "tags": ["bar", "bat"]
-        }
-    )
+def test_renders_title():
+    title = "my great docstore"
+    html_soup = get_html_soup(title=title)
 
-    resp_bar = sess.get("/", params={"tag": "bar"})
-    assert "hello world" in resp_bar.text
-    assert "hi world" in resp_bar.text
-
-    resp_bat = sess.get("/", params={"tag": ["bar", "bat"]})
-    assert "hello world" not in resp_bat.text
-    assert "hi world" in resp_bat.text
+    header = html_soup.find("a", attrs={"class": "navbar-brand"})
+    assert header.text == title
 
 
 # TODO: Pass proper params here
@@ -197,7 +209,7 @@ class TestStoreDocumentForm:
 
         html_soup = get_html_soup(
             documents=[document],
-            view_options=viewer.ViewOptions(tag_filter=["colour:blue"])
+            search_options=SearchOptions(tag_query=["colour:blue"])
         )
         tag_field = html_soup.find("input", attrs={"name": "tags"})
         assert tag_field.attrs["value"] == "colour:blue"
@@ -211,53 +223,9 @@ def test_omits_source_url_if_empty(document):
     assert html_soup.find("div", attrs={"id": "document__metadata__source_url"}) is None
 
 
-@pytest.mark.parametrize("tag", ["x-y", "x-&-y"])
-def test_can_navigate_to_tag(sess, pdf_file, tag):
-    # Regression test for https://github.com/alexwlchan/docstore/issues/60
-    resp = sess.post(
-        "/upload",
-        files={"file": ("mydocument.pdf", pdf_file)},
-        data={"tags": [tag], "title": "hello world"}
-    )
-
-    resp = sess.get("/")
-    soup = bs4.BeautifulSoup(resp.text, "html.parser")
-
-    tag_div = soup.find("div", attrs={"id": "collapseTagList"})
-    link_to_tag = tag_div.find("ul").find("li").find("a").attrs["href"]
-
-    resp = sess.get("/" + link_to_tag)
-    assert "hello world" in resp.text
-
-
 def test_renders_titles_with_pretty_quotes(document):
     document["title"] = "Isn't it a wonderful day? -- an optimist"
 
     html_soup = get_html_soup(documents=[document])
     title = html_soup.find("div", attrs={"class": "document__title"})
     assert "Isn’t it a wonderful day? — an optimist" in title.text
-
-
-def test_sets_caching_headers_on_file(sess, pdf_file):
-    resp = sess.post(
-        "/upload",
-        files={"file": ("mydocument.pdf", pdf_file)}
-    )
-
-    doc_id = resp.json()["id"]
-
-    now = time.time()
-
-    while time.time() - now < 5:  # pragma: no cover
-        resp = sess.get(f"/documents/{doc_id}")
-
-        if "thumbnail_identifier" in resp.json():
-            break
-
-    data = resp.json()
-
-    file_resp = sess.head(f"/files/{data['file_identifier']}")
-    assert file_resp.headers["Cache-Control"] == "public, max-age=31536000"
-
-    thumb_resp = sess.head(f"/thumbnails/{data['thumbnail_identifier']}")
-    assert thumb_resp.headers["Cache-Control"] == "public, max-age=31536000"
