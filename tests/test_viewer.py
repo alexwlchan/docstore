@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import datetime as dt
 import re
 import time
 
@@ -8,6 +9,7 @@ import pytest
 
 import api as service
 from index_helpers import index_new_document
+import viewer
 
 
 PARAMS = [
@@ -29,54 +31,56 @@ def sess(api):
     return api.requests
 
 
-def test_empty_state(sess):
-    resp = sess.get("/")
-    assert "No documents found" in resp.text
-    assert '<div class="row">' not in resp.text
-    assert '<table class="table">' not in resp.text
+def test_empty_state():
+    html = viewer.render_document_list(
+        documents=[],
+        view_options=viewer.ViewOptions(),
+        api_version="test_1.2.3"
+    )
+
+    assert "No documents found" in html
+    assert '<div class="row">' not in html
+    assert '<table class="table">' not in html
 
 
 class TestViewOptions:
 
     @staticmethod
-    def _assert_is_table(resp):
-        assert '<main class="documents documents__view_grid">' not in resp.text
-        assert '<main class="documents documents__view_table">' in resp.text
+    def _assert_is_table(html):
+        assert '<main class="documents documents__view_grid">' not in html
+        assert '<main class="documents documents__view_table">' in html
 
     @staticmethod
-    def _assert_is_grid(resp):
-        assert '<main class="documents documents__view_grid">' in resp.text
-        assert '<main class="documents documents__view_table">' not in resp.text
+    def _assert_is_grid(html):
+        assert '<main class="documents documents__view_grid">' in html
+        assert '<main class="documents documents__view_table">' not in html
 
-    def test_table_view(self, sess, tagged_store, file_manager):
-        index_new_document(tagged_store, file_manager, doc_id="1", doc={
-            "file": b"hello world",
-            "title": "foo",
-            "tags": ["bar", "baz", "bat"]
-        })
-        resp = sess.get("/", params={"view": "table"})
-        self._assert_is_table(resp)
+    def test_table_view(self, document):
+        html = render_document_list(
+            documents=[document],
+            view_options=viewer.ViewOptions(list_view="table"),
+            api_version="test_1.0.0"
+        )
+
+        self._assert_is_table(html)
 
     def test_grid_view(self, sess, tagged_store, file_manager):
-        index_new_document(
-            tagged_store,
-            file_manager,
-            doc_id="1",
-            doc={"file": b"hello world", "title": "foo"}
+        html = render_document_list(
+            documents=[document],
+            view_options=viewer.ViewOptions(list_view="grid"),
+            api_version="test_1.0.0"
         )
-        resp = sess.get("/", params={"view": "grid"})
-        self._assert_is_grid(resp)
+
+        self._assert_is_grid(html)
 
     def test_default_is_table_view(self, store_root, tagged_store, file_manager):
-        index_new_document(
-            tagged_store,
-            file_manager,
-            doc_id="1",
-            doc={"file": b"hello world", "title": "xyz"}
+        html = render_document_list(
+            documents=[document],
+            view_options=viewer.ViewOptions(),
+            api_version="test_1.0.0"
         )
-        api = service.create_api(tagged_store, store_root)
-        resp = api.requests.get("/")
-        self._assert_is_table(resp)
+
+        self._assert_is_table(html)
 
     def test_can_set_default_table_view(self, store_root, tagged_store, file_manager):
         index_new_document(
@@ -142,90 +146,72 @@ def test_can_filter_by_tag(sess, tagged_store, file_manager):
     assert "hi world" in resp_bat.text
 
 
+# TODO: Pass proper params here
 @pytest.mark.parametrize("params", PARAMS)
-def test_all_urls_are_relative(sess, tagged_store, file_manager, params):
-    index_new_document(
-        tagged_store,
-        file_manager,
-        doc_id="1",
-        doc={
-            "file": b"hello world",
-            "title": "hello world",
-            "tags": ["x", "y"]
-        }
-    )
+def test_all_urls_are_relative(document, params):
+    document["tags"] = ["x", "y"]
 
-    resp = sess.get("/", params=params)
-
-    soup = bs4.BeautifulSoup(resp.text, "html.parser")
-    links = [a.attrs["href"] for a in soup.find("main").find_all("a")]
+    html_soup = get_html_soup(documents=[document])
+    links = [a.attrs["href"] for a in html_soup.find("main").find_all("a")]
 
     for href in links:
         assert href.startswith(("?", "#", "files/")), href
 
 
-def test_version_is_shown_in_footer(sess):
-    resp = sess.get("/")
-
-    soup = bs4.BeautifulSoup(resp.text, "html.parser")
-    footer = soup.find("footer")
-
-    assert re.search(r'docstore v\d+\.\d+\.\d+', str(footer)) is not None
+def test_version_is_shown_in_footer():
+    html_soup = get_html_soup(api_version="1.2.3")
+    footer = html_soup.find("footer")
+    assert re.search(r'docstore v1\.2\.3', str(footer)) is not None
 
 
-def test_includes_created_date(sess, tagged_store, file_manager):
-    index_new_document(
-        tagged_store,
-        file_manager,
-        doc_id="1",
-        doc={
-            "file": b"hello world",
-            "title": "hello world"
-        }
-    )
+def test_includes_created_date(document):
+    document["created_date"] = dt.datetime.now().isoformat()
 
-    resp = sess.get("/")
-
-    soup = bs4.BeautifulSoup(resp.text, "html.parser")
-    date_created_div = soup.find(
+    html_soup = get_html_soup(documents=[document])
+    date_created_div = html_soup.find(
         "div", attrs={"class": "document__metadata__date_created"})
     assert date_created_div.find(
         "h5", attrs={"class": "document__metadata__info"}).text == "just now"
 
 
+def get_html_soup(
+    documents=[],
+    view_options=viewer.ViewOptions(),
+    api_version="test_1.0.0"
+):
+    html = viewer.render_document_list(
+        documents=documents,
+        view_options=view_options,
+        api_version=api_version
+    )
+
+    return bs4.BeautifulSoup(html, "html.parser")
+
+
 class TestStoreDocumentForm:
-    def test_url_decodes_tags_before_displaying(self, sess, pdf_file):
+    def test_url_decodes_tags_before_displaying(self, document):
         """
         Check that URL-encoded entities get unwrapped when we display the tag form.
 
         e.g. "colour:blue" isn't displayed as "colour%3Ablue"
 
         """
-        sess.post(
-            "/upload",
-            files={"file": ("mydocument.pdf", pdf_file)},
-            data={"tags": ["colour:blue"]}
+        document["tags"] = ["colour:blue"]
+
+        html_soup = get_html_soup(
+            documents=[document],
+            view_options=viewer.ViewOptions(tag_filter=["colour:blue"])
         )
-
-        resp = sess.get("/", params={"tag": "colour:blue"})
-
-        soup = bs4.BeautifulSoup(resp.text, "html.parser")
-        tag_field = soup.find("input", attrs={"name": "tags"})
+        tag_field = html_soup.find("input", attrs={"name": "tags"})
         assert tag_field.attrs["value"] == "colour:blue"
 
 
-def test_omits_source_url_if_empty(sess, pdf_file):
-    sess.post(
-        "/upload",
-        files={"file": ("mydocument.pdf", pdf_file)},
-        data={"title": "my great document", "source_url": ""}
-    )
+def test_omits_source_url_if_empty(document):
+    document["source_url"] = ""
 
-    resp = sess.get("/")
-
-    soup = bs4.BeautifulSoup(resp.text, "html.parser")
-    assert len(soup.find_all("section")) == 1
-    assert soup.find("div", attrs={"id": "document__metadata__source_url"}) is None
+    html_soup = get_html_soup(documents=[document])
+    assert len(html_soup.find_all("section")) == 1
+    assert html_soup.find("div", attrs={"id": "document__metadata__source_url"}) is None
 
 
 @pytest.mark.parametrize("tag", ["x-y", "x-&-y"])
@@ -247,17 +233,20 @@ def test_can_navigate_to_tag(sess, pdf_file, tag):
     assert "hello world" in resp.text
 
 
-def test_renders_titles_with_pretty_quotes(sess, pdf_file):
-    resp = sess.post(
-        "/upload",
-        files={"file": ("mydocument.pdf", pdf_file)},
-        data={"title": "Isn't it a wonderful day? -- an optimist"}
-    )
+@pytest.fixture
+def document():
+    return {
+        "title": "a document with a title",
+        "file_identifier": "1/1.pdf",
+        "date_created": dt.datetime.now().isoformat()
+    }
 
-    resp = sess.get("/")
 
-    soup = bs4.BeautifulSoup(resp.text, "html.parser")
-    title = soup.find("div", attrs={"class": "document__title"})
+def test_renders_titles_with_pretty_quotes(document):
+    document["title"] = "Isn't it a wonderful day? -- an optimist"
+
+    html_soup = get_html_soup(documents=[document])
+    title = html_soup.find("div", attrs={"class": "document__title"})
     assert "Isn’t it a wonderful day? — an optimist" in title.text
 
 
