@@ -60,7 +60,6 @@ TEMPLATE = ENV.get_template("document_list.html")
 
 
 def render_document_list(documents, view_options, api_version):
-    print(view_options.tag_filter)
     return TEMPLATE.render(
         display_documents=documents,
         search_options=search_helpers.SearchOptions(

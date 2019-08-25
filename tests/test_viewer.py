@@ -21,6 +21,24 @@ PARAMS = [
 ]
 
 
+def get_html(
+    documents=[],
+    view_options=viewer.ViewOptions(),
+    api_version="test_1.0.0"
+):
+    return viewer.render_document_list(
+        documents=documents,
+        view_options=view_options,
+        api_version=api_version
+    )
+
+
+def get_html_soup(**kwargs):
+    html = get_html(**kwargs)
+
+    return bs4.BeautifulSoup(html, "html.parser")
+
+
 @pytest.fixture
 def sess(api):
     def raise_for_status(resp, *args, **kwargs):
@@ -32,11 +50,7 @@ def sess(api):
 
 
 def test_empty_state():
-    html = viewer.render_document_list(
-        documents=[],
-        view_options=viewer.ViewOptions(),
-        api_version="test_1.2.3"
-    )
+    html = get_html(documents=[])
 
     assert "No documents found" in html
     assert '<div class="row">' not in html
@@ -56,28 +70,25 @@ class TestViewOptions:
         assert '<main class="documents documents__view_table">' not in html
 
     def test_table_view(self, document):
-        html = render_document_list(
+        html = get_html(
             documents=[document],
-            view_options=viewer.ViewOptions(list_view="table"),
-            api_version="test_1.0.0"
+            view_options=viewer.ViewOptions(list_view="table")
         )
 
         self._assert_is_table(html)
 
-    def test_grid_view(self, sess, tagged_store, file_manager):
-        html = render_document_list(
+    def test_grid_view(self, document):
+        html = get_html(
             documents=[document],
-            view_options=viewer.ViewOptions(list_view="grid"),
-            api_version="test_1.0.0"
+            view_options=viewer.ViewOptions(list_view="grid")
         )
 
         self._assert_is_grid(html)
 
-    def test_default_is_table_view(self, store_root, tagged_store, file_manager):
-        html = render_document_list(
+    def test_default_is_table_view(self, document):
+        html = get_html(
             documents=[document],
-            view_options=viewer.ViewOptions(),
-            api_version="test_1.0.0"
+            view_options=viewer.ViewOptions()
         )
 
         self._assert_is_table(html)
@@ -174,20 +185,6 @@ def test_includes_created_date(document):
         "h5", attrs={"class": "document__metadata__info"}).text == "just now"
 
 
-def get_html_soup(
-    documents=[],
-    view_options=viewer.ViewOptions(),
-    api_version="test_1.0.0"
-):
-    html = viewer.render_document_list(
-        documents=documents,
-        view_options=view_options,
-        api_version=api_version
-    )
-
-    return bs4.BeautifulSoup(html, "html.parser")
-
-
 class TestStoreDocumentForm:
     def test_url_decodes_tags_before_displaying(self, document):
         """
@@ -231,15 +228,6 @@ def test_can_navigate_to_tag(sess, pdf_file, tag):
 
     resp = sess.get("/" + link_to_tag)
     assert "hello world" in resp.text
-
-
-@pytest.fixture
-def document():
-    return {
-        "title": "a document with a title",
-        "file_identifier": "1/1.pdf",
-        "date_created": dt.datetime.now().isoformat()
-    }
 
 
 def test_renders_titles_with_pretty_quotes(document):
