@@ -97,8 +97,6 @@ def create_api(
         version=__version__
     )
 
-    api.static_url = lambda asset: "static/" + asset
-
     def add_headers_function(headers, path, url):
         # Add the Content-Disposition header to file requests, so they can
         # be downloaded with the original filename they were uploaded under
@@ -135,8 +133,6 @@ def create_api(
 
     api.mount("/files", whitenoise_files)
 
-    api.file_url = lambda doc: "files/" + str(doc["file_identifier"])
-
     def add_cache_control_headers(headers, path, url):
         headers["Cache-Control"] = "public, max-age=31536000"
 
@@ -149,8 +145,6 @@ def create_api(
         whitenoise_thumbs.add_files(thumbnail_manager.root)
 
     api.mount("/thumbnails", whitenoise_thumbs)
-
-    api.thumbnail_url = lambda doc: "thumbnails/" + str(doc["thumbnail_identifier"])
 
     @api.route("/")
     def list_documents(req, resp):

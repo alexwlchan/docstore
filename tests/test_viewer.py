@@ -89,6 +89,11 @@ class TestViewOptions:
 
         self._assert_is_table(html)
 
+    @pytest.mark.parametrize("list_view", [None, 1, "circles"])
+    def test_only_allows_certain_list_view(self, list_view):
+        with pytest.raises(ValueError):
+            viewer.ViewOptions(list_view=list_view)
+
     def test_tag_list_view(self, document):
         html_soup = get_html_soup(
             documents=[document],
@@ -121,6 +126,11 @@ class TestViewOptions:
         tag_div = html_soup.find("div", attrs={"id": "collapseTagList"})
         assert tag_div.find("ul") is not None
         assert html_soup.find("div", attrs={"id": "tag_cloud"}) is None
+
+    @pytest.mark.parametrize("tag_view", [None, 1, "circles"])
+    def test_only_allows_certain_tag_view(self, tag_view):
+        with pytest.raises(ValueError):
+            viewer.ViewOptions(tag_view=tag_view)
 
 
 class TestUserMessages:
