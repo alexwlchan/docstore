@@ -31,6 +31,17 @@ def pdf_file(pdf_path):
 
 
 @pytest.fixture
+def png_path():
+    return pathlib.Path("tests/files/cluster.png")
+
+
+@pytest.fixture
+def png_file(png_path):
+    with png_path.open("rb") as f:
+        yield f
+
+
+@pytest.fixture
 def file_identifier(store_root, pdf_path):
     p = store_root / "files" / "s/snakes.pdf"
     p.parent.mkdir(exist_ok=True, parents=True)

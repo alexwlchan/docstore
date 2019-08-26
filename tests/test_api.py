@@ -40,24 +40,24 @@ def test_uploading_file_with_wrong_name_is_400(api):
     }
 
 
-@pytest.mark.parametrize('data', [
+@pytest.mark.parametrize("data", [
     {},
     {"title": "Hello world"},
-    {"tags": ["foo"]},
-    {"filename": "foo.pdf"},
+    {"tags": ["cluster"]},
+    {"filename": "cluster.png"},
 ])
-def test_can_upload_without_all_parameters(api, data, pdf_file):
-    resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
+def test_can_upload_without_all_parameters(api, data, png_file):
+    resp = api.requests.post("/upload", files={"file": png_file}, data=data)
     assert resp.status_code == 201
 
 
-def test_stores_document_in_store(api, tagged_store, pdf_file, pdf_path):
+def test_stores_document_in_store(api, tagged_store, png_file, png_path):
     data = {
         "title": "Hello world",
-        "tags": "foo bar baz",
-        "filename": "foo.pdf",
+        "tags": "cluster elasticsearch blue",
+        "filename": "cluster.png",
     }
-    resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
+    resp = api.requests.post("/upload", files={"file": png_file}, data=data)
     assert resp.status_code == 201
     assert list(resp.json().keys()) == ["id"]
 
@@ -69,28 +69,22 @@ def test_stores_document_in_store(api, tagged_store, pdf_file, pdf_path):
     assert "checksum" in stored_doc
 
 
-def test_extra_keys_are_kept_in_store(api, tagged_store, pdf_file):
+def test_extra_keys_are_kept_in_store(api, tagged_store, png_file):
     data = {
-        "title": "Hello world",
-        "tags": "foo bar baz",
-        "filename": "foo.pdf",
         "key1": "value1",
         "key2": "value2"
     }
-    resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
+    resp = api.requests.post("/upload", files={"file": png_file}, data=data)
     assert resp.status_code == 201
     assert list(resp.json().keys()) == ["id"]
 
     docid = resp.json()["id"]
     stored_doc = tagged_store.objects[docid]
-    assert stored_doc["user_data"] == {
-        "key1": "value1",
-        "key2": "value2",
-    }
+    assert stored_doc["user_data"] == data
 
 
-def test_calls_create_thumbnail(api, tagged_store, pdf_file):
-    resp = api.requests.post("/upload", files={"file": pdf_file})
+def test_calls_create_thumbnail(api, tagged_store, png_file):
+    resp = api.requests.post("/upload", files={"file": png_file})
     assert resp.status_code == 201
     doc_id = resp.json()["id"]
 
@@ -103,19 +97,19 @@ def test_calls_create_thumbnail(api, tagged_store, pdf_file):
     assert "thumbnail_identifier" in stored_doc
 
 
-def test_get_view_endpoint(api, pdf_file):
+def test_get_view_endpoint(api, png_file):
     data = {
         "title": "Hello world"
     }
-    api.requests.post("/upload", files={"file": pdf_file}, data=data)
+    api.requests.post("/upload", files={"file": png_file}, data=data)
 
     resp = api.requests.get("/")
     assert resp.status_code == 200
     assert data["title"] in resp.text
 
 
-def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
-    api.requests.post("/upload", files={"file": pdf_file})
+def test_can_view_file_and_thumbnail(api, png_file, png_path, file_identifier):
+    api.requests.post("/upload", files={"file": png_file})
     time.sleep(1)
 
     resp = api.requests.get("/")
@@ -125,13 +119,13 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
 
     all_links = soup.find_all("a", attrs={"target": "_blank"})
-    pdf_links = list(set(
+    png_links = list(set(
         link.attrs["href"]
         for link in all_links
-        if link.attrs.get("href", "").endswith(".pdf")
+        if link.attrs.get("href", "").endswith(".png")
     ))
-    assert len(pdf_links) == 1
-    pdf_href = pdf_links[0]
+    assert len(png_links) == 1
+    png_href = png_links[0]
 
     thumbnails_div = soup.find_all("div", attrs={"class": "document__image"})
     assert len(thumbnails_div) == 1
@@ -139,9 +133,9 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
     assert len(thumbnails_img) == 1
     img_src = thumbnails_img[0].attrs["src"]
 
-    pdf_resp = api.requests.get(pdf_href, stream=True)
-    assert pdf_resp.status_code == 200
-    assert pdf_resp.raw.read() == open(pdf_path, "rb").read()
+    png_resp = api.requests.get(png_href, stream=True)
+    assert png_resp.status_code == 200
+    assert png_resp.raw.read() == open(png_path, "rb").read()
 
     now = time.time()
     while time.time() - now < 3:  # pragma: no cover
@@ -156,9 +150,9 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
 
 
 def test_can_view_existing_file_and_thumbnail(
-    api, tagged_store, store_root, pdf_file, pdf_path, file_identifier
+    api, tagged_store, store_root, png_file, png_path, file_identifier
 ):
-    api.requests.post("/upload", files={"file": pdf_file})
+    api.requests.post("/upload", files={"file": png_file})
 
     # Wait for the document to index, then create a fresh API at the same root
     time.sleep(1)
@@ -171,13 +165,13 @@ def test_can_view_existing_file_and_thumbnail(
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
 
     all_links = soup.find_all("a", attrs={"target": "_blank"})
-    pdf_links = list(set(
+    png_links = list(set(
         link.attrs["href"]
         for link in all_links
-        if link.attrs.get("href", "").endswith(".pdf")
+        if link.attrs.get("href", "").endswith(".png")
     ))
-    assert len(pdf_links) == 1
-    pdf_href = pdf_links[0]
+    assert len(png_links) == 1
+    png_href = png_links[0]
 
     thumbnails_div = soup.find_all("div", attrs={"class": "document__image"})
     assert len(thumbnails_div) == 1
@@ -185,9 +179,9 @@ def test_can_view_existing_file_and_thumbnail(
     assert len(thumbnails_img) == 1
     img_src = thumbnails_img[0].attrs["src"]
 
-    pdf_resp = new_api.requests.get(pdf_href, stream=True)
-    assert pdf_resp.status_code == 200
-    assert pdf_resp.raw.read() == open(pdf_path, "rb").read()
+    png_resp = new_api.requests.get(png_href, stream=True)
+    assert png_resp.status_code == 200
+    assert png_resp.raw.read() == open(png_path, "rb").read()
 
     now = time.time()
     while time.time() - now < 3:  # pragma: no cover
@@ -201,11 +195,11 @@ def test_can_view_existing_file_and_thumbnail(
     assert img_resp.status_code == 200
 
 
-def test_can_lookup_document(api, pdf_file):
+def test_can_lookup_document(api, png_file):
     data = {
         "title": "Hello world"
     }
-    resp = api.requests.post("/upload", files={"file": pdf_file}, data=data)
+    resp = api.requests.post("/upload", files={"file": png_file}, data=data)
 
     doc_id = resp.json()["id"]
 
@@ -238,12 +232,12 @@ def test_resolves_css(api):
 
 
 @pytest.mark.parametrize("filename,expected_header", [
-    ("example.pdf", "filename*=utf-8''example.pdf"),
+    ("cluster.png", "filename*=utf-8''cluster.png"),
 ])
-def test_sets_content_disposition_header(api, pdf_file, filename, expected_header):
+def test_sets_content_disposition_header(api, png_file, filename, expected_header):
     resp = api.requests.post(
         "/upload",
-        files={"file": pdf_file},
+        files={"file": png_file},
         data={"filename": filename}
     )
 
@@ -256,11 +250,11 @@ def test_sets_content_disposition_header(api, pdf_file, filename, expected_heade
     assert resp.headers["Content-Disposition"] == expected_header
 
 
-def test_does_not_set_content_disposition_if_no_filename(api, pdf_file):
-    resp = api.requests.post("/upload", files={"file": pdf_file})
+def test_does_not_set_content_disposition_if_no_filename(api, png_file):
+    resp = api.requests.post("/upload", files={"file": png_file})
 
     doc_id = resp.json()["id"]
-    resp = api.requests.get(f"/files/{doc_id[0]}/{doc_id}.pdf")
+    resp = api.requests.get(f"/files/{doc_id[0]}/{doc_id}.png")
     assert "Content-Disposition" not in resp.headers
 
 
@@ -273,26 +267,26 @@ class TestBrowser:
         referer = referer or "http://localhost:8072/"
         return api.requests.post(
             "/upload",
-            files={"file": ("mydocument.pdf", file_contents, "application/pdf")},
+            files={"file": ("mydocument.png", file_contents, "image/png")},
             data=data,
             headers={"referer": referer}
         )
 
-    def test_returns_302_redirect_to_original_page(self, api, pdf_file):
+    def test_returns_302_redirect_to_original_page(self, api, png_file):
         original_page = "https://example.org/docstore/"
-        resp = self.upload(api=api, file_contents=pdf_file, referer=original_page)
+        resp = self.upload(api=api, file_contents=png_file, referer=original_page)
 
         assert resp.status_code == 302
         assert resp.headers["Location"].startswith(original_page)
 
-    def test_includes_document_in_store(self, api, tagged_store, pdf_file):
-        resp = self.upload(api=api, file_contents=pdf_file)
+    def test_includes_document_in_store(self, api, tagged_store, png_file):
+        resp = self.upload(api=api, file_contents=png_file)
 
         location = hyperlink.URL.from_text(resp.headers["Location"])
         doc_id = dict(location.query)["_message.id"]
 
         stored_doc = tagged_store.objects[doc_id]
-        assert stored_doc["filename"] == "mydocument.pdf"
+        assert stored_doc["filename"] == "mydocument.png"
 
 
 class TestPrepareData:
@@ -337,11 +331,11 @@ class TestPrepareData:
 
 
 @pytest.mark.parametrize("tag", ["x-y", "x-&-y"])
-def test_can_navigate_to_tag(api, pdf_file, tag):
+def test_can_navigate_to_tag(api, png_file, tag):
     # Regression test for https://github.com/alexwlchan/docstore/issues/60
     resp = api.requests.post(
         "/upload",
-        files={"file": ("mydocument.pdf", pdf_file)},
+        files={"file": png_file},
         data={"tags": [tag], "title": "hello world"}
     )
 
@@ -355,11 +349,8 @@ def test_can_navigate_to_tag(api, pdf_file, tag):
     assert "hello world" in resp.text
 
 
-def test_sets_caching_headers_on_file(api, pdf_file):
-    resp = api.requests.post(
-        "/upload",
-        files={"file": ("mydocument.pdf", pdf_file)}
-    )
+def test_sets_caching_headers_on_file(api, png_file):
+    resp = api.requests.post("/upload", files={"file": png_file})
 
     doc_id = resp.json()["id"]
 

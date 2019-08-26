@@ -98,9 +98,9 @@ class FileManagerTestMixin(abc.ABC):
         )
         assert resp.suffix == expected_extension
 
-    def test_detects_file_extension(self, store_root):
+    def test_detects_file_extension(self, png_file, store_root):
         manager = self.create_manager(store_root)
-        png_data = pathlib.Path("tests/files/cluster.png").read_bytes()
+        png_data = png_file.read()
         resp = manager.write_bytes(file_id="1234", buffer=png_data)
         assert resp.suffix == ".png"
 
