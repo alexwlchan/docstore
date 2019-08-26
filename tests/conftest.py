@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import datetime as dt
 import pathlib
 import shutil
 import sys
@@ -50,3 +51,12 @@ def tagged_store():
 @pytest.fixture
 def file_manager(store_root):
     return FileManager(root=store_root)
+
+
+@pytest.fixture
+def document():
+    return {
+        "title": "a document with a title",
+        "file_identifier": "1/1.pdf",
+        "date_created": dt.datetime.now().isoformat()
+    }
