@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.14.1 - 2019-08-26
+
+This is an internal refactoring that tidies up some of the code and should make testing easier. No user-visible changes.
+
 ## v1.14.0 - 2019-08-24
 
 Remove the `/api/v1/recreate_thumbnails` endpoint, because I wasn't using it.
