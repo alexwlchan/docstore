@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.14.2 - 2019-08-26
+
+More internal refactoring to improve the speed of the test suite.
+
 ## v1.14.1 - 2019-08-26
 
 This is an internal refactoring that tidies up some of the code and should make testing easier. No user-visible changes.
