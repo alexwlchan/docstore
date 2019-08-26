@@ -62,17 +62,7 @@ def prepare_form_data(user_data):
     return prepared_data
 
 
-def create_api(
-    tagged_store,
-    root,
-    display_title="Alex’s documents",
-    default_view="table",
-    tag_view="list",
-    accent_color="#007bff"
-):
-    file_manager = FileManager(root / "files")
-    thumbnail_manager = ThumbnailManager(root / "thumbnails")
-
+def compile_css(accent_color):
     src_root = pathlib.Path(__file__).parent
     static_dir = src_root / "static"
 
@@ -87,6 +77,21 @@ def create_api(
 
     css_path = static_dir / "style.css"
     css_path.write_text(css)
+
+
+def create_api(
+    tagged_store,
+    root,
+    display_title="Alex’s documents",
+    default_view="table",
+    tag_view="list",
+    accent_color="#007bff"
+):
+    file_manager = FileManager(root / "files")
+    thumbnail_manager = ThumbnailManager(root / "thumbnails")
+
+    src_root = pathlib.Path(__file__).parent
+    static_dir = src_root / "static"
 
     api = responder.API(
         static_dir=static_dir,
@@ -290,6 +295,8 @@ def run_api(root, title, default_view, tag_view, accent_color):
     tagged_store = JsonTaggedObjectStore(root / "documents.json")
 
     migrations.apply_migrations(root=root, object_store=tagged_store)
+
+    compile_css(accent_color=accent_color)
 
     api = create_api(
         tagged_store,

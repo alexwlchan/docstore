@@ -213,7 +213,10 @@ def test_lookup_missing_document_is_404(api):
     assert resp.status_code == 404
 
 
-def test_resolves_css(api):
+def test_resolves_css(tagged_store, store_root):
+    service.compile_css(accent_color="#ff0000")
+
+    api = service.create_api(tagged_store, root=store_root)
     resp = api.requests.get("/")
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
 
