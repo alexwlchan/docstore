@@ -105,9 +105,6 @@ def test_calls_create_thumbnail(api, tagged_store, pdf_file):
 
 
 def test_get_view_endpoint(api, pdf_file):
-    resp = api.requests.get("/")
-    assert resp.status_code == 200
-
     data = {
         "title": "Hello world"
     }
@@ -150,13 +147,12 @@ def test_can_view_file_and_thumbnail(api, pdf_file, pdf_path, file_identifier):
     now = time.time()
     while time.time() - now < 3:  # pragma: no cover
         try:
-            api.requests.get(img_src)
+            img_resp = api.requests.get(img_src)
         except TypeError:
             pass
         else:
             break
 
-    img_resp = api.requests.get(img_src)
     assert img_resp.status_code == 200
 
 
@@ -197,13 +193,12 @@ def test_can_view_existing_file_and_thumbnail(
     now = time.time()
     while time.time() - now < 3:  # pragma: no cover
         try:
-            new_api.requests.get(img_src)
+            img_resp = new_api.requests.get(img_src)
         except TypeError:
             pass
         else:
             break
 
-    img_resp = new_api.requests.get(img_src)
     assert img_resp.status_code == 200
 
 
@@ -275,8 +270,7 @@ class TestBrowser:
 
     @staticmethod
     def upload(api, file_contents, data=None, referer=None):
-        if data is None:
-            data = {}
+        data = data or {}
         referer = referer or "http://localhost:8072/"
         return api.requests.post(
             "/upload",
@@ -300,17 +294,6 @@ class TestBrowser:
 
         stored_doc = tagged_store.objects[doc_id]
         assert stored_doc["filename"] == "mydocument.pdf"
-
-    @pytest.mark.parametrize("view_option", ["table", "grid"])
-    def test_includes_source_url_in_page(self, api, view_option, pdf_file):
-        self.upload(
-            api=api,
-            file_contents=pdf_file,
-            data={"source_url": "https://example.org/document.pdf"}
-        )
-
-        resp = api.requests.get("/", params={"view": view_option})
-        assert '<a href="https://example.org/document.pdf">example.org</a>' in resp.text
 
 
 class TestPrepareData:

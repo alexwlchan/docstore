@@ -47,22 +47,10 @@ def get_html_soup(**kwargs):
     return bs4.BeautifulSoup(html, "html.parser")
 
 
-# @pytest.fixture
-# def sess(api):
-#     def raise_for_status(resp, *args, **kwargs):
-#         resp.raise_for_status()
-#         assert resp.text != "null"
-#
-#     api.requests.hooks["response"].append(raise_for_status)
-#     return api.requests
-
-
 def test_empty_state():
     html = get_html(documents=[])
 
     assert "No documents found" in html
-    assert '<div class="row">' not in html
-    assert '<table class="table">' not in html
 
 
 class TestViewOptions:
@@ -215,8 +203,21 @@ class TestStoreDocumentForm:
         assert tag_field.attrs["value"] == "colour:blue"
 
 
+@pytest.mark.parametrize("list_view", ["table", "grid"])
+def test_includes_source_url(document, list_view):
+    source_url = "https://example.org/document.pdf"
+    document["user_data"] = {"source_url": source_url}
+
+    html = get_html(
+        documents=[document],
+        view_options=viewer.ViewOptions(list_view=list_view)
+    )
+
+    assert f'<a href="{source_url}">example.org</a>' in html
+
+
 def test_omits_source_url_if_empty(document):
-    document["source_url"] = ""
+    document["user_data"] = {"source_url": ""}
 
     html_soup = get_html_soup(documents=[document])
     assert len(html_soup.find_all("section")) == 1
