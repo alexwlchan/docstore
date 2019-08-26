@@ -9,6 +9,7 @@ import hyperlink
 import pytest
 
 import api as service
+from index_helpers import index_new_document
 
 
 def test_non_post_to_upload_is_405(api):
@@ -295,10 +296,9 @@ class TestBrowser:
         resp = self.upload(api=api, file_contents=pdf_file)
 
         location = hyperlink.URL.from_text(resp.headers["Location"])
-        message = json.loads(dict(location.query)["_message"])
+        doc_id = dict(location.query)["_message.id"]
 
-        docid = message["id"]
-        stored_doc = tagged_store.objects[docid]
+        stored_doc = tagged_store.objects[doc_id]
         assert stored_doc["filename"] == "mydocument.pdf"
 
     @pytest.mark.parametrize("view_option", ["table", "grid"])
@@ -355,26 +355,26 @@ class TestPrepareData:
 
 
 @pytest.mark.parametrize("tag", ["x-y", "x-&-y"])
-def test_can_navigate_to_tag(sess, pdf_file, tag):
+def test_can_navigate_to_tag(api, pdf_file, tag):
     # Regression test for https://github.com/alexwlchan/docstore/issues/60
-    resp = sess.post(
+    resp = api.requests.post(
         "/upload",
         files={"file": ("mydocument.pdf", pdf_file)},
         data={"tags": [tag], "title": "hello world"}
     )
 
-    resp = sess.get("/")
+    resp = api.requests.get("/")
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
 
     tag_div = soup.find("div", attrs={"id": "collapseTagList"})
     link_to_tag = tag_div.find("ul").find("li").find("a").attrs["href"]
 
-    resp = sess.get("/" + link_to_tag)
+    resp = api.requests.get("/" + link_to_tag)
     assert "hello world" in resp.text
 
 
-def test_sets_caching_headers_on_file(sess, pdf_file):
-    resp = sess.post(
+def test_sets_caching_headers_on_file(api, pdf_file):
+    resp = api.requests.post(
         "/upload",
         files={"file": ("mydocument.pdf", pdf_file)}
     )
@@ -384,21 +384,21 @@ def test_sets_caching_headers_on_file(sess, pdf_file):
     now = time.time()
 
     while time.time() - now < 5:  # pragma: no cover
-        resp = sess.get(f"/documents/{doc_id}")
+        resp = api.requests.get(f"/documents/{doc_id}")
 
         if "thumbnail_identifier" in resp.json():
             break
 
     data = resp.json()
 
-    file_resp = sess.head(f"/files/{data['file_identifier']}")
+    file_resp = api.requests.head(f"/files/{data['file_identifier']}")
     assert file_resp.headers["Cache-Control"] == "public, max-age=31536000"
 
-    thumb_resp = sess.head(f"/thumbnails/{data['thumbnail_identifier']}")
+    thumb_resp = api.requests.head(f"/thumbnails/{data['thumbnail_identifier']}")
     assert thumb_resp.headers["Cache-Control"] == "public, max-age=31536000"
 
 
-def test_can_filter_by_tag(sess, tagged_store, file_manager):
+def test_can_filter_by_tag(api, tagged_store, file_manager):
     index_new_document(
         tagged_store,
         file_manager,
@@ -420,11 +420,11 @@ def test_can_filter_by_tag(sess, tagged_store, file_manager):
         }
     )
 
-    resp_bar = sess.get("/", params={"tag": "bar"})
+    resp_bar = api.requests.get("/", params={"tag": "bar"})
     assert "hello world" in resp_bar.text
     assert "hi world" in resp_bar.text
 
-    resp_bat = sess.get("/", params={"tag": ["bar", "bat"]})
+    resp_bat = api.requests.get("/", params={"tag": ["bar", "bat"]})
     assert "hello world" not in resp_bat.text
     assert "hi world" in resp_bat.text
 
@@ -439,24 +439,35 @@ def test_uses_display_title(tagged_store, store_root):
     assert "Manuals" in resp.text
 
 
-def test_can_set_default_table_view(self, store_root, tagged_store, file_manager):
-    index_new_document(
-        tagged_store,
-        file_manager,
-        doc_id="1",
-        doc={"file": b"hello world", "title": "xyz"}
-    )
-    api = service.create_api(tagged_store, store_root, default_view="table")
-    resp = api.requests.get("/")
-    self._assert_is_table(resp)
+class TestListView:
+    @staticmethod
+    def _assert_is_table(html):
+        assert '<main class="documents documents__view_grid">' not in html
+        assert '<main class="documents documents__view_table">' in html
 
-def test_can_set_default_grid_view(self, store_root, tagged_store, file_manager):
-    index_new_document(
-        tagged_store,
-        file_manager,
-        doc_id="1",
-        doc={"file": b"hello world", "title": "xyz"}
-    )
-    api = service.create_api(tagged_store, store_root, default_view="grid")
-    resp = api.requests.get("/")
-    self._assert_is_grid(resp)
+    @staticmethod
+    def _assert_is_grid(html):
+        assert '<main class="documents documents__view_grid">' in html
+        assert '<main class="documents documents__view_table">' not in html
+
+    def test_can_set_default_table_view(self, store_root, tagged_store, file_manager):
+        index_new_document(
+            tagged_store,
+            file_manager,
+            doc_id="1",
+            doc={"file": b"hello world", "title": "xyz"}
+        )
+        api = service.create_api(tagged_store, store_root, default_view="table")
+        resp = api.requests.get("/")
+        self._assert_is_table(resp.text)
+
+    def test_can_set_default_grid_view(self, store_root, tagged_store, file_manager):
+        index_new_document(
+            tagged_store,
+            file_manager,
+            doc_id="1",
+            doc={"file": b"hello world", "title": "xyz"}
+        )
+        api = service.create_api(tagged_store, store_root, default_view="grid")
+        resp = api.requests.get("/")
+        self._assert_is_grid(resp.text)

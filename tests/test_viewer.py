@@ -144,7 +144,7 @@ class TestUserMessages:
 
         assert html_soup.find("alert") is None
 
-    def test_no_message(self):
+    def test_success_message(self):
         html_soup = get_html_soup(
             req_url=hyperlink.URL.from_text("http://localhost:1234?_message.id=1234")
         )
