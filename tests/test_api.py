@@ -1,7 +1,6 @@
 # -*- encoding: utf-8
 
 import io
-import json
 import time
 
 import bs4

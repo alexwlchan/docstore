@@ -2,7 +2,6 @@
 
 import datetime as dt
 import re
-import time
 
 import bs4
 import hyperlink
@@ -89,7 +88,7 @@ class TestViewOptions:
 
         self._assert_is_table(html)
 
-    @pytest.mark.parametrize("list_view", [None, 1, "circles"])
+    @pytest.mark.parametrize("list_view", [None, 1, "circles", "cloud"])
     def test_only_allows_certain_list_view(self, list_view):
         with pytest.raises(ValueError):
             viewer.ViewOptions(list_view=list_view)
@@ -127,7 +126,7 @@ class TestViewOptions:
         assert tag_div.find("ul") is not None
         assert html_soup.find("div", attrs={"id": "tag_cloud"}) is None
 
-    @pytest.mark.parametrize("tag_view", [None, 1, "circles"])
+    @pytest.mark.parametrize("tag_view", [None, 1, "circles", "table"])
     def test_only_allows_certain_tag_view(self, tag_view):
         with pytest.raises(ValueError):
             viewer.ViewOptions(tag_view=tag_view)

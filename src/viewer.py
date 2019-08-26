@@ -4,13 +4,11 @@ import pathlib
 import urllib.parse
 
 import attr
-import hyperlink
 import jinja2
 import smartypants
 
 import date_helpers
 import multilevel_tag_list
-import search_helpers
 
 
 TEMPLATES_DIR = pathlib.Path(__file__).parent / "templates"
@@ -31,13 +29,13 @@ class ViewOptions:
     expand_tag_list = attr.ib(default=False)
 
     @list_view.validator
-    def check(self, attribute, value):
+    def check_list_view(self, attribute, value):
         allowed_values = {"table", "grid"}
         if value not in allowed_values:
             raise ValueError(f"Unrecognised value for list_view: {value}")
 
     @tag_view.validator
-    def check(self, attribute, value):
+    def check_tag_view(self, attribute, value):
         allowed_values = {"cloud", "list"}
         if value not in allowed_values:
             raise ValueError(f"Unrecognised value for tag_view: {value}")

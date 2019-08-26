@@ -12,15 +12,12 @@ import hyperlink
 from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
 import responder
 import scss
-import smartypants
 from whitenoise import WhiteNoise
 
-import date_helpers
 from exceptions import UserError
 from file_manager import FileManager, ThumbnailManager
 from index_helpers import index_new_document
 import migrations
-import multilevel_tag_list
 import search_helpers
 from storage import JsonTaggedObjectStore
 import viewer
