@@ -110,7 +110,6 @@ def test_get_view_endpoint(api, png_file):
 
 def test_can_view_file_and_thumbnail(api, png_file, png_path, file_identifier):
     api.requests.post("/upload", files={"file": png_file})
-    time.sleep(1)
 
     resp = api.requests.get("/")
     assert resp.status_code == 200
@@ -127,35 +126,33 @@ def test_can_view_file_and_thumbnail(api, png_file, png_path, file_identifier):
     assert len(png_links) == 1
     png_href = png_links[0]
 
-    thumbnails_div = soup.find_all("div", attrs={"class": "document__image"})
-    assert len(thumbnails_div) == 1
-    thumbnails_img = thumbnails_div[0].find_all("img")
-    assert len(thumbnails_img) == 1
-    img_src = thumbnails_img[0].attrs["src"]
-
     png_resp = api.requests.get(png_href, stream=True)
     assert png_resp.status_code == 200
     assert png_resp.raw.read() == open(png_path, "rb").read()
 
-    now = time.time()
-    while time.time() - now < 3:  # pragma: no cover
-        try:
-            img_resp = api.requests.get(img_src)
-        except TypeError:
-            pass
-        else:
-            break
+    thumbnails_div = soup.find_all("div", attrs={"class": "document__image"})
+    assert len(thumbnails_div) == 1
+    thumbnails_img = thumbnails_div[0].find_all("img")
+    assert len(thumbnails_img) == 1
+    thumb_src = thumbnails_img[0].attrs["src"]
 
-    assert img_resp.status_code == 200
+    thumb_resp = api.requests.get(thumb_src)
+    assert thumb_resp.status_code == 200
 
 
 def test_can_view_existing_file_and_thumbnail(
     api, tagged_store, store_root, png_file, png_path, file_identifier
 ):
-    api.requests.post("/upload", files={"file": png_file})
+    resp = api.requests.post("/upload", files={"file": png_file})
+    doc_id = resp.json()["id"]
 
-    # Wait for the document to index, then create a fresh API at the same root
-    time.sleep(1)
+    # Wait until a thumbnail has been created before creating the new API.
+    now = time.time()
+    while time.time() - now < 3:  # pragma: no cover
+        stored_doc = tagged_store.objects[doc_id]
+        if "thumbnail_identifier" in stored_doc:
+            break
+
     new_api = service.create_api(tagged_store, root=store_root)
 
     resp = new_api.requests.get("/")
@@ -173,26 +170,18 @@ def test_can_view_existing_file_and_thumbnail(
     assert len(png_links) == 1
     png_href = png_links[0]
 
-    thumbnails_div = soup.find_all("div", attrs={"class": "document__image"})
-    assert len(thumbnails_div) == 1
-    thumbnails_img = thumbnails_div[0].find_all("img")
-    assert len(thumbnails_img) == 1
-    img_src = thumbnails_img[0].attrs["src"]
-
     png_resp = new_api.requests.get(png_href, stream=True)
     assert png_resp.status_code == 200
     assert png_resp.raw.read() == open(png_path, "rb").read()
 
-    now = time.time()
-    while time.time() - now < 3:  # pragma: no cover
-        try:
-            img_resp = new_api.requests.get(img_src)
-        except TypeError:
-            pass
-        else:
-            break
+    thumbnails_div = soup.find_all("div", attrs={"class": "document__image"})
+    assert len(thumbnails_div) == 1
+    thumbnails_img = thumbnails_div[0].find_all("img")
+    assert len(thumbnails_img) == 1
+    thumb_src = thumbnails_img[0].attrs["src"]
 
-    assert img_resp.status_code == 200
+    thumb_resp = api.requests.get(thumb_src)
+    assert thumb_resp.status_code == 200
 
 
 def test_can_lookup_document(api, png_file):
