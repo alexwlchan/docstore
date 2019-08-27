@@ -2,7 +2,6 @@
 # -*- encoding: utf-8
 
 import json
-import os
 import pathlib
 import sys
 import urllib.parse
@@ -284,8 +283,6 @@ def create_api(
 
 
 def run_api(config):
-    root = pathlib.Path(os.path.normpath(root))
-
     tagged_store = JsonTaggedObjectStore(config.root / "documents.json")
 
     migrations.apply_migrations(root=config.root, object_store=tagged_store)
