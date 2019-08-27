@@ -79,16 +79,9 @@ def compile_css(accent_color):
     css_path.write_text(css)
 
 
-def create_api(
-    tagged_store,
-    root,
-    display_title="Alex’s documents",
-    default_view="table",
-    tag_view="list",
-    accent_color="#007bff"
-):
-    file_manager = FileManager(root / "files")
-    thumbnail_manager = ThumbnailManager(root / "thumbnails")
+def create_api(tagged_store, config):
+    file_manager = FileManager(config.root / "files")
+    thumbnail_manager = ThumbnailManager(config.root / "thumbnails")
 
     src_root = pathlib.Path(__file__).parent
     static_dir = src_root / "static"
@@ -178,8 +171,8 @@ def create_api(
             pass
 
         view_options = viewer.ViewOptions(
-            list_view=req.params.get("view", default_view),
-            tag_view=tag_view,
+            list_view=req.params.get("view", config.list_view),
+            tag_view=config.tag_view,
             expand_document_form=(req.cookies.get('tags-collapse__show') == 'true'),
             expand_tag_list=(req.cookies.get('tags-collapse__show') == 'true')
         )
@@ -189,9 +182,9 @@ def create_api(
             tag_aggregation=tag_aggregation,
             view_options=view_options,
             search_options=search_options,
-            title=display_title,
+            title=config.title,
             req_url=req_url,
-            accent_color=accent_color,
+            accent_color=config.accent_color,
             api_version=__version__
         )
 
@@ -291,14 +284,7 @@ def run_api(argv):
 
     compile_css(accent_color=config.accent_color)
 
-    api = create_api(
-        tagged_store,
-        root=config.root,
-        display_title=config.title,
-        default_view=config.list_view,
-        tag_view=config.tag_view,
-        accent_color=config.accent_color
-    )
+    api = create_api(tagged_store, config=config)
 
     api.run()
 

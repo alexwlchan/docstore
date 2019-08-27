@@ -4,8 +4,9 @@ import copy
 import pathlib
 
 from migrations import (
-    replace_sha256_checksum_with_generic_field,
     add_missing_thumbnails,
+    apply_migrations,
+    replace_sha256_checksum_with_generic_field,
 )
 from storage.object_store import MemoryObjectStore
 
@@ -109,3 +110,18 @@ class TestMissingThumbnailCreation:
         assert store.objects == {
             "1": {"file_identifier": "1/1.pdf"}
         }
+
+
+def test_applies_migrations_in_turn(store_root, file_identifier):
+    store = MemoryObjectStore(initial_objects={
+        "1": {"sha256_checksum": "abcd"},
+        "2": {"file_identifier": file_identifier},
+    })
+
+    apply_migrations(root=store_root, object_store=store)
+
+    assert store.objects["1"] == {"checksum": "sha256:abcd"}
+    assert store.objects["2"] == {
+        "file_identifier": file_identifier,
+        "thumbnail_identifier": pathlib.Path("2/2.jpeg")
+    }

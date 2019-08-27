@@ -9,7 +9,8 @@ import pytest
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
-import api as service  # noqa
+import api as app_api  # noqa
+from config import DocstoreConfig  # noqa
 from file_manager import FileManager  # noqa
 from storage import MemoryTaggedObjectStore  # noqa
 
@@ -50,8 +51,19 @@ def file_identifier(store_root, pdf_path):
 
 
 @pytest.fixture()
-def api(tagged_store, store_root):
-    return service.create_api(tagged_store, root=store_root)
+def config(store_root):
+    return DocstoreConfig(
+        root=store_root,
+        title="test instance",
+        list_view="table",
+        tag_view="list",
+        accent_color="#ff0000"
+    )
+
+
+@pytest.fixture()
+def api(tagged_store, config):
+    return app_api.create_api(tagged_store, config=config)
 
 
 @pytest.fixture

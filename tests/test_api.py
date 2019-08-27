@@ -143,7 +143,11 @@ def test_can_view_file_and_thumbnail(api, png_file, png_path):
 
 
 def test_can_view_existing_file_and_thumbnail(
+<<<<<<< HEAD
     api, tagged_store, store_root, png_file, png_path
+=======
+    api, config, tagged_store, png_file, png_path
+>>>>>>> Use the refactored CLI in the tests
 ):
     resp = api.requests.post("/upload", files={"file": png_file})
     doc_id = resp.json()["id"]
@@ -155,7 +159,7 @@ def test_can_view_existing_file_and_thumbnail(
         if "thumbnail_identifier" in stored_doc:
             break
 
-    new_api = service.create_api(tagged_store, root=store_root)
+    new_api = service.create_api(tagged_store, config=config)
 
     resp = new_api.requests.get("/")
     assert resp.status_code == 200
@@ -204,10 +208,10 @@ def test_lookup_missing_document_is_404(api):
     assert resp.status_code == 404
 
 
-def test_resolves_css(tagged_store, store_root):
+def test_resolves_css(tagged_store, config):
     service.compile_css(accent_color="#ff0000")
 
-    api = service.create_api(tagged_store, root=store_root)
+    api = service.create_api(tagged_store, config=config)
     resp = api.requests.get("/")
     soup = bs4.BeautifulSoup(resp.text, "html.parser")
 
@@ -396,12 +400,12 @@ def test_can_filter_by_tag(api, tagged_store, file_manager):
     assert "hi world" in resp_bat.text
 
 
-def test_uses_display_title(tagged_store, store_root):
-    title = "My docstore title"
+def test_uses_display_title(tagged_store, config):
+    config.title = "this is my example instance"
+    api = service.create_api(tagged_store, config=config)
 
-    api = service.create_api(tagged_store, store_root, display_title=title)
     resp = api.requests.get("/")
-    assert title in resp.text
+    assert config.title in resp.text
 
 
 class TestListView:
@@ -415,27 +419,45 @@ class TestListView:
         assert '<main class="documents documents__view_grid">' in html
         assert '<main class="documents documents__view_table">' not in html
 
-    def test_can_set_default_table_view(self, store_root, tagged_store, file_manager):
+    def test_can_set_default_table_view(self, config, tagged_store, file_manager):
         index_new_document(
             tagged_store,
             file_manager,
             doc_id="1",
             doc={"file": b"hello world", "title": "xyz"}
         )
-        api = service.create_api(tagged_store, store_root, default_view="table")
+        config.list_view = "table"
+
+        api = service.create_api(tagged_store, config=config)
         resp = api.requests.get("/")
         self._assert_is_table(resp.text)
 
-    def test_can_set_default_grid_view(self, store_root, tagged_store, file_manager):
+    def test_can_set_default_grid_view(self, config, tagged_store, file_manager):
         index_new_document(
             tagged_store,
             file_manager,
             doc_id="1",
             doc={"file": b"hello world", "title": "xyz"}
         )
-        api = service.create_api(tagged_store, store_root, default_view="grid")
+
+        config.list_view = "grid"
+
+        api = service.create_api(tagged_store, config=config)
         resp = api.requests.get("/")
         self._assert_is_grid(resp.text)
+
+    def test_can_request__view_explicitly(self, api, png_file):
+        api.requests.post(
+            "/upload",
+            files={"file": png_file},
+            data={}
+        )
+
+        resp_grid = api.requests.get("/", params={"view": "grid"})
+        self._assert_is_grid(resp_grid.text)
+
+        resp_table = api.requests.get("/", params={"view": "table"})
+        self._assert_is_table(resp_table.text)
 
 
 class TestMigrations:
