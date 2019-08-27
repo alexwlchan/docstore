@@ -108,7 +108,7 @@ def test_get_view_endpoint(api, png_file):
     assert data["title"] in resp.text
 
 
-def test_can_view_file_and_thumbnail(api, png_file, png_path, file_identifier):
+def test_can_view_file_and_thumbnail(api, png_file, png_path):
     api.requests.post("/upload", files={"file": png_file})
 
     resp = api.requests.get("/")
@@ -141,7 +141,7 @@ def test_can_view_file_and_thumbnail(api, png_file, png_path, file_identifier):
 
 
 def test_can_view_existing_file_and_thumbnail(
-    api, tagged_store, store_root, png_file, png_path, file_identifier
+    api, tagged_store, store_root, png_file, png_path
 ):
     resp = api.requests.post("/upload", files={"file": png_file})
     doc_id = resp.json()["id"]
