@@ -108,7 +108,7 @@ def test_get_view_endpoint(api, png_file):
     assert data["title"] in resp.text
 
 
-def test_can_view_file_and_thumbnail(api, png_file, png_path, file_identifier):
+def test_can_view_file_and_thumbnail(api, png_file, png_path):
     api.requests.post("/upload", files={"file": png_file})
 
     resp = api.requests.get("/")
@@ -141,7 +141,7 @@ def test_can_view_file_and_thumbnail(api, png_file, png_path, file_identifier):
 
 
 def test_can_view_existing_file_and_thumbnail(
-    api, tagged_store, store_root, png_file, png_path, file_identifier
+    api, tagged_store, store_root, png_file, png_path
 ):
     resp = api.requests.post("/upload", files={"file": png_file})
     doc_id = resp.json()["id"]
@@ -395,13 +395,11 @@ def test_can_filter_by_tag(api, tagged_store, file_manager):
 
 
 def test_uses_display_title(tagged_store, store_root):
-    api = service.create_api(tagged_store, store_root)
-    resp = api.requests.get("/")
-    assert "docstore" in resp.text
+    title = "My docstore title"
 
-    api = service.create_api(tagged_store, store_root, display_title="Manuals")
+    api = service.create_api(tagged_store, store_root, display_title=title)
     resp = api.requests.get("/")
-    assert "Manuals" in resp.text
+    assert title in resp.text
 
 
 class TestListView:
