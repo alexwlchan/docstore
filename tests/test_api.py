@@ -395,13 +395,11 @@ def test_can_filter_by_tag(api, tagged_store, file_manager):
 
 
 def test_uses_display_title(tagged_store, store_root):
-    api = service.create_api(tagged_store, store_root)
-    resp = api.requests.get("/")
-    assert "docstore" in resp.text
+    title = "My docstore title"
 
-    api = service.create_api(tagged_store, store_root, display_title="Manuals")
+    api = service.create_api(tagged_store, store_root, display_title=title)
     resp = api.requests.get("/")
-    assert "Manuals" in resp.text
+    assert title in resp.text
 
 
 class TestListView:
