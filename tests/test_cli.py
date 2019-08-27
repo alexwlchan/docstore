@@ -1,12 +1,17 @@
 # -*- encoding: utf-8
 
 import json
-import re
+import multiprocessing
+import os
+import pathlib
+import time
 
 import docopt
 import pytest
 
+import api
 import cli
+from config import DocstoreConfig
 
 
 def test_cli_needs_root():
@@ -17,8 +22,15 @@ def test_cli_needs_root():
 def test_cli_starts_with_just_root():
     config = cli.parse_args("docstore", version="1.2.3", argv=["/path/to/docstore"])
 
-    assert isinstance(config, cli.DocstoreConfig)
-    assert config.root == "/path/to/docstore"
+    assert isinstance(config, DocstoreConfig)
+    assert config.root == pathlib.Path("/path/to/docstore")
+
+
+def test_cli_root_is_abspath():
+    config = cli.parse_args("docstore", version="1.2.3", argv=["docstore"])
+
+    assert isinstance(config, DocstoreConfig)
+    assert config.root == pathlib.Path(os.path.normpath("docstore"))
 
 
 def test_default_title():
@@ -103,27 +115,31 @@ def test_unrecognised_tag_view_is_rejected(tag_view):
             version="1.2.3",
             argv=["/path/to/docstore", "--tag_view", tag_view]
         )
-#
-#
-# class TestMigrations:
-#     def test_changes_checksums_to_sha256(self, runner, store_root):
-#         json_string = json.dumps({
-#             "1": {"name": "alex"},
-#             "2": {"name": "lexie", "sha256_checksum": "abcdef"},
-#             "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
-#         })
-#
-#         db_root = store_root / "documents.json"
-#         db_root.open("w").write(json_string)
-#
-#         runner.invoke(api.run_api, [str(store_root)])
-#
-#         expected_data = {
-#             "1": {"name": "alex"},
-#             "2": {"name": "lexie", "checksum": "sha256:abcdef"},
-#             "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
-#         }
-#
-#         actual_data = json.load(db_root.open())
-#
-#         assert actual_data == expected_data
+
+
+class TestMigrations:
+    def test_changes_checksums_to_sha256(self, store_root):
+        json_string = json.dumps({
+            "1": {"name": "alex"},
+            "2": {"name": "lexie", "sha256_checksum": "abcdef"},
+            "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
+        })
+
+        db_root = store_root / "documents.json"
+        db_root.open("w").write(json_string)
+
+        p = multiprocessing.Process(target=api.run_api, args=([str(store_root)], ))
+        p.start()
+
+        time.sleep(1)
+        p.terminate()
+
+        expected_data = {
+            "1": {"name": "alex"},
+            "2": {"name": "lexie", "checksum": "sha256:abcdef"},
+            "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
+        }
+
+        actual_data = json.load(db_root.open())
+
+        assert actual_data == expected_data

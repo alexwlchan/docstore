@@ -4,6 +4,7 @@
 import json
 import os
 import pathlib
+import sys
 import urllib.parse
 import uuid
 
@@ -14,6 +15,7 @@ import responder
 import scss
 from whitenoise import WhiteNoise
 
+from cli import parse_args
 from exceptions import UserError
 from file_manager import FileManager, ThumbnailManager
 from index_helpers import index_new_document
@@ -282,33 +284,26 @@ def create_api(
     return api
 
 
-@click.command()
-@click.version_option(version=__version__, prog_name="docstore")
-@click.argument("root", required=True)
-@click.option("--title", default="docstore")
-@click.option("--default_view", default="table", type=click.Choice(["table", "grid"]))
-@click.option("--tag_view", default="list", type=click.Choice(["list", "cloud"]))
-@click.option("--accent_color", default="#007bff")
-def run_api(root, title, default_view, tag_view, accent_color):
-    root = pathlib.Path(os.path.normpath(root))
+def run_api(argv):
+    config = parse_args(prog=__file__, version=__version__, argv=argv)
 
-    tagged_store = JsonTaggedObjectStore(root / "documents.json")
+    tagged_store = JsonTaggedObjectStore(config.root / "documents.json")
 
-    migrations.apply_migrations(root=root, object_store=tagged_store)
+    migrations.apply_migrations(root=config.root, object_store=tagged_store)
 
-    compile_css(accent_color=accent_color)
+    compile_css(accent_color=config.accent_color)
 
     api = create_api(
         tagged_store,
-        root=root,
-        display_title=title,
-        default_view=default_view,
-        tag_view=tag_view,
-        accent_color=accent_color
+        root=config.root,
+        display_title=config.title,
+        default_view=config.list_view,
+        tag_view=config.tag_view,
+        accent_color=config.accent_color
     )
 
     api.run()
 
 
 if __name__ == "__main__":  # pragma: no cover
-    run_api()
+    run_api(argv=sys.argv)
