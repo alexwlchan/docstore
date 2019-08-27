@@ -1,6 +1,8 @@
 # -*- encoding: utf-8
 
 import io
+import json
+import multiprocessing
 import time
 
 import bs4
@@ -434,3 +436,31 @@ class TestListView:
         api = service.create_api(tagged_store, store_root, default_view="grid")
         resp = api.requests.get("/")
         self._assert_is_grid(resp.text)
+
+
+class TestMigrations:
+    def test_changes_checksums_to_sha256(self, store_root):
+        json_string = json.dumps({
+            "1": {"name": "alex"},
+            "2": {"name": "lexie", "sha256_checksum": "abcdef"},
+            "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
+        })
+
+        db_root = store_root / "documents.json"
+        db_root.open("w").write(json_string)
+
+        p = multiprocessing.Process(target=service.run_api, args=([str(store_root)], ))
+        p.start()
+
+        time.sleep(1)
+        p.terminate()
+
+        expected_data = {
+            "1": {"name": "alex"},
+            "2": {"name": "lexie", "checksum": "sha256:abcdef"},
+            "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
+        }
+
+        actual_data = json.load(db_root.open())
+
+        assert actual_data == expected_data

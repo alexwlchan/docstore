@@ -1,15 +1,11 @@
 # -*- encoding: utf-8
 
-import json
-import multiprocessing
 import os
 import pathlib
-import time
 
 import docopt
 import pytest
 
-import api
 import cli
 from config import DocstoreConfig
 
@@ -115,31 +111,3 @@ def test_unrecognised_tag_view_is_rejected(tag_view):
             version="1.2.3",
             argv=["/path/to/docstore", "--tag_view", tag_view]
         )
-
-
-class TestMigrations:
-    def test_changes_checksums_to_sha256(self, store_root):
-        json_string = json.dumps({
-            "1": {"name": "alex"},
-            "2": {"name": "lexie", "sha256_checksum": "abcdef"},
-            "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
-        })
-
-        db_root = store_root / "documents.json"
-        db_root.open("w").write(json_string)
-
-        p = multiprocessing.Process(target=api.run_api, args=([str(store_root)], ))
-        p.start()
-
-        time.sleep(1)
-        p.terminate()
-
-        expected_data = {
-            "1": {"name": "alex"},
-            "2": {"name": "lexie", "checksum": "sha256:abcdef"},
-            "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
-        }
-
-        actual_data = json.load(db_root.open())
-
-        assert actual_data == expected_data

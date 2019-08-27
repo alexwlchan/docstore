@@ -2,13 +2,11 @@
 # -*- encoding: utf-8
 
 import json
-import os
 import pathlib
 import sys
 import urllib.parse
 import uuid
 
-import click
 import hyperlink
 from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
 import responder
