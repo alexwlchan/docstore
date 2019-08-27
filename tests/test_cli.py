@@ -1,105 +1,113 @@
 # -*- encoding: utf-8
 
-import json
-import re
+import os
+import pathlib
 
-from click.testing import CliRunner
+import docopt
 import pytest
 
-import api
+import cli
+from config import DocstoreConfig
 
 
-@pytest.fixture
-def runner(monkeypatch):
-    def mock_create_api(*create_args, **create_kwargs):
-        print("create_args=%r, create_kwargs=%r" % (create_args, create_kwargs))
-
-        class Api:
-            def run(self, *run_args, **run_kwargs):
-                print("Called run()")
-                print("run_args=%r, run_kwargs=%r" % (run_args, run_kwargs))
-                pass
-
-        return Api()
-
-    with monkeypatch.context() as m:
-        m.setattr(api, "create_api", mock_create_api)
-        yield CliRunner()
+def test_cli_needs_root():
+    with pytest.raises(docopt.DocoptExit):
+        cli.parse_args("docstore", version="1.2.3", argv=[])
 
 
-def test_api_needs_root(runner):
-    result = runner.invoke(api.run_api)
-    assert result.exit_code == 2
-    assert 'Missing argument "ROOT"' in result.output
+def test_cli_starts_with_just_root():
+    config = cli.parse_args("docstore", version="1.2.3", argv=["/path/to/docstore"])
+
+    assert isinstance(config, DocstoreConfig)
+    assert config.root == pathlib.Path("/path/to/docstore")
 
 
-def test_api_starts(runner, store_root):
-    result = runner.invoke(api.run_api, [str(store_root)])
+def test_cli_root_is_abspath():
+    config = cli.parse_args("docstore", version="1.2.3", argv=["docstore"])
 
-    assert result.exit_code == 0
-    assert "Called run()" in result.output
-    assert str(store_root) in result.output
-
-
-def test_api_sets_title(runner, store_root):
-    result = runner.invoke(api.run_api, [str(store_root), "--title", "manuals"])
-
-    assert result.exit_code == 0
-    assert "'display_title': 'manuals'" in result.output
+    assert isinstance(config, DocstoreConfig)
+    assert config.root == pathlib.Path(os.path.normpath("docstore"))
 
 
-def test_api_prints_version(runner):
-    result = runner.invoke(api.run_api, ["--version"])
+def test_default_title():
+    config = cli.parse_args("docstore", version="1.2.3", argv=["/path/to/docstore"])
 
-    assert result.exit_code == 0
-    assert re.match(r"^docstore, version \d+\.\d+\.\d+\n$", result.output)
-
-
-@pytest.mark.parametrize("view_option", ["table", "grid"])
-def test_sets_default_view_option(runner, store_root, view_option):
-    result = runner.invoke(api.run_api, [
-        str(store_root), "--default_view", view_option])
-    assert result.exit_code == 0
-    assert "'default_view': %r" % view_option in result.output
+    assert config.title == "docstore"
 
 
-def test_unrecognised_view_option_is_rejected(runner, store_root):
-    result = runner.invoke(api.run_api, [str(store_root), "--default_view", "mosaic"])
-    assert result.exit_code == 2
+def test_cli_sets_title():
+    config = cli.parse_args(
+        "docstore",
+        version="1.2.3",
+        argv=["/path/to/docstore", "--title", "my docstore instance"]
+    )
+
+    assert config.title == "my docstore instance"
 
 
-@pytest.mark.parametrize("tag_view_option", ["cloud", "list"])
-def test_sets_default_tag_view_option(runner, store_root, tag_view_option):
-    result = runner.invoke(api.run_api, [
-        str(store_root), "--tag_view", tag_view_option])
-    assert result.exit_code == 0
-    assert "'tag_view': %r" % tag_view_option in result.output
+def test_cli_prints_version(capsys):
+    with pytest.raises(SystemExit):
+        cli.parse_args("docstore", version="1.2.3", argv=["--version"])
+
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "1.2.3"
 
 
-def test_unrecognised_tag_view_is_rejected(runner, store_root):
-    result = runner.invoke(api.run_api, [str(store_root), "--tag_view", "mosaic"])
-    assert result.exit_code == 2
+def test_default_list_view_is_table():
+    config = cli.parse_args("docstore", version="1.2.3", argv=["/path/to/docstore"])
+
+    assert config.list_view == "table"
 
 
-class TestMigrations:
-    def test_changes_checksums_to_sha256(self, runner, store_root):
-        json_string = json.dumps({
-            "1": {"name": "alex"},
-            "2": {"name": "lexie", "sha256_checksum": "abcdef"},
-            "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
-        })
+@pytest.mark.parametrize("list_view", ["table", "grid"])
+def test_sets_list_view_option(list_view):
+    config = cli.parse_args(
+        "docstore",
+        version="1.2.3",
+        argv=["/path/to/docstore", "--default_view", list_view]
+    )
 
-        db_root = store_root / "documents.json"
-        db_root.open("w").write(json_string)
+    assert config.list_view == list_view
 
-        runner.invoke(api.run_api, [str(store_root)])
 
-        expected_data = {
-            "1": {"name": "alex"},
-            "2": {"name": "lexie", "checksum": "sha256:abcdef"},
-            "3": {"name": "carol", "sha256_checksum": "ghijkl", "checksum": "xyz"}
-        }
+@pytest.mark.parametrize("list_view", ["cloud", "xyz", "mosaic"])
+def test_unrecognised_list_view_is_rejected(list_view):
+    with pytest.raises(
+        docopt.DocoptExit,
+        match=f"Unrecognised argument for --default_view: {list_view}"
+    ):
+        cli.parse_args(
+            "docstore",
+            version="1.2.3",
+            argv=["/path/to/docstore", "--default_view", list_view]
+        )
 
-        actual_data = json.load(db_root.open())
 
-        assert actual_data == expected_data
+def test_default_tag_view_is_list():
+    config = cli.parse_args("docstore", version="1.2.3", argv=["/path/to/docstore"])
+
+    assert config.tag_view == "list"
+
+
+@pytest.mark.parametrize("tag_view", ["cloud", "list"])
+def test_sets_tag_view_option(tag_view):
+    config = cli.parse_args(
+        "docstore",
+        version="1.2.3",
+        argv=["/path/to/docstore", "--tag_view", tag_view]
+    )
+
+    assert config.tag_view == tag_view
+
+
+@pytest.mark.parametrize("tag_view", ["grid", "table", "xyz", "mosaic"])
+def test_unrecognised_tag_view_is_rejected(tag_view):
+    with pytest.raises(
+        docopt.DocoptExit,
+        match=f"Unrecognised argument for --tag_view: {tag_view}"
+    ):
+        cli.parse_args(
+            "docstore",
+            version="1.2.3",
+            argv=["/path/to/docstore", "--tag_view", tag_view]
+        )

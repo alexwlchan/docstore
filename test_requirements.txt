@@ -38,7 +38,7 @@ more-itertools==7.2.0     # via pytest, zipp
 packaging==19.1
 parse==1.12.1
 pathlib==1.0.1
-pdf2image==1.6.0
+pdf2image==1.7.0
 pillow==6.1.0
 pluggy==0.12.0            # via pytest
 preview-generator==0.10
@@ -64,7 +64,7 @@ six==1.12.0
 smartypants==2.0.1
 soupsieve==1.9.3          # via beautifulsoup4
 starlette==0.12.8
-tqdm==4.34.0
+tqdm==4.35.0
 typesystem==0.2.4
 unidecode==1.1.1
 urllib3==1.25.3
