@@ -232,7 +232,7 @@ def test_resolves_css(tagged_store, store_root):
     css_link = local_links[0]
 
     assert css_link.endswith(".css")
-    css_resp = api.requests.get(css_link)
+    css_resp = api.requests.head(css_link)
     assert css_resp.status_code == 200
 
 
