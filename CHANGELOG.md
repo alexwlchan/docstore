@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.14.4 - 2019-08-28
+
+Fix a bug introduced in v1.14.3 that meant the container would never start.
+
+Also add `mimetype` to the Docker image, which fixes a crash when trying to create thumbnails for some file formats (e.g. Markdown).
+
 ## v1.14.3 - 2019-08-28
 
 More internal refactoring, this time to use docopt instead of CLI for the command-line parsing.
