@@ -585,3 +585,32 @@ class TestCookies:
 
         div = html_soup.find("div", attrs={"id": "collapseTagList"})
         assert div.attrs["class"] == expected_classes
+
+
+class TestPagination:
+    def test_only_gets_documents_for_page(self, api):
+        for i in range(1, 11):
+            api.requests.post(
+                "/upload",
+                files={"file": b"hello world"},
+                data={"title": f"document {i}"}
+            )
+
+        resp = api.requests.get("/", stream=True, params={"page": 1, "page_size": 5})
+        html_soup = bs4.BeautifulSoup(resp.raw.read(), "html.parser")
+        assert str(html_soup) != "null"
+
+        titles = [
+            div.text.strip()
+            for div in html_soup.find_all("div", attrs={"class": "document__title"})
+        ]
+
+        assert titles == [
+            "document 10",
+            "document 9",
+            "document 8",
+            "document 7",
+            "document 6"
+        ]
+
+        assert html_soup.find("nav", attrs={"id": "pagination"}) is not None
