@@ -78,7 +78,7 @@ def render_document_list(
     return TEMPLATE.render(
         display_documents=documents,
         view_options=view_options,
-        search_options=search_options,
+        tag_query=search_options.tag_query,
         tag_aggregation=tag_aggregation,
         title=title,
         req_url=req_url,

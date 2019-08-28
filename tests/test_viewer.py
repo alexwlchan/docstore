@@ -184,6 +184,13 @@ def test_includes_created_date(document):
 
 
 class TestStoreDocumentForm:
+    def test_displays_tags_in_form(self):
+        html_soup = get_html_soup(
+            search_options=SearchOptions(tag_query=["x", "y", "z"])
+        )
+        tag_field = html_soup.find("input", attrs={"name": "tags"})
+        assert tag_field.attrs["value"] == "x y z"
+
     def test_url_decodes_tags_before_displaying(self, document):
         """
         Check that URL-encoded entities get unwrapped when we display the tag form.
@@ -319,3 +326,103 @@ class TestNavbarOptions:
 
         for label, url in self.get_view_options(html_soup).items():
             self.assert_query_param_equal(url, expected[label])
+
+
+def test_uses_title_in_head():
+    title = "my docstore instance"
+    html_soup = get_html_soup(title=title)
+
+    assert html_soup.find("title").text.strip() == title
+
+
+def test_includes_tags_in_title_if_present():
+    title = "my docstore instance"
+    html_soup = get_html_soup(
+        title=title,
+        search_options=SearchOptions(tag_query=["x", "y", "z"])
+    )
+
+    assert html_soup.find("title").text.strip() == f"Tagged with x, y, z — {title}"
+
+
+def test_selected_tags_are_not_clickable_in_tag_cloud(document):
+    document["tags"] = ["a", "b", "c", "d"]
+
+    html_soup = get_html_soup(
+        documents=[document],
+        search_options=SearchOptions(tag_query=["a", "b"]),
+        view_options=viewer.ViewOptions(tag_view="cloud"),
+        tag_aggregation={"a": 1, "b": 1, "c": 1, "d": 1}
+    )
+
+    tag_cloud = html_soup.find("div", attrs={"id": "collapseTagList"})
+    tag_is_link = {
+        span_tag.text.strip(): span_tag.find("a") is not None
+        for span_tag in tag_cloud.find_all("span", attrs={"class": "tag"})
+    }
+
+    assert tag_is_link == {
+        "a": False,
+        "b": False,
+        "c": True,
+        "d": True,
+    }
+
+
+def test_includes_list_of_filtered_tags():
+    html_soup = get_html_soup(
+        req_url=hyperlink.URL.from_text("http://localhost:1234/?tag=alfa&tag=bravo"),
+        search_options=SearchOptions(tag_query=["alfa", "bravo"])
+    )
+
+    alert_div = html_soup.find("div", attrs={"class": ["alert", "tag_query"]})
+    actual_text = re.sub(r"\s+", " ", alert_div.text.strip())
+
+    expected_text = "Filtering to documents tagged with alfa x bravo x"
+
+    assert actual_text == expected_text
+
+    links = {
+        a_tag.attrs["id"].split(":")[1]: a_tag.attrs["href"]
+        for a_tag in alert_div.find_all("a")
+    }
+
+    assert links == {
+        "alfa": "?tag=bravo",
+        "bravo": "?tag=alfa",
+    }
+
+
+def test_displays_list_of_tags_on_document(document):
+    document["tags"] = ["alfa", "bravo", "charlie"]
+
+    html_soup = get_html_soup(
+        documents=[document],
+        search_options=SearchOptions(tag_query=["alfa", "bravo"]),
+        req_url=hyperlink.URL.from_text("http://localhost:1234/?tag=alfa&tag=bravo")
+    )
+
+    tag_info = html_soup.find("div", attrs={"class": "document__metadata__tags"})
+    span_tags = tag_info.find_all(
+        "span", attrs={"class": "document__metadata__info_tag"})
+
+    tag_names = [
+        span_tag.text.strip()
+        for span_tag in tag_info.find_all("span")
+    ]
+
+    assert tag_names == ["#alfa", "#bravo", "#charlie"]
+
+    tag_is_link = {
+        span_tag.text.strip(): span_tag.find("a") is not None
+        for span_tag in tag_info.find_all("span")
+    }
+
+    assert tag_is_link == {"#alfa": False, "#bravo": False, "#charlie": True}
+
+    tag_links = [
+        a_tag.attrs["href"]
+        for a_tag in tag_info.find_all("a")
+    ]
+
+    assert tag_links == ["?tag=alfa&tag=bravo&tag=charlie"]

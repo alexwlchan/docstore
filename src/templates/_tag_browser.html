@@ -7,7 +7,13 @@
     {% elif view_options.tag_view == "cloud" %}
       <div id="tag_cloud" style="margin-bottom: 0;">
         {% for tag in tag_aggregation|sort %}
-          <a href="{% if tag not in search_options.tag_query %}{{ req_url.add('tag', tag) | query_str_only }}{% else %}#{% endif %}"  rel="{{ tag_aggregation[tag] }}">{{ tag }}</a>
+          <span class="tag" rel="{{ tag_aggregation[tag] }}">
+          {% if tag in tag_query %}
+          {{ tag }}
+          {% else %}
+          <a href="{{ req_url.add('tag', tag) | query_str_only }}">{{ tag }}</a>
+          {% endif %}
+          </span>
         {% endfor %}
       </div>
 
@@ -19,7 +25,7 @@
         };
 
         $(function() {
-          $('#tag_cloud a').tagcloud();
+          $('#tag_cloud .tag').tagcloud();
         })
       </script>
     {% endif %}
