@@ -30,6 +30,16 @@ def test_errors_if_cannot_create_thumbnail():
         create_thumbnail(pathlib.Path("tests/files/helloworld.rb"))
 
 
+def test_can_use_external_mimetype_to_check_mimetype():
+    # Inside the preview_generator library, it shells out to an external
+    # program "mimetype" if it can't work out the mimetype with Python.
+    #
+    # Markdown seems to be a format that it shells out for, so check
+    # that it works.
+    with pytest.raises(UnsupportedMimeType):
+        create_thumbnail(pathlib.Path("tests/files/README.md"))
+
+
 def test_creates_animated_gif_thumbnail():
     path = pathlib.Path("tests/files/movingsun.gif")
     result = create_thumbnail(path)

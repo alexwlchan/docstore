@@ -302,5 +302,5 @@ def run_api(config):  # pragma: no cover
 
 
 if __name__ == "__main__":  # pragma: no cover
-    config = cli.parse_args(prog="docstore", version=__version__, argv=sys.argv)
+    config = cli.parse_args(prog="docstore", version=__version__, argv=sys.argv[1:])
     run_api(config)
