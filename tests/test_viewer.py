@@ -402,8 +402,6 @@ def test_displays_list_of_tags_on_document(document):
     )
 
     tag_info = html_soup.find("div", attrs={"class": "document__metadata__tags"})
-    span_tags = tag_info.find_all(
-        "span", attrs={"class": "document__metadata__info_tag"})
 
     tag_names = [
         span_tag.text.strip()
