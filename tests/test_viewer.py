@@ -7,6 +7,7 @@ import bs4
 import hyperlink
 import pytest
 
+from pagination import Pagination
 import viewer
 
 
@@ -17,6 +18,11 @@ def get_html(
     tag_query=[],
     req_url=hyperlink.URL.from_text("http://localhost:9000/request"),
     title="docstore test instance",
+    pagination=Pagination(
+        page_size=25,
+        current_page=1,
+        total_documents=100
+    ),
     api_version="test_1.0.0"
 ):
     return viewer.render_document_list(
@@ -26,6 +32,7 @@ def get_html(
         tag_query=tag_query,
         req_url=req_url,
         title=title,
+        pagination=pagination,
         api_version=api_version
     )
 
@@ -423,3 +430,129 @@ def test_displays_list_of_tags_on_document(document):
     ]
 
     assert tag_links == ["?tag=alfa&tag=bravo&tag=charlie"]
+
+
+class TestPagination:
+    def test_omits_pagination_if_single_page(self):
+        html_soup = get_html_soup(
+            pagination=Pagination(
+                page_size=25,
+                current_page=1,
+                total_documents=10
+            )
+        )
+
+        assert html_soup.find("nav", attrs={"id": "pagination"}) is None
+
+    @pytest.mark.parametrize("current_page, expected_classes", [
+        (1, ["page-item", "disabled"]),
+        (2, ["page-item"]),
+    ])
+    def test_classes_on_prev_page_button(self, current_page, expected_classes):
+        html_soup = get_html_soup(
+            pagination=Pagination(
+                page_size=25,
+                current_page=current_page,
+                total_documents=50
+            )
+        )
+
+        pagination_div = html_soup.find("nav", attrs={"id": "pagination"})
+        prev_li = pagination_div.find("li", attrs={"id": "pagination__prev"})
+        assert prev_li.attrs["class"] == expected_classes
+
+    @pytest.mark.parametrize("req_url, expected_url", [
+        ("http://localhost:1234?page=2", "?"),
+        ("http://localhost:1234?tag=alfa&page=2", "?tag=alfa"),
+    ])
+    def test_prev_page_link_on_page_1(self, req_url, expected_url):
+        html_soup = get_html_soup(
+            pagination=Pagination(
+                page_size=25,
+                current_page=2,
+                total_documents=50
+            ),
+            req_url=hyperlink.URL.from_text(req_url)
+        )
+
+        pagination_div = html_soup.find("nav", attrs={"id": "pagination"})
+        prev_li = pagination_div.find("li", attrs={"id": "pagination__prev"})
+        assert prev_li.find("a").attrs["href"] == expected_url
+
+    @pytest.mark.parametrize("req_url, expected_url", [
+        ("http://localhost:1234?page=4", "?page=3"),
+        ("http://localhost:1234?tag=alfa&page=4", "?tag=alfa&page=3"),
+    ])
+    def test_prev_page_link_on_later_pages(self, req_url, expected_url):
+        html_soup = get_html_soup(
+            pagination=Pagination(
+                page_size=25,
+                current_page=4,
+                total_documents=100
+            ),
+            req_url=hyperlink.URL.from_text(req_url)
+        )
+
+        pagination_div = html_soup.find("nav", attrs={"id": "pagination"})
+        prev_li = pagination_div.find("li", attrs={"id": "pagination__prev"})
+        assert prev_li.find("a").attrs["href"] == expected_url
+
+    def test_creates_page_links_for_each_page(self):
+        html_soup = get_html_soup(
+            pagination=Pagination(
+                page_size=10,
+                current_page=2,
+                total_documents=50
+            )
+        )
+        pagination_div = html_soup.find("nav", attrs={"id": "pagination"})
+        page_links = pagination_div.find_all(
+            "a", attrs={"class": "numbered-page-link"})
+
+        actual_links = {
+            a_tag.text: a_tag.attrs["href"]
+            for a_tag in page_links
+        }
+
+        assert actual_links == {
+            "1": "?",
+            "2": "?page=2",
+            "3": "?page=3",
+            "4": "?page=4",
+            "5": "?page=5",
+        }
+
+    @pytest.mark.parametrize("current_page, expected_classes", [
+        (1, ["page-item"]),
+        (2, ["page-item", "disabled"]),
+    ])
+    def test_classes_on_next_page_button(self, current_page, expected_classes):
+        html_soup = get_html_soup(
+            pagination=Pagination(
+                page_size=25,
+                current_page=current_page,
+                total_documents=50
+            )
+        )
+
+        pagination_div = html_soup.find("nav", attrs={"id": "pagination"})
+        next_li = pagination_div.find("li", attrs={"id": "pagination__next"})
+        assert next_li.attrs["class"] == expected_classes
+
+    @pytest.mark.parametrize("req_url, expected_url", [
+        ("http://localhost:1234?page=4", "?page=5"),
+        ("http://localhost:1234?tag=alfa&page=4", "?tag=alfa&page=5"),
+    ])
+    def test_next_page_link(self, req_url, expected_url):
+        html_soup = get_html_soup(
+            pagination=Pagination(
+                page_size=25,
+                current_page=4,
+                total_documents=200
+            ),
+            req_url=hyperlink.URL.from_text(req_url)
+        )
+
+        pagination_div = html_soup.find("nav", attrs={"id": "pagination"})
+        next_li = pagination_div.find("li", attrs={"id": "pagination__next"})
+        assert next_li.find("a").attrs["href"] == expected_url

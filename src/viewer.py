@@ -73,6 +73,7 @@ def render_document_list(
     title,
     req_url,
     api_version,
+    pagination,
     accent_color="#007bff"
 ):
     return TEMPLATE.render(
@@ -83,5 +84,6 @@ def render_document_list(
         title=title,
         req_url=req_url,
         accent_color=accent_color,
+        pagination=pagination,
         api_version=api_version
     )
