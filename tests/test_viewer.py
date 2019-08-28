@@ -7,7 +7,6 @@ import bs4
 import hyperlink
 import pytest
 
-from search_helpers import SearchOptions
 import viewer
 
 
@@ -15,7 +14,7 @@ def get_html(
     documents=[],
     tag_aggregation={},
     view_options=viewer.ViewOptions(),
-    search_options=SearchOptions(),
+    tag_query=[],
     req_url=hyperlink.URL.from_text("http://localhost:9000/request"),
     title="docstore test instance",
     api_version="test_1.0.0"
@@ -24,7 +23,7 @@ def get_html(
         documents=documents,
         tag_aggregation=tag_aggregation,
         view_options=view_options,
-        search_options=search_options,
+        tag_query=tag_query,
         req_url=req_url,
         title=title,
         api_version=api_version
@@ -186,7 +185,7 @@ def test_includes_created_date(document):
 class TestStoreDocumentForm:
     def test_displays_tags_in_form(self):
         html_soup = get_html_soup(
-            search_options=SearchOptions(tag_query=["x", "y", "z"])
+            tag_query=["x", "y", "z"]
         )
         tag_field = html_soup.find("input", attrs={"name": "tags"})
         assert tag_field.attrs["value"] == "x y z"
@@ -202,7 +201,7 @@ class TestStoreDocumentForm:
 
         html_soup = get_html_soup(
             documents=[document],
-            search_options=SearchOptions(tag_query=["colour:blue"])
+            tag_query=["colour:blue"]
         )
         tag_field = html_soup.find("input", attrs={"name": "tags"})
         assert tag_field.attrs["value"] == "colour:blue"
@@ -339,7 +338,7 @@ def test_includes_tags_in_title_if_present():
     title = "my docstore instance"
     html_soup = get_html_soup(
         title=title,
-        search_options=SearchOptions(tag_query=["x", "y", "z"])
+        tag_query=["x", "y", "z"]
     )
 
     assert html_soup.find("title").text.strip() == f"Tagged with x, y, z — {title}"
@@ -350,7 +349,7 @@ def test_selected_tags_are_not_clickable_in_tag_cloud(document):
 
     html_soup = get_html_soup(
         documents=[document],
-        search_options=SearchOptions(tag_query=["a", "b"]),
+        tag_query=["a", "b"],
         view_options=viewer.ViewOptions(tag_view="cloud"),
         tag_aggregation={"a": 1, "b": 1, "c": 1, "d": 1}
     )
@@ -372,7 +371,7 @@ def test_selected_tags_are_not_clickable_in_tag_cloud(document):
 def test_includes_list_of_filtered_tags():
     html_soup = get_html_soup(
         req_url=hyperlink.URL.from_text("http://localhost:1234/?tag=alfa&tag=bravo"),
-        search_options=SearchOptions(tag_query=["alfa", "bravo"])
+        tag_query=["alfa", "bravo"]
     )
 
     alert_div = html_soup.find("div", attrs={"class": ["alert", "tag_query"]})
@@ -398,7 +397,7 @@ def test_displays_list_of_tags_on_document(document):
 
     html_soup = get_html_soup(
         documents=[document],
-        search_options=SearchOptions(tag_query=["alfa", "bravo"]),
+        tag_query=["alfa", "bravo"],
         req_url=hyperlink.URL.from_text("http://localhost:1234/?tag=alfa&tag=bravo")
     )
 

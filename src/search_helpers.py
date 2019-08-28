@@ -2,13 +2,6 @@
 
 import collections
 
-import attr
-
-
-@attr.s
-class SearchOptions:
-    tag_query = attr.ib(default=())
-
 
 def get_tag_aggregation(objects):
     tags = collections.defaultdict(int)

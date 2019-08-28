@@ -152,10 +152,6 @@ def create_api(
     def list_documents(req, resp):
         tag_query = req.params.get_list("tag", [])
 
-        search_options = search_helpers.SearchOptions(
-            tag_query=tag_query
-        )
-
         matching_documents = tagged_store.query(tag_query)
 
         sort_param = req.params.get("sort", "date_created:newest_first")
@@ -201,7 +197,7 @@ def create_api(
             documents=display_documents,
             tag_aggregation=tag_aggregation,
             view_options=view_options,
-            search_options=search_options,
+            tag_query=tag_query,
             title=display_title,
             req_url=req_url,
             accent_color=accent_color,
