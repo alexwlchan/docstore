@@ -154,7 +154,7 @@ def create_api(
         tag_query = req.params.get_list("tag", [])
 
         page = int(req.params.get("page", "1"))
-        page_size = int(req.params.get("page_size", "200"))
+        page_size = int(req.params.get("page_size", "250"))
 
         matching_documents = tagged_store.query(tag_query)
 
