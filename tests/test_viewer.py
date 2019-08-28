@@ -522,6 +522,26 @@ class TestPagination:
             "5": "?page=5",
         }
 
+    @pytest.mark.parametrize("current_page", [1, 2, 3, 4, 5])
+    def test_disables_current_page_link(self, current_page):
+        html_soup = get_html_soup(
+            pagination=Pagination(
+                page_size=10,
+                current_page=current_page,
+                total_documents=50
+            )
+        )
+        pagination_div = html_soup.find("nav", attrs={"id": "pagination"})
+        page_links = pagination_div.find_all("li", attrs={"class": "page-item"})
+
+        current_page_link = [
+            li_tag
+            for li_tag in page_links
+            if li_tag.find("a").text == str(current_page)
+        ][0]
+
+        assert "disabled" in current_page_link.attrs["class"]
+
     @pytest.mark.parametrize("current_page, expected_classes", [
         (1, ["page-item"]),
         (2, ["page-item", "disabled"]),

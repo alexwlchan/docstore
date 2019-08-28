@@ -15,12 +15,14 @@
         <span class="sr-only">Previous</span>
       </a>
     </li>
-    <li class="page-item">
+    <li class="page-item{% if pagination.current_page == 1 %} disabled{% endif %}">
       <a class="page-link numbered-page-link" href="{{ req_url.remove('page') | query_str_only }}">1</a>
     </li>
 
     {% for page in range(2, pagination.total_pages + 1) %}
-      <li class="page-item"><a class="page-link numbered-page-link" href="{{ req_url.set('page', page | string) | query_str_only }}">{{ page }}</a></li>
+    <li class="page-item{% if pagination.current_page == page %} disabled{% endif %}">
+      <a class="page-link numbered-page-link" href="{{ req_url.set('page', page | string) | query_str_only }}">{{ page }}</a>
+    </li>
     {% endfor %}
 
     <li class="page-item{% if not pagination.has_next %} disabled{% endif %}" id="pagination__next">
