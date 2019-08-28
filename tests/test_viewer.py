@@ -7,24 +7,14 @@ import bs4
 import hyperlink
 import pytest
 
-from search_helpers import SearchOptions
 import viewer
-
-
-PARAMS = [
-    [("view", "table"), ("tag", "x")],
-    [("sort", "title:asc")],
-    [("sort", "title:desc")],
-    [("sort", "date_created:asc")],
-    [("sort", "date_created:desc")],
-]
 
 
 def get_html(
     documents=[],
     tag_aggregation={},
     view_options=viewer.ViewOptions(),
-    search_options=SearchOptions(),
+    tag_query=[],
     req_url=hyperlink.URL.from_text("http://localhost:9000/request"),
     title="docstore test instance",
     api_version="test_1.0.0"
@@ -33,7 +23,7 @@ def get_html(
         documents=documents,
         tag_aggregation=tag_aggregation,
         view_options=view_options,
-        search_options=search_options,
+        tag_query=tag_query,
         req_url=req_url,
         title=title,
         api_version=api_version
@@ -166,9 +156,7 @@ def test_renders_title():
     assert header.text == title
 
 
-# TODO: Pass proper params here
-@pytest.mark.parametrize("params", PARAMS)
-def test_all_urls_are_relative(document, params):
+def test_all_urls_are_relative(document):
     document["tags"] = ["x", "y"]
 
     html_soup = get_html_soup(documents=[document])
@@ -195,6 +183,13 @@ def test_includes_created_date(document):
 
 
 class TestStoreDocumentForm:
+    def test_displays_tags_in_form(self):
+        html_soup = get_html_soup(
+            tag_query=["x", "y", "z"]
+        )
+        tag_field = html_soup.find("input", attrs={"name": "tags"})
+        assert tag_field.attrs["value"] == "x y z"
+
     def test_url_decodes_tags_before_displaying(self, document):
         """
         Check that URL-encoded entities get unwrapped when we display the tag form.
@@ -206,7 +201,7 @@ class TestStoreDocumentForm:
 
         html_soup = get_html_soup(
             documents=[document],
-            search_options=SearchOptions(tag_query=["colour:blue"])
+            tag_query=["colour:blue"]
         )
         tag_field = html_soup.find("input", attrs={"name": "tags"})
         assert tag_field.attrs["value"] == "colour:blue"
@@ -239,3 +234,192 @@ def test_renders_titles_with_pretty_quotes(document):
     html_soup = get_html_soup(documents=[document])
     title = html_soup.find("div", attrs={"class": "document__title"})
     assert "Isn’t it a wonderful day? — an optimist" in title.text
+
+
+class TestNavbarOptions:
+    @staticmethod
+    def get_sort_options(html_soup):
+        dropdown = html_soup.find("li", attrs={"id": "navbarSortBy"})
+
+        items = dropdown.find("div", attrs={"class": "dropdown-menu"}).find_all("a")
+
+        return {
+            it.text: it.attrs["href"] for it in items
+        }
+
+    @staticmethod
+    def get_view_options(html_soup):
+        dropdown = html_soup.find("li", attrs={"id": "navbarViewAs"})
+
+        items = dropdown.find("div", attrs={"class": "dropdown-menu"}).find_all("a")
+
+        return {
+            it.text: it.attrs["href"] for it in items
+        }
+
+    @staticmethod
+    def assert_query_param_equal(query1, query2):
+        assert (
+            sorted(hyperlink.URL.from_text(query1).query) ==
+            sorted(hyperlink.URL.from_text(query2).query)
+        )
+
+    @pytest.mark.parametrize("req_url", [
+        "http://localhost:1234",
+        "http://localhost:1234?sort=title:a_z",
+    ])
+    def test_sets_sort_option(self, req_url):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text(req_url)
+        )
+
+        assert self.get_sort_options(html_soup) == {
+            "title (a-z)": "?sort=title:a_z",
+            "title (z-a)": "?sort=title:z_a",
+            "date created (newest first)": "?sort=date_created:newest_first",
+            "date created (oldest first)": "?sort=date_created:oldest_first",
+        }
+
+    def test_preserves_other_query_params_setting_sort_option(self):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text(
+                "http://localhost:1234?tag=x&tag=y"
+            )
+        )
+
+        expected = {
+            "title (a-z)": "?tag=x&tag=y&sort=title:a_z",
+            "title (z-a)": "?tag=x&tag=y&sort=title:z_a",
+            "date created (newest first)": "?tag=x&tag=y&sort=date_created:newest_first",
+            "date created (oldest first)": "?tag=x&tag=y&sort=date_created:oldest_first",
+        }
+
+        for label, url in self.get_sort_options(html_soup).items():
+            self.assert_query_param_equal(url, expected[label])
+
+    @pytest.mark.parametrize("req_url", [
+        "http://localhost:1234",
+        "http://localhost:1234?view=table",
+    ])
+    def test_sets_view_option(self, req_url):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text(req_url)
+        )
+
+        assert self.get_view_options(html_soup) == {
+            "table": "?view=table",
+            "grid": "?view=grid",
+        }
+
+    def test_preserves_other_query_params_setting_view_option(self):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text(
+                "http://localhost:1234?tag=x&tag=y"
+            )
+        )
+
+        expected = {
+            "table": "?tag=x&tag=y&view=table",
+            "grid": "?tag=x&tag=y&view=grid",
+        }
+
+        for label, url in self.get_view_options(html_soup).items():
+            self.assert_query_param_equal(url, expected[label])
+
+
+def test_uses_title_in_head():
+    title = "my docstore instance"
+    html_soup = get_html_soup(title=title)
+
+    assert html_soup.find("title").text.strip() == title
+
+
+def test_includes_tags_in_title_if_present():
+    title = "my docstore instance"
+    html_soup = get_html_soup(
+        title=title,
+        tag_query=["x", "y", "z"]
+    )
+
+    assert html_soup.find("title").text.strip() == f"Tagged with x, y, z — {title}"
+
+
+def test_selected_tags_are_not_clickable_in_tag_cloud(document):
+    document["tags"] = ["a", "b", "c", "d"]
+
+    html_soup = get_html_soup(
+        documents=[document],
+        tag_query=["a", "b"],
+        view_options=viewer.ViewOptions(tag_view="cloud"),
+        tag_aggregation={"a": 1, "b": 1, "c": 1, "d": 1}
+    )
+
+    tag_cloud = html_soup.find("div", attrs={"id": "collapseTagList"})
+    tag_is_link = {
+        span_tag.text.strip(): span_tag.find("a") is not None
+        for span_tag in tag_cloud.find_all("span", attrs={"class": "tag"})
+    }
+
+    assert tag_is_link == {
+        "a": False,
+        "b": False,
+        "c": True,
+        "d": True,
+    }
+
+
+def test_includes_list_of_filtered_tags():
+    html_soup = get_html_soup(
+        req_url=hyperlink.URL.from_text("http://localhost:1234/?tag=alfa&tag=bravo"),
+        tag_query=["alfa", "bravo"]
+    )
+
+    alert_div = html_soup.find("div", attrs={"class": ["alert", "tag_query"]})
+    actual_text = re.sub(r"\s+", " ", alert_div.text.strip())
+
+    expected_text = "Filtering to documents tagged with alfa x bravo x"
+
+    assert actual_text == expected_text
+
+    links = {
+        a_tag.attrs["id"].split(":")[1]: a_tag.attrs["href"]
+        for a_tag in alert_div.find_all("a")
+    }
+
+    assert links == {
+        "alfa": "?tag=bravo",
+        "bravo": "?tag=alfa",
+    }
+
+
+def test_displays_list_of_tags_on_document(document):
+    document["tags"] = ["alfa", "bravo", "charlie"]
+
+    html_soup = get_html_soup(
+        documents=[document],
+        tag_query=["alfa", "bravo"],
+        req_url=hyperlink.URL.from_text("http://localhost:1234/?tag=alfa&tag=bravo")
+    )
+
+    tag_info = html_soup.find("div", attrs={"class": "document__metadata__tags"})
+
+    tag_names = [
+        span_tag.text.strip()
+        for span_tag in tag_info.find_all("span")
+    ]
+
+    assert tag_names == ["#alfa", "#bravo", "#charlie"]
+
+    tag_is_link = {
+        span_tag.text.strip(): span_tag.find("a") is not None
+        for span_tag in tag_info.find_all("span")
+    }
+
+    assert tag_is_link == {"#alfa": False, "#bravo": False, "#charlie": True}
+
+    tag_links = [
+        a_tag.attrs["href"]
+        for a_tag in tag_info.find_all("a")
+    ]
+
+    assert tag_links == ["?tag=alfa&tag=bravo&tag=charlie"]

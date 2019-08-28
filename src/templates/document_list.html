@@ -11,13 +11,13 @@
       {% include "_message.html" %}
       {% include "_collapsibles.html" %}
 
-      {% if search_options.tag_query %}
+      {% if tag_query %}
       <div class="alert alert-secondary tag_query" role="alert">
         Filtering to documents tagged with
-        {% for tag in search_options.tag_query %}
+        {% for tag in tag_query %}
           <span class="tag_query__tag">
             <strong>{{ tag }}</strong>
-            <a class="text-danger" href="{{ req_url.remove('tag', tag) | query_str_only }}">x</a>
+            <a class="text-danger" id="removeTag:{{ tag }}" href="{{ req_url.remove('tag', tag) | query_str_only }}">x</a>
           </span>
         {% endfor %}
       </div>
@@ -69,11 +69,11 @@
                 <h5 class="document__metadata__info">
                 {% for tag in doc["tags"]|sort %}
                 <span class="document__metadata__info_tag">
-                {% if tag not in search_options.tag_query %}
+                {% if tag not in tag_query %}
                   <a href="{{ req_url.add('tag', tag) | query_str_only }}">
                 {% endif %}
                 #{{ tag }}
-                {%- if tag not in search_options.tag_query %}</a>{% endif %}
+                {%- if tag not in tag_query %}</a>{% endif %}
                 </span>
                 {% endfor %}
                 </h5>

@@ -254,6 +254,30 @@ def test_renders_expected_html(tag_counter, expected_html):
     )
 
 
+def test_selected_tags_are_not_links():
+    req_url = hyperlink.URL.from_text("http://localhost:1234/?tag=alfa&tag=bravo")
+
+    tag_counter = {"alfa": 1, "bravo": 2, "charlie": 3}
+
+    expected_html = """
+    <ul>
+      <li>alfa (1)</li>
+      <li>bravo (2)</li>
+      <li><a href="?tag=alfa&tag=bravo&tag=charlie">charlie</a> (3)</li>
+    </ul>
+    """
+
+    actual_html = render_tags(req_url=req_url, tag_counter=tag_counter)
+
+    actual_soup = bs4.BeautifulSoup(actual_html, "html.parser")
+    expected_soup = bs4.BeautifulSoup(expected_html, "html.parser")
+
+    assert (
+        actual_soup.prettify(formatter="minimal").strip() ==
+        expected_soup.prettify(formatter="minimal").strip()
+    )
+
+
 def tag_strategy():   # pragma: no cover
     return lists(
         text(alphabet=string.ascii_lowercase, min_size=1, max_size=1),

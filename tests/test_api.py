@@ -457,3 +457,131 @@ class TestListView:
         api = service.create_api(tagged_store, store_root, default_view="grid")
         resp = api.requests.get("/", stream=True)
         self._assert_is_grid(resp)
+
+
+def test_default_sort_is_newest_first(api):
+    for title in ("xyz_1", "abc_2", "mno_3"):
+        api.requests.post(
+            "/upload",
+            files={"file": b"hello world"},
+            data={"title": title}
+        )
+
+    resp = api.requests.get("/", stream=True)
+    html_soup = bs4.BeautifulSoup(resp.raw.read(), "html.parser")
+
+    titles = [
+        div.text.strip()
+        for div in html_soup.find_all("div", attrs={"class": "document__title"})
+    ]
+
+    assert titles == ["mno_3", "abc_2", "xyz_1"]
+
+
+@pytest.mark.parametrize("sort_by, expected_titles", [
+    ("title:a_z", ["abc_2", "mno_3", "xyz_1"]),
+    ("title:z_a", ["xyz_1", "mno_3", "abc_2"]),
+    ("date_created:newest_first", ["mno_3", "abc_2", "xyz_1"]),
+    ("date_created:oldest_first", ["xyz_1", "abc_2", "mno_3"]),
+])
+def test_respects_sort_order(api, sort_by, expected_titles):
+    # The sort order of titles should be different to the sort order
+    # by date.
+    for title in ("xyz_1", "abc_2", "mno_3"):
+        api.requests.post(
+            "/upload",
+            files={"file": b"hello world"},
+            data={"title": title}
+        )
+
+    resp = api.requests.get("/", params={"sort": sort_by}, stream=True)
+
+    html_soup = bs4.BeautifulSoup(resp.raw.read(), "html.parser")
+
+    titles = [
+        div.text.strip()
+        for div in html_soup.find_all("div", attrs={"class": "document__title"})
+    ]
+
+    assert titles == expected_titles
+
+
+@pytest.mark.parametrize("sort_by", [
+    "title:ascending",
+    "date_created:descending",
+    "ascending",
+    "x:y:z",
+])
+def test_invalid_sort_params_are_rejected(api, sort_by):
+    resp = api.requests.get("/", params={"sort": sort_by})
+
+    assert resp.status_code == 400
+    assert resp.json() == {"error": f"Unrecognised sort parameter: {sort_by}"}
+
+
+class TestCookies:
+    """Test the use of cookies to collapse/expand certain areas."""
+
+    def test_document_form_is_collapsed_by_default(self, api):
+        resp = api.requests.get("/", stream=True)
+
+        html_soup = bs4.BeautifulSoup(resp.raw.read(), "html.parser")
+
+        div = html_soup.find("div", attrs={"id": "collapseDocumentForm"})
+        assert div.attrs["class"] == ["collapse"]
+
+    @pytest.mark.parametrize("cookie_value, expected_classes", [
+        ("true", ["collapse", "show"]),
+        ("false", ["collapse"]),
+    ])
+    def test_form_collapse_show_expands_document_form(
+        self, api, cookie_value, expected_classes
+    ):
+        resp = api.requests.get(
+            "/",
+            stream=True,
+            cookies={"form-collapse__show": cookie_value}
+        )
+
+        html_soup = bs4.BeautifulSoup(resp.raw.read(), "html.parser")
+
+        div = html_soup.find("div", attrs={"id": "collapseDocumentForm"})
+        assert div.attrs["class"] == expected_classes
+
+    def test_tag_browser_is_collapsed_by_default(self, api):
+        api.requests.post(
+            "/upload",
+            files={"file": b"hello world"},
+            data={"tags": "alfa bravo charlie"}
+        )
+
+        resp = api.requests.get("/", stream=True)
+
+        html_soup = bs4.BeautifulSoup(resp.raw.read(), "html.parser")
+
+        div = html_soup.find("div", attrs={"id": "collapseTagList"})
+        assert div.attrs["class"] == ["collapse"]
+
+    @pytest.mark.parametrize("cookie_value, expected_classes", [
+        ("true", ["collapse", "show"]),
+        ("false", ["collapse"]),
+    ])
+    def test_form_collapse_show_expands_tag_browser(
+        self, api, cookie_value, expected_classes
+    ):
+        api.requests.post(
+            "/upload",
+            files={"file": b"hello world"},
+            data={"tags": "alfa bravo charlie"}
+        )
+
+        resp = api.requests.get(
+            "/",
+            stream=True,
+            cookies={"tags-collapse__show": cookie_value}
+        )
+
+        html_soup = bs4.BeautifulSoup(resp.raw.read(), "html.parser")
+
+        div = html_soup.find("div", attrs={"id": "collapseTagList"})
+        assert div.attrs["class"] == expected_classes

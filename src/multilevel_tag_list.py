@@ -28,6 +28,8 @@ def render_tags(tag_counter, req_url):
     def _format_tag(tag):
         return _query_str_only(req_url.add("tag", tag))
 
+    selected_tags = req_url.get("tag")
+
     result = ""
 
     prev_tags = []
@@ -42,9 +44,11 @@ def render_tags(tag_counter, req_url):
         show_lower_tiers = False
 
         for tier in tags:
-            # If we're on a tag's last tier, we need to return a link to the tag,
-            # otherwise plain text is returned.
-            if len(tags) == pos + 1:
+            # If we're on a tag's last tier and this tag isn't already selected,
+            # we need to return a link to the tag, otherwise plain text is returned.
+            if tag_name in selected_tags:
+                tier_code = f'{tier} ({count})'
+            elif len(tags) == pos + 1:
                 tier_code = f'<a href="{_format_tag(tag_name)}">{tier}</a> ({count})'
             else:
                 tier_code = f'<span class="non-link-tag">{tier}</span>'
