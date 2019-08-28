@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.16.0 - 2019-08-29
+
+Add support for pagination in the GUI app.
+
+If you have more than 250 documents, they get broken into pages to reduce the number of items on each page (and so making the app faster and more responsive!).
+
 ## v1.15.0 - 2019-08-28
 
 This release makes it easier to change the document view (table/grid) and to change the sort order of documents (by title or date added).  There are new menus in the top navbar for controlling both options.
