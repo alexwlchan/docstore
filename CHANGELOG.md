@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.14.3 - 2019-08-28
+
+More internal refactoring, this time to use docopt instead of CLI for the command-line parsing.
+
 ## v1.14.2 - 2019-08-26
 
 More internal refactoring to improve the speed of the test suite.
