@@ -189,7 +189,7 @@ def create_api(
         view_options = viewer.ViewOptions(
             list_view=req.params.get("view", default_view),
             tag_view=tag_view,
-            expand_document_form=(req.cookies.get('tags-collapse__show') == 'true'),
+            expand_document_form=(req.cookies.get('form-collapse__show') == 'true'),
             expand_tag_list=(req.cookies.get('tags-collapse__show') == 'true')
         )
 
