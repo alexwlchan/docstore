@@ -11,15 +11,6 @@ from search_helpers import SearchOptions
 import viewer
 
 
-PARAMS = [
-    [("view", "table"), ("tag", "x")],
-    [("sort", "title:asc")],
-    [("sort", "title:desc")],
-    [("sort", "date_created:asc")],
-    [("sort", "date_created:desc")],
-]
-
-
 def get_html(
     documents=[],
     tag_aggregation={},
@@ -166,9 +157,7 @@ def test_renders_title():
     assert header.text == title
 
 
-# TODO: Pass proper params here
-@pytest.mark.parametrize("params", PARAMS)
-def test_all_urls_are_relative(document, params):
+def test_all_urls_are_relative(document):
     document["tags"] = ["x", "y"]
 
     html_soup = get_html_soup(documents=[document])
@@ -239,3 +228,94 @@ def test_renders_titles_with_pretty_quotes(document):
     html_soup = get_html_soup(documents=[document])
     title = html_soup.find("div", attrs={"class": "document__title"})
     assert "Isn’t it a wonderful day? — an optimist" in title.text
+
+
+class TestNavbarOptions:
+    @staticmethod
+    def get_sort_options(html_soup):
+        dropdown = html_soup.find("li", attrs={"id": "navbarSortBy"})
+
+        items = dropdown.find("div", attrs={"class": "dropdown-menu"}).find_all("a")
+
+        return {
+            it.text: it.attrs["href"] for it in items
+        }
+
+    @staticmethod
+    def get_view_options(html_soup):
+        dropdown = html_soup.find("li", attrs={"id": "navbarViewAs"})
+
+        items = dropdown.find("div", attrs={"class": "dropdown-menu"}).find_all("a")
+
+        return {
+            it.text: it.attrs["href"] for it in items
+        }
+
+    @staticmethod
+    def assert_query_param_equal(query1, query2):
+        assert (
+            sorted(hyperlink.URL.from_text(query1).query) ==
+            sorted(hyperlink.URL.from_text(query2).query)
+        )
+
+    @pytest.mark.parametrize("req_url", [
+        "http://localhost:1234",
+        "http://localhost:1234?sort=title:a_z",
+    ])
+    def test_sets_sort_option(self, req_url):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text(req_url)
+        )
+
+        assert self.get_sort_options(html_soup) == {
+            "title (a-z)": "?sort=title:a_z",
+            "title (z-a)": "?sort=title:z_a",
+            "date added (newest first)": "?sort=date_added:newest_first",
+            "date added (oldest first)": "?sort=date_added:oldest_first",
+        }
+
+    def test_preserves_other_query_params_setting_sort_option(self):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text(
+                "http://localhost:1234?tag=x&tag=y"
+            )
+        )
+
+        expected = {
+            "title (a-z)": "?tag=x&tag=y&sort=title:a_z",
+            "title (z-a)": "?tag=x&tag=y&sort=title:z_a",
+            "date added (newest first)": "?tag=x&tag=y&sort=date_added:newest_first",
+            "date added (oldest first)": "?tag=x&tag=y&sort=date_added:oldest_first",
+        }
+
+        for label, url in self.get_sort_options(html_soup).items():
+            self.assert_query_param_equal(url, expected[label])
+
+    @pytest.mark.parametrize("req_url", [
+        "http://localhost:1234",
+        "http://localhost:1234?view=table",
+    ])
+    def test_sets_view_option(self, req_url):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text(req_url)
+        )
+
+        assert self.get_view_options(html_soup) == {
+            "table": "?view=table",
+            "grid": "?view=grid",
+        }
+
+    def test_preserves_other_query_params_setting_view_option(self):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text(
+                "http://localhost:1234?tag=x&tag=y"
+            )
+        )
+
+        expected = {
+            "table": "?tag=x&tag=y&view=table",
+            "grid": "?tag=x&tag=y&view=grid",
+        }
+
+        for label, url in self.get_view_options(html_soup).items():
+            self.assert_query_param_equal(url, expected[label])
