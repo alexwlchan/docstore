@@ -556,3 +556,29 @@ class TestPagination:
         pagination_div = html_soup.find("nav", attrs={"id": "pagination"})
         next_li = pagination_div.find("li", attrs={"id": "pagination__next"})
         assert next_li.find("a").attrs["href"] == expected_url
+
+    def test_only_shows_relevant_documents(self):
+        documents = [
+            {
+                "title": f"document {i}",
+                "file_identifier": f"{i}/{i}.pdf",
+                "date_created": dt.datetime.now().isoformat()
+            }
+            for i in range(1, 20)
+        ]
+
+        html_soup = get_html_soup(
+            documents=documents,
+            pagination=Pagination(
+                page_size=5,
+                current_page=2,
+                total_documents=len(documents)
+            )
+        )
+
+        titles = [
+            div.text.strip()
+            for div in html_soup.find_all("div", attrs={"class": "document__title"})
+        ]
+
+        assert titles == [f"document {i}" for i in range(6, 11)]

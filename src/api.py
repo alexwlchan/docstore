@@ -18,6 +18,7 @@ from exceptions import UserError
 from file_manager import FileManager, ThumbnailManager
 from index_helpers import index_new_document
 import migrations
+from pagination import Pagination
 import search_helpers
 from storage import JsonTaggedObjectStore
 import viewer
@@ -152,6 +153,9 @@ def create_api(
     def list_documents(req, resp):
         tag_query = req.params.get_list("tag", [])
 
+        page = int(req.params.get("page", "1"))
+        page_size = int(req.params.get("page_size", "200"))
+
         matching_documents = tagged_store.query(tag_query)
 
         sort_param = req.params.get("sort", "date_created:newest_first")
@@ -170,11 +174,13 @@ def create_api(
             resp.media = {"error": f"Unrecognised sort parameter: {sort_param}"}
             return
 
-        display_documents = sorted(
+        sorted_documents = sorted(
             matching_documents.values(),
             key=lambda doc: doc.get(sort_field, ""),
             reverse=sort_order_reverse
         )
+
+        display_documents = sorted_documents
 
         tag_aggregation = search_helpers.get_tag_aggregation(display_documents)
 
@@ -193,6 +199,12 @@ def create_api(
             expand_tag_list=(req.cookies.get('tags-collapse__show') == 'true')
         )
 
+        pagination = Pagination(
+            page_size=page_size,
+            current_page=page,
+            total_documents=len(display_documents)
+        )
+
         resp.content = viewer.render_document_list(
             documents=display_documents,
             tag_aggregation=tag_aggregation,
@@ -201,6 +213,7 @@ def create_api(
             title=display_title,
             req_url=req_url,
             accent_color=accent_color,
+            pagination=pagination,
             api_version=__version__
         )
 

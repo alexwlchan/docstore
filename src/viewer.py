@@ -76,8 +76,13 @@ def render_document_list(
     pagination,
     accent_color="#007bff"
 ):
+    idx_start = pagination.page_size * (pagination.current_page - 1)
+    idx_end = pagination.page_size * pagination.current_page
+
+    display_documents = documents[idx_start:idx_end]
+
     return TEMPLATE.render(
-        display_documents=documents,
+        display_documents=display_documents,
         view_options=view_options,
         tag_query=tag_query,
         tag_aggregation=tag_aggregation,
