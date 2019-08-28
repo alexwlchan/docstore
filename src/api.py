@@ -282,7 +282,7 @@ def create_api(
     return api
 
 
-def run_api(config):
+def run_api(config):  # pragma: no cover
     tagged_store = JsonTaggedObjectStore(config.root / "documents.json")
 
     migrations.apply_migrations(root=config.root, object_store=tagged_store)
