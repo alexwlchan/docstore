@@ -14,8 +14,8 @@
           <div class="dropdown-menu" aria-labelledby="navbarSortByDropdown">
             <a class="dropdown-item" href="{{ req_url.set('sort', 'title:a_z') | query_str_only }}">title (a-z)</a>
             <a class="dropdown-item" href="{{ req_url.set('sort', 'title:z_a') | query_str_only }}">title (z-a)</a>
-            <a class="dropdown-item" href="{{ req_url.set('sort', 'date_added:newest_first') | query_str_only }}">date added (newest first)</a>
-            <a class="dropdown-item" href="{{ req_url.set('sort', 'date_added:oldest_first') | query_str_only }}">date added (oldest first)</a>
+            <a class="dropdown-item" href="{{ req_url.set('sort', 'date_created:newest_first') | query_str_only }}">date created (newest first)</a>
+            <a class="dropdown-item" href="{{ req_url.set('sort', 'date_created:oldest_first') | query_str_only }}">date created (oldest first)</a>
           </div>
         </li>
         <li class="nav-item dropdown float-right" id="navbarViewAs">

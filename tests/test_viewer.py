@@ -270,8 +270,8 @@ class TestNavbarOptions:
         assert self.get_sort_options(html_soup) == {
             "title (a-z)": "?sort=title:a_z",
             "title (z-a)": "?sort=title:z_a",
-            "date added (newest first)": "?sort=date_added:newest_first",
-            "date added (oldest first)": "?sort=date_added:oldest_first",
+            "date created (newest first)": "?sort=date_created:newest_first",
+            "date created (oldest first)": "?sort=date_created:oldest_first",
         }
 
     def test_preserves_other_query_params_setting_sort_option(self):
@@ -284,8 +284,8 @@ class TestNavbarOptions:
         expected = {
             "title (a-z)": "?tag=x&tag=y&sort=title:a_z",
             "title (z-a)": "?tag=x&tag=y&sort=title:z_a",
-            "date added (newest first)": "?tag=x&tag=y&sort=date_added:newest_first",
-            "date added (oldest first)": "?tag=x&tag=y&sort=date_added:oldest_first",
+            "date created (newest first)": "?tag=x&tag=y&sort=date_created:newest_first",
+            "date created (oldest first)": "?tag=x&tag=y&sort=date_created:oldest_first",
         }
 
         for label, url in self.get_sort_options(html_soup).items():

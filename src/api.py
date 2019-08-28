@@ -151,20 +151,33 @@ def create_api(
     @api.route("/")
     def list_documents(req, resp):
         tag_query = req.params.get_list("tag", [])
-        sort_order = req.params.get("sort", "date_created:desc")
 
         search_options = search_helpers.SearchOptions(
-            tag_query=tag_query,
-            sort_order=tuple(sort_order.split(":"))
+            tag_query=tag_query
         )
 
         matching_documents = tagged_store.query(tag_query)
 
-        sort_field, sort_order = tuple(sort_order.split(":"))
+        sort_param = req.params.get("sort", "date_created:newest_first")
+
+        sort_options = {
+            "title:a_z": ("title", False),
+            "title:z_a": ("title", True),
+            "date_created:oldest_first": ("date_created", False),
+            "date_created:newest_first": ("date_created", True),
+        }
+
+        try:
+            sort_field, sort_order_reverse = sort_options[sort_param]
+        except KeyError:
+            resp.status_code = api.status_codes.HTTP_400
+            resp.media = {"error": f"Unrecognised sort parameter: {sort_param}"}
+            return
+
         display_documents = sorted(
-            list(matching_documents.values()),
+            matching_documents.values(),
             key=lambda doc: doc.get(sort_field, ""),
-            reverse=(sort_order == "desc")
+            reverse=sort_order_reverse
         )
 
         tag_aggregation = search_helpers.get_tag_aggregation(display_documents)

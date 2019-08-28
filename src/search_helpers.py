@@ -8,7 +8,6 @@ import attr
 @attr.s
 class SearchOptions:
     tag_query = attr.ib(default=())
-    sort_order = attr.ib(default=("indexed_at", "desc"))
 
 
 def get_tag_aggregation(objects):
