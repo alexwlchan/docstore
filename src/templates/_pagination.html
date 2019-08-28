@@ -1,4 +1,4 @@
-{% if pagination.total_pages > 1 %}
+{% if pagination.total_pages > 1 or (pagination.current_page > pagination.total_pages and pagination.total_documents > 0) %}
 <nav id="pagination" aria-label="Page navigation">
   <ul class="pagination justify-content-center">
     <li class="page-item{% if not pagination.has_prev %} disabled{% endif %}" id="pagination__prev">

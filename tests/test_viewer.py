@@ -444,6 +444,28 @@ class TestPagination:
 
         assert html_soup.find("nav", attrs={"id": "pagination"}) is None
 
+    def test_omits_pagination_if_no_documents(self):
+        html_soup = get_html_soup(
+            pagination=Pagination(
+                page_size=25,
+                current_page=1,
+                total_documents=0
+            )
+        )
+
+        assert html_soup.find("nav", attrs={"id": "pagination"}) is None
+
+    def test_shows_pagination_if_beyond_last_page(self):
+        html_soup = get_html_soup(
+            pagination=Pagination(
+                page_size=25,
+                current_page=25,
+                total_documents=10
+            )
+        )
+
+        assert html_soup.find("nav", attrs={"id": "pagination"}) is not None
+
     @pytest.mark.parametrize("current_page, expected_classes", [
         (1, ["page-item", "disabled"]),
         (2, ["page-item"]),
