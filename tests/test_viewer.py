@@ -351,7 +351,7 @@ def test_includes_tags_in_title_if_present():
     assert html_soup.find("title").text.strip() == f"Tagged with x, y, z — {title}"
 
 
-def test_selected_tags_are_not_clickable_in_tag_cloud(document):
+def test_selected_tags_are_not_links_in_tag_cloud(document):
     document["tags"] = ["a", "b", "c", "d"]
 
     html_soup = get_html_soup(
@@ -362,17 +362,7 @@ def test_selected_tags_are_not_clickable_in_tag_cloud(document):
     )
 
     tag_cloud = html_soup.find("div", attrs={"id": "collapseTagList"})
-    tag_is_link = {
-        span_tag.text.strip(): span_tag.find("a") is not None
-        for span_tag in tag_cloud.find_all("span", attrs={"class": "tag"})
-    }
-
-    assert tag_is_link == {
-        "a": False,
-        "b": False,
-        "c": True,
-        "d": True,
-    }
+    assert [a_tag.text for a_tag in tag_cloud.find_all("a")] == ["c", "d"]
 
 
 def test_includes_list_of_filtered_tags():

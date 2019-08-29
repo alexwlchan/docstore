@@ -7,11 +7,11 @@
     {% elif view_options.tag_view == "cloud" %}
       <div id="tag_cloud" style="margin-bottom: 0;">
         {% for tag in tag_aggregation|sort %}
-          <span class="tag" rel="{{ tag_aggregation[tag] }}">
+          <span>
           {% if tag in tag_query %}
-          {{ tag }}
+          <span  class="tag" rel="{{ tag_aggregation[tag] }}">{{ tag }}</span>
           {% else %}
-          <a href="{{ req_url.add('tag', tag) | query_str_only }}">{{ tag }}</a>
+          <a href="{{ req_url.add('tag', tag) | query_str_only }}" class="tag" rel="{{ tag_aggregation[tag] }}">{{ tag }}</a>
           {% endif %}
           </span>
         {% endfor %}
