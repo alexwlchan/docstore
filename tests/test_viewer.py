@@ -614,3 +614,55 @@ class TestPagination:
         ]
 
         assert titles == [f"document {i}" for i in range(6, 11)]
+
+
+class TestLinksResetPagination:
+    @pytest.mark.parametrize("req_url, expected_url", [
+        ("http://localhost:1234?page=4&tag=alfa", "?"),
+        ("http://localhost:1234?page=4&page_size=3&tag=alfa", "?page_size=3"),
+        ("http://localhost:1234?page=4&tag=alfa&tag=bravo", "?tag=bravo"),
+        ("http://localhost:1234?page=4&tag=alfa&tag=bravo&page_size=3",
+         "?tag=bravo&page_size=3"),
+    ])
+    def test_removes_page_pagesize_in_tag_filter(self, req_url, expected_url):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text(req_url),
+            tag_query=["alfa"]
+        )
+
+        alert = html_soup.find("div", attrs={"class": ["alert", "tag_query"]})
+        a_tag = alert.find("a", attrs={"id": "removeTag:alfa"})
+
+        assert a_tag.attrs["href"] == expected_url
+
+    @pytest.mark.parametrize("tag_view", ["list", "cloud"])
+    @pytest.mark.parametrize("req_url, expected_url", [
+        ("http://localhost:1234?page=4", "?tag=alfa"),
+        ("http://localhost:1234?page=4&page_size=3", "?page_size=3&tag=alfa"),
+        ("http://localhost:1234?page_size=5", "?page_size=5&tag=alfa"),
+    ])
+    def test_removes_page_pagesize_in_tag_cloud(self, tag_view, req_url, expected_url):
+        html_soup = get_html_soup(
+            req_url=hyperlink.URL.from_text(req_url),
+            tag_aggregation={"alfa": 1},
+            view_options=viewer.ViewOptions(tag_view=tag_view)
+        )
+
+        tag_list = html_soup.find("div", attrs={"id": "collapseTagList"})
+        assert tag_list.find("a").attrs["href"] == expected_url
+
+    def test_removes_page_pagesize_in_document_tags(self, document):
+        document["tags"] = ["alfa", "bravo"]
+        html_soup = get_html_soup(
+            documents=[document],
+            req_url=hyperlink.URL.from_text("http://localhost:1234?page=4")
+        )
+
+        document_tags = html_soup.find(
+            "div", attrs={"class": "document__metadata__tags"})
+        links = [a_tag.attrs["href"] for a_tag in document_tags.find_all("a")]
+
+        assert links == [
+            "?tag=alfa",
+            "?tag=bravo",
+        ]

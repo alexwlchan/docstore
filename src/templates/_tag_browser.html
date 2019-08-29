@@ -9,9 +9,9 @@
         {% for tag in tag_aggregation|sort %}
           <span>
           {% if tag in tag_query %}
-          <span  class="tag" rel="{{ tag_aggregation[tag] }}">{{ tag }}</span>
+          <span class="tag" rel="{{ tag_aggregation[tag] }}">{{ tag }}</span>
           {% else %}
-          <a href="{{ req_url.add('tag', tag) | query_str_only }}" class="tag" rel="{{ tag_aggregation[tag] }}">{{ tag }}</a>
+          <a href="{{ req_url.add('tag', tag).remove('page') | query_str_only }}" class="tag" rel="{{ tag_aggregation[tag] }}">{{ tag }}</a>
           {% endif %}
           </span>
         {% endfor %}

@@ -26,7 +26,7 @@ def render_tags(tag_counter, req_url):
         return ""
 
     def _format_tag(tag):
-        return _query_str_only(req_url.add("tag", tag))
+        return _query_str_only(req_url.add("tag", tag).remove("page"))
 
     selected_tags = req_url.get("tag")
 
