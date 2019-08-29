@@ -1,4 +1,4 @@
-a {
+a, #pagination .page-item:not(.disabled) a {
   color: $accent-color;
 
   &:hover {
