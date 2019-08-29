@@ -25,16 +25,14 @@ main.documents {
 
       &__info {
         font-size: 14px;
+
+        &_tag {
+          padding-right: 3px;
+        }
       }
 
       h5 {
         font-weight: 400;
-      }
-    }
-
-    &__metadata__tags {
-      &_tag {
-        margin-right: 2px;
       }
     }
   }
