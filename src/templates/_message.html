@@ -19,7 +19,8 @@
 
   <script>
     var url = new URL(window.location.href);
-    url.searchParams.delete("_message");
+    url.searchParams.delete("_message.id");
+    url.searchParams.delete("_message.error");
     window.history.pushState({ path: url.href }, "", url.href);
   </script>
 {% endif %}
