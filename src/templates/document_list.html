@@ -17,7 +17,7 @@
         {% for tag in tag_query %}
           <span class="tag_query__tag">
             <strong>{{ tag }}</strong>
-            <a class="text-danger" id="removeTag:{{ tag }}" href="{{ req_url.remove('tag', tag) | query_str_only }}">x</a>
+            <a class="text-danger" id="removeTag:{{ tag }}" href="{{ req_url.remove('tag', tag).remove('page') | query_str_only }}">x</a>
           </span>
         {% endfor %}
       </div>
@@ -70,7 +70,7 @@
                 {% for tag in doc["tags"]|sort %}
                 <span class="document__metadata__info_tag">
                 {% if tag not in tag_query %}
-                  <a href="{{ req_url.add('tag', tag) | query_str_only }}">
+                  <a href="{{ req_url.add('tag', tag).remove('page') | query_str_only }}">
                 {% endif %}
                 #{{ tag }}
                 {%- if tag not in tag_query %}</a>{% endif %}
