@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.16.2 - 2019-08-29
+
+Fix a bug where alerts about new uploads weren't being dismissed correctly.
+
 ## v1.16.1 - 2019-08-29
 
 Fix a pair of bugs around pagination, or "what should have been in v1.16.0".
