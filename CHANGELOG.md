@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.16.3 - 2019-08-30
+
+Cosmetic tweak: use curly quotes/Smartypants when displaying the title of a docstore insatnce.
+
 ## v1.16.2 - 2019-08-29
 
 Fix a bug where alerts about new uploads weren't being dismissed correctly.
