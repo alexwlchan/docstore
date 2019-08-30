@@ -155,12 +155,15 @@ class TestUserMessages:
         assert danger_div.text.strip().startswith("Unable to store document: BOOM")
 
 
-def test_renders_title():
-    title = "my great docstore"
+@pytest.mark.parametrize("title, expected_title", [
+    ("my docstore instance", "my docstore instance"),
+    ("lexie's documents", "lexie’s documents"),
+])
+def test_renders_title(title, expected_title):
     html_soup = get_html_soup(title=title)
 
     header = html_soup.find("a", attrs={"class": "navbar-brand"})
-    assert header.text == title
+    assert header.text == expected_title
 
 
 def test_all_urls_are_relative(document):
@@ -235,7 +238,7 @@ def test_omits_source_url_if_empty(document):
     assert html_soup.find("div", attrs={"id": "document__metadata__source_url"}) is None
 
 
-def test_renders_titles_with_pretty_quotes(document):
+def test_renders_document_title_with_pretty_quotes(document):
     document["title"] = "Isn't it a wonderful day? -- an optimist"
 
     html_soup = get_html_soup(documents=[document])
@@ -334,11 +337,14 @@ class TestNavbarOptions:
             self.assert_query_param_equal(url, expected[label])
 
 
-def test_uses_title_in_head():
-    title = "my docstore instance"
+@pytest.mark.parametrize("title, expected_title", [
+    ("my docstore instance", "my docstore instance"),
+    ("lexie's documents", "lexie’s documents"),
+])
+def test_uses_title_in_head(title, expected_title):
     html_soup = get_html_soup(title=title)
 
-    assert html_soup.find("title").text.strip() == title
+    assert html_soup.find("title").text.strip() == expected_title
 
 
 def test_includes_tags_in_title_if_present():
