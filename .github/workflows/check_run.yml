@@ -1,0 +1,12 @@
+on: check_run
+name: merge_and_cleanup
+jobs:
+  build:
+    name: When tests pass, merge and cleanup
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: When tests pass, merge and cleanup
+      uses: alexwlchan/auto_merge_my_pull_requests@development
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
