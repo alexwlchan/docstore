@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import datetime as dt
 import hashlib
 import logging
 import json
@@ -49,10 +50,10 @@ for name, root in list_docstore_instances("/mnt/docstore"):
 
         recognised_files.add(file_identifier)
 
-        if actual_sha256 != doc_data["sha256_checksum"]:
+        if "sha256:" + actual_sha256 != doc_data["checksum"]:
             logger.warn(
                 "SHA256 checksums for %s do not match: %s != %s",
-                doc_id, actual_sha256, doc_data["sha256_checksum"]
+                doc_id, actual_sha256, doc_data["checksum"]
             )
             warnings += 1
 
@@ -74,8 +75,12 @@ for name, root in list_docstore_instances("/mnt/docstore"):
                 logger.warning("Detected unrecognised file: %s", file_identifier)
 
 
-with tarfile.open(name="snapshot.%s.tar.gz" % int(time.time()), mode="w") as tf:
+tarname = "snapshot.%s.tar.gz" % dt.datetime.now().strftime("%Y-%m-%d")
+
+with tarfile.open(name=os.path.join("/mnt/docstore", tarname), mode="w") as tf:
     for name, root in list_docstore_instances("/mnt/docstore"):
         tf.add(root, arcname=os.path.join("docstore", name))
 
     logger.info("Created archive as %s", os.path.basename(tf.name))
+    logger.info("To download locally:\n\nscp alexwlchan@helene.linode:/mnt/docstore/%s ~/Documents/backups/docstore/%s",
+        tarname, tarname)
