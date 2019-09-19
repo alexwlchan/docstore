@@ -81,6 +81,10 @@ main.documents {
         position: absolute;
         bottom: 0;
         left:   0;
+
+      }
+
+      &:not(.document__notitle)::after {
         background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
       }
 

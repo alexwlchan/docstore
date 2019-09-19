@@ -29,7 +29,7 @@
       <main class="documents documents__view_{{ view_options.list_view }}">
       {% for doc in display_documents %}
       <section>
-        <div class="document card">
+        <div class="document card {% if not doc.title %}document__notitle{% endif %}">
           <div class="document__image">
             <a href="{{ doc | file_url }}" target="_blank">
             {% if "thumbnail_identifier" in doc %}
