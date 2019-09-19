@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.16.4 - 2019-09-19
+
+Improve the look of thumbnails in the grid view that don't have a title.
+
 ## v1.16.3 - 2019-08-30
 
 Cosmetic tweak: use curly quotes/Smartypants when displaying the title of a docstore insatnce.
