@@ -2,6 +2,7 @@
 
 import datetime as dt
 import pathlib
+import random
 import shutil
 import sys
 
@@ -9,7 +10,7 @@ import pytest
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
-import api as service  # noqa
+import api, config  # noqa
 from file_manager import FileManager  # noqa
 from storage import MemoryTaggedObjectStore  # noqa
 
@@ -50,8 +51,27 @@ def file_identifier(store_root, pdf_path):
 
 
 @pytest.fixture()
-def api(tagged_store, store_root):
-    return service.create_api(tagged_store, root=store_root)
+def app(store_root, tagged_store):
+    docstore = api.Docstore(
+        tagged_store=tagged_store,
+        config=config.DocstoreConfig(
+            root=store_root,
+            title="test docstore instance",
+            list_view=random.choice(["table", "grid"]),
+            tag_view=random.choice(["list", "cloud"]),
+            accent_color="#ff0000"
+        )
+    )
+
+    # See https://flask.palletsprojects.com/en/1.1.x/testing/#the-testing-skeleton:
+    #
+    #   What [setting this flag] does is disable error catching during
+    #   request handling, so that you get better error reports when performing
+    #   test requests against the application.
+    #
+    docstore.app.config['TESTING'] = True
+
+    return docstore.app.test_client()
 
 
 @pytest.fixture

@@ -2,22 +2,30 @@
 # -*- encoding: utf-8
 
 import json
+import pathlib
 import sys
 import urllib.parse
+import uuid
 
 from flask import Flask, jsonify, redirect, request
 import hyperlink
 from whitenoise import WhiteNoise
 
-import cli, css, index_helpers, migrations, search_helpers, viewer
+import cli
+import css
+from exceptions import UserError
 from file_manager import FileManager, ThumbnailManager
+import index_helpers
+import migrations
 from pagination import Pagination
+import search_helpers
 from storage import JsonTaggedObjectStore
 from version import __version__
+import viewer
 
 
 class Docstore:
-    def __init__(self, tagged_store, root, config):
+    def __init__(self, tagged_store, config):
         self.tagged_store = tagged_store
         self.config = config
 
@@ -32,22 +40,38 @@ class Docstore:
         )
 
         for (static_dir, prefix) in [
-            (root / "files", "/files"),
-            (root / "thumbnails", "/thumbnails"),
-            ("static", "/static"),
+            (config.root / "files", "/files"),
+            (config.root / "thumbnails", "/thumbnails"),
+            (pathlib.Path("static"), "/static"),
         ]:
-            self.whitenoise_app.add_files(static_dir, prefix=prefix)
+            if static_dir.exists():
+                self.whitenoise_app.add_files(static_dir, prefix=prefix)
 
-        self.file_manager = FileManager(root / "files")
-        self.thumbnail_manager = ThumbnailManager(root / "thumbnails")
+        self.file_manager = FileManager(config.root / "files")
+        self.thumbnail_manager = ThumbnailManager(config.root / "thumbnails")
 
         @self.app.route("/")
         def list_documents():
             return self._list_documents()
 
+        @self.app.route("/documents/<doc_id>")
+        def get_document(doc_id):
+            try:
+                retrieved_doc = tagged_store.objects[doc_id]
+            except KeyError:
+                return jsonify({"error": "Document %s not found!" % doc_id}), 404
+
+            return jsonify({
+                k: (str(v) if isinstance(v, pathlib.Path) else v)
+                for k, v in retrieved_doc.items()
+            })
+
         @self.app.route("/upload", methods=["POST"])
         def upload_document():
-            resp = self._upload_document()
+            resp, status_code = self._upload_document()
+
+            if status_code != 201:
+                return jsonify(resp), status_code
 
             # If the request came through the browser rather than via
             # a script, redirect back to the original page (which we get
@@ -58,14 +82,11 @@ class Docstore:
                 for key, value in resp.items():
                     url = url.add(f"_message.{key}", value)
 
-                return redirect(
-                    location=str(url),
-                    response=resp
-                )
+                return redirect(location=str(url), response=jsonify(resp))
             except KeyError:
                 pass
 
-            return 201, jsonify(resp)
+            return jsonify(resp), 201
 
     @property
     def whitenoise_app(self):
@@ -118,8 +139,8 @@ class Docstore:
         try:
             sort_field, sort_order_reverse = sort_options[sort_param]
         except KeyError:
-            return 400, jsonify({
-                "error": f"Unrecognised sort parameter: {sort_param}"})
+            return jsonify({
+                "error": f"Unrecognised sort parameter: {sort_param}"}), 400
 
         sorted_documents = sorted(
             matching_documents.values(),
@@ -140,8 +161,8 @@ class Docstore:
             pass
 
         view_options = viewer.ViewOptions(
-            list_view=request.args.get("view", config.list_view),
-            tag_view=config.tag_view,
+            list_view=request.args.get("view", self.config.list_view),
+            tag_view=self.config.tag_view,
             expand_document_form=(request.cookies.get('form-collapse__show') == 'true'),
             expand_tag_list=(request.cookies.get('tags-collapse__show') == 'true')
         )
@@ -157,39 +178,30 @@ class Docstore:
             tag_aggregation=tag_aggregation,
             view_options=view_options,
             tag_query=tag_query,
-            title=config.title,
+            title=self.config.title,
             req_url=req_url,
-            accent_color=config.accent_color,
+            accent_color=self.config.accent_color,
             pagination=pagination,
             api_version=__version__
         )
 
     def _upload_document(self):
-        # This catches the error that gets thrown if the user doesn't include
-        # any files in their upload.
         try:
-            user_data = request.files["file"]
-        except NonMultipartContentTypeException as err:
-            return 400, jsonify({"error": str(err)})
+            prepared_data = self._prepare_form_data()
+        except UserError as err:
+            return {"error": str(err)}, 400
 
         doc_id = str(uuid.uuid4())
-
-        try:
-            prepared_data = self._prepare_form_data(user_data)
-            doc = index_helpers.index_new_document(
-                self.tagged_store,
-                self.file_manager,
-                doc_id=doc_id,
-                doc=prepared_data
-            )
-        except UserError as err:
-            resp.media = {"error": str(err)}
-            resp.status_code = api.status_codes.HTTP_400
-            return
+        doc = index_helpers.index_new_document(
+            self.tagged_store,
+            self.file_manager,
+            doc_id=doc_id,
+            doc=prepared_data
+        )
 
         self.whitenoise_app.add_file_to_dictionary(
             url="/" + str(doc["file_identifier"]),
-            path=str(file_manager.root / doc["file_identifier"])
+            path=str(self.file_manager.root / doc["file_identifier"])
         )
 
         try:
@@ -197,7 +209,7 @@ class Docstore:
         except Exception:
             pass
 
-        return 201, jsonify({"id": doc_id})
+        return {"id": doc_id}, 201
 
     def _create_doc_thumbnail(self, doc_id, doc):
         absolute_file_identifier = self.file_manager.root / doc["file_identifier"]
@@ -211,44 +223,38 @@ class Docstore:
 
         self.whitenoise_app.add_file_to_dictionary(
             url="/" + str(doc["thumbnail_identifier"]),
-            path=str(thumbnail_manager.root / doc["thumbnail_identifier"])
+            path=str(self.thumbnail_manager.root / doc["thumbnail_identifier"])
         )
 
     @staticmethod
-    def _prepare_form_data(user_data):
-        prepared_data = {}
+    def _prepare_form_data():
+        known_keys = ("title", "tags")
 
-        # Copy across all the keys the app knows about.
-        try:
-            prepared_data["file"] = user_data.pop("file")
-        except KeyError:
-            raise UserError("Unable to find multipart upload 'file'!")
-
-        # Handle HTML forms, which send this data as a dict of filename, content
-        # and content-type.
-        if isinstance(prepared_data["file"], dict):
-            prepared_data["filename"] = prepared_data["file"]["filename"]
-            prepared_data["file"] = prepared_data["file"]["content"]
-
-        assert isinstance(prepared_data["file"], bytes), type(prepared_data["file"])
-
-        for key in ("title", "tags", "filename"):
-            try:
-                prepared_data[key] = user_data.pop(key).decode("utf8")
-            except KeyError:
-                pass
+        prepared_data = {
+            key: request.form[key]
+            for key in known_keys
+            if key in request.form
+        }
 
         try:
             prepared_data["tags"] = prepared_data["tags"].split()
         except KeyError:
             pass
 
-        # Any remaining keys we put into a special "user_data" array so they're
-        # still saved, but don't conflict with other parameters we might add later.
-        if any(v for v in user_data.values()):
+        if any(k not in known_keys for k in request.form):
             prepared_data["user_data"] = {
-                k: v.decode("utf8") for k, v in user_data.items() if v
+                k: request.form[k]
+                for k in request.form
+                if k not in known_keys
             }
+
+        try:
+            uploaded_file = request.files["file"]
+        except KeyError:
+            raise UserError("No file in upload?")
+
+        prepared_data["file"] = uploaded_file.read()
+        prepared_data["filename"] = uploaded_file.filename
 
         return prepared_data
 
@@ -261,7 +267,7 @@ def run_api(config):  # pragma: no cover
     # Compile the CSS file before the API starts
     css.compile_css(accent_color=config.accent_color)
 
-    docstore = Docstore(tagged_store, root=config.root, config=config)
+    docstore = Docstore(tagged_store, config=config)
 
     docstore.app.run(port=8072, host="0.0.0.0", debug=True)
 
