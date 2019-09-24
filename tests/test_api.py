@@ -23,6 +23,7 @@ import hyperlink
 import pytest
 
 import api as service
+import css
 from index_helpers import index_new_document
 
 
@@ -216,7 +217,7 @@ def test_lookup_missing_document_is_404(api):
 
 
 def test_resolves_css(tagged_store, store_root):
-    service.compile_css(accent_color="#ff0000")
+    css.compile_css(accent_color="#ff0000")
 
     api = service.create_api(tagged_store, root=store_root)
     resp = api.requests.get("/", stream=True)

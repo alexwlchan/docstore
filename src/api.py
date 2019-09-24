@@ -10,10 +10,10 @@ import uuid
 import hyperlink
 from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
 import responder
-import scss
 from whitenoise import WhiteNoise
 
 import cli
+import css
 from exceptions import UserError
 from file_manager import FileManager, ThumbnailManager
 from index_helpers import index_new_document
@@ -61,23 +61,6 @@ def prepare_form_data(user_data):
         }
 
     return prepared_data
-
-
-def compile_css(accent_color):
-    src_root = pathlib.Path(__file__).parent
-    static_dir = src_root / "static"
-
-    # Compile the CSS file before the API starts
-    from scss.namespace import Namespace
-    from scss.types import Color
-    namespace = Namespace()
-    namespace.set_variable("$accent_color", Color.from_hex(accent_color))
-    css = scss.Compiler(
-        root=src_root / "assets",
-        namespace=namespace).compile("style.scss")
-
-    css_path = static_dir / "style.css"
-    css_path.write_text(css)
 
 
 def create_api(
@@ -309,7 +292,8 @@ def run_api(config):  # pragma: no cover
 
     migrations.apply_migrations(root=config.root, object_store=tagged_store)
 
-    compile_css(accent_color=config.accent_color)
+    # Compile the CSS file before the API starts
+    css.compile_css(accent_color=config.accent_color)
 
     api = create_api(
         tagged_store,
