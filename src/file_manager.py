@@ -31,7 +31,7 @@ class FileManager:
             # If we didn't get a filename from the user, try to guess one based
             # on the data.  Note that mimetypes will suggest ".jpe" for JPEG images,
             # so replace it with the more common extension by hand.
-            assert isinstance(buffer, bytes)
+            assert isinstance(buffer, bytes), type(buffer)
             guessed_mimetype = magic.from_buffer(buffer, mime=True)
             if guessed_mimetype == "image/jpeg":
                 extension = ".jpg"
