@@ -7,158 +7,127 @@ import sys
 import urllib.parse
 import uuid
 
+from flask import Flask, jsonify, redirect, request
 import hyperlink
-from requests_toolbelt.multipart.decoder import NonMultipartContentTypeException
-import responder
-import scss
 from whitenoise import WhiteNoise
 
 import cli
+import css
 from exceptions import UserError
 from file_manager import FileManager, ThumbnailManager
-from index_helpers import index_new_document
+import index_helpers
 import migrations
 from pagination import Pagination
 import search_helpers
 from storage import JsonTaggedObjectStore
-import viewer
 from version import __version__
+import viewer
 
 
-def prepare_form_data(user_data):
-    prepared_data = {}
+class Docstore:
+    def __init__(self, tagged_store, config):
+        self.tagged_store = tagged_store
+        self.config = config
 
-    # Copy across all the keys the app knows about.
-    try:
-        prepared_data["file"] = user_data.pop("file")
-    except KeyError:
-        raise UserError("Unable to find multipart upload 'file'!")
+        self.app = Flask(__name__)
 
-    # Handle HTML forms, which send this data as a dict of filename, content
-    # and content-type.
-    if isinstance(prepared_data["file"], dict):
-        prepared_data["filename"] = prepared_data["file"]["filename"]
-        prepared_data["file"] = prepared_data["file"]["content"]
+        # Configure Whitenoise to serve the large files statically, rather than
+        # through the Flask server.
+        # See http://whitenoise.evans.io/en/stable/flask.html
+        self.app.wsgi_app = WhiteNoise(
+            self.app.wsgi_app,
+            add_headers_function=self._add_headers_function
+        )
 
-    assert isinstance(prepared_data["file"], bytes), type(prepared_data["file"])
+        for (static_dir, prefix) in [
+            (config.root / "files", "/files"),
+            (config.root / "thumbnails", "/thumbnails"),
+            ("static", "/static"),
+        ]:
+            if pathlib.Path(static_dir).exists():
+                self.whitenoise_app.add_files(static_dir, prefix=prefix)
 
-    for key in ("title", "tags", "filename"):
-        try:
-            prepared_data[key] = user_data.pop(key).decode("utf8")
-        except KeyError:
-            pass
+        self.file_manager = FileManager(config.root / "files")
+        self.thumbnail_manager = ThumbnailManager(config.root / "thumbnails")
 
-    try:
-        prepared_data["tags"] = prepared_data["tags"].split()
-    except KeyError:
-        pass
+        @self.app.route("/")
+        def list_documents():
+            return self._list_documents()
 
-    # Any remaining keys we put into a special "user_data" array so they're
-    # still saved, but don't conflict with other parameters we might add later.
-    if any(v for v in user_data.values()):
-        prepared_data["user_data"] = {
-            k: v.decode("utf8") for k, v in user_data.items() if v
-        }
+        @self.app.route("/documents/<doc_id>")
+        def get_document(doc_id):
+            try:
+                retrieved_doc = tagged_store.objects[doc_id]
+            except KeyError:
+                return jsonify({"error": "Document %s not found!" % doc_id}), 404
 
-    return prepared_data
+            return jsonify({
+                k: (str(v) if isinstance(v, pathlib.Path) else v)
+                for k, v in retrieved_doc.items()
+            })
 
+        @self.app.route("/upload", methods=["POST"])
+        def upload_document():
+            resp, status_code = self._upload_document()
 
-def compile_css(accent_color):
-    src_root = pathlib.Path(__file__).parent
-    static_dir = src_root / "static"
+            if status_code != 201:
+                return jsonify(resp), status_code
 
-    # Compile the CSS file before the API starts
-    from scss.namespace import Namespace
-    from scss.types import Color
-    namespace = Namespace()
-    namespace.set_variable("$accent_color", Color.from_hex(accent_color))
-    css = scss.Compiler(
-        root=src_root / "assets",
-        namespace=namespace).compile("style.scss")
+            # If the request came through the browser rather than via
+            # a script, redirect back to the original page (which we get
+            # in the "referer" header), along with a message to display.
+            try:
+                url = hyperlink.URL.from_text(request.headers["referer"])
 
-    css_path = static_dir / "style.css"
-    css_path.write_text(css)
+                for key, value in resp.items():
+                    url = url.add(f"_message.{key}", value)
 
+                return redirect(location=str(url))
+            except KeyError:
+                pass
 
-def create_api(
-    tagged_store,
-    root,
-    display_title="Alex’s documents",
-    default_view="table",
-    tag_view="list",
-    accent_color="#007bff"
-):
-    file_manager = FileManager(root / "files")
-    thumbnail_manager = ThumbnailManager(root / "thumbnails")
+            return jsonify(resp), 201
 
-    src_root = pathlib.Path(__file__).parent
-    static_dir = src_root / "static"
+    @property
+    def whitenoise_app(self):
+        return self.app.wsgi_app
 
-    api = responder.API(
-        static_dir=static_dir,
-        templates_dir=src_root / "templates",
-        version=__version__
-    )
-
-    def add_headers_function(headers, path, url):
+    def _add_headers_function(self, headers, path, url):
         # Add the Content-Disposition header to file requests, so they can
         # be downloaded with the original filename they were uploaded under
         # (if specified).
         #
         # For encoding as UTF-8, see https://stackoverflow.com/a/49481671/1558022
-        file_identifier = "/".join(hyperlink.DecodedURL.from_text(url).path)
 
-        try:
-            # Because file identifiers are only ever a UUID or a slugified
-            # value, we don't need to worry about weird encoding issues in URLs.
-            matching_obj = [
-                obj
-                for obj in tagged_store.objects.values()
-                if str(obj["file_identifier"]) == file_identifier
-            ][0]
-            filename = matching_obj["filename"]
-        except (IndexError, KeyError):
-            pass
-        else:
-            encoded_filename = urllib.parse.quote(filename, encoding="utf-8")
-            headers["Content-Disposition"] = f"filename*=utf-8''{encoded_filename}"
+        if url.startswith("/files/"):
+            file_identifier = url.replace("/files/", "")
+
+            try:
+                # Because file identifiers are only ever a UUID or a slugified
+                # value, we don't need to worry about weird encoding issues in URLs.
+                matching_obj = [
+                    obj
+                    for obj in self.tagged_store.objects.values()
+                    if str(obj["file_identifier"]) == file_identifier
+                ][0]
+                filename = matching_obj["filename"]
+            except (IndexError, KeyError):
+                pass
+            else:
+                encoded_filename = urllib.parse.quote(filename, encoding="utf-8")
+                headers["Content-Disposition"] = f"filename*=utf-8''{encoded_filename}"
 
         headers["Cache-Control"] = "public, max-age=31536000"
 
-    # Add routes for serving the static files/thumbnails
-    whitenoise_files = WhiteNoise(
-        application=api._default_wsgi_app,
-        add_headers_function=add_headers_function
-    )
+    def _list_documents(self):
+        tag_query = request.args.getlist("tag")
 
-    if file_manager.root.exists():
-        whitenoise_files.add_files(file_manager.root)
+        page = int(request.args.get("page", "1"))
+        page_size = int(request.args.get("page_size", "250"))
 
-    api.mount("/files", whitenoise_files)
+        matching_documents = self.tagged_store.query(tag_query)
 
-    def add_cache_control_headers(headers, path, url):
-        headers["Cache-Control"] = "public, max-age=31536000"
-
-    whitenoise_thumbs = WhiteNoise(
-        application=api._default_wsgi_app,
-        add_headers_function=add_cache_control_headers
-    )
-
-    if thumbnail_manager.root.exists():
-        whitenoise_thumbs.add_files(thumbnail_manager.root)
-
-    api.mount("/thumbnails", whitenoise_thumbs)
-
-    @api.route("/")
-    def list_documents(req, resp):
-        tag_query = req.params.get_list("tag", [])
-
-        page = int(req.params.get("page", "1"))
-        page_size = int(req.params.get("page_size", "250"))
-
-        matching_documents = tagged_store.query(tag_query)
-
-        sort_param = req.params.get("sort", "date_created:newest_first")
+        sort_param = request.args.get("sort", "date_created:newest_first")
 
         sort_options = {
             "title:a_z": ("title", False),
@@ -170,9 +139,8 @@ def create_api(
         try:
             sort_field, sort_order_reverse = sort_options[sort_param]
         except KeyError:
-            resp.status_code = api.status_codes.HTTP_400
-            resp.media = {"error": f"Unrecognised sort parameter: {sort_param}"}
-            return
+            return jsonify({
+                "error": f"Unrecognised sort parameter: {sort_param}"}), 400
 
         sorted_documents = sorted(
             matching_documents.values(),
@@ -184,19 +152,19 @@ def create_api(
 
         tag_aggregation = search_helpers.get_tag_aggregation(display_documents)
 
-        req_url = hyperlink.DecodedURL.from_text(req.full_url)
+        req_url = hyperlink.DecodedURL.from_text(request.url)
 
-        params = {k: v for k, v in req.params.items()}
+        params = {k: v for k, v in request.args.items()}
         try:
             params["_message"] = json.loads(params["_message"])
         except KeyError:
             pass
 
         view_options = viewer.ViewOptions(
-            list_view=req.params.get("view", default_view),
-            tag_view=tag_view,
-            expand_document_form=(req.cookies.get('form-collapse__show') == 'true'),
-            expand_tag_list=(req.cookies.get('tags-collapse__show') == 'true')
+            list_view=request.args.get("view", self.config.list_view),
+            tag_view=self.config.tag_view,
+            expand_document_form=(request.cookies.get('form-collapse__show') == 'true'),
+            expand_tag_list=(request.cookies.get('tags-collapse__show') == 'true')
         )
 
         pagination = Pagination(
@@ -205,103 +173,90 @@ def create_api(
             total_documents=len(display_documents)
         )
 
-        resp.content = viewer.render_document_list(
+        return viewer.render_document_list(
             documents=display_documents,
             tag_aggregation=tag_aggregation,
             view_options=view_options,
             tag_query=tag_query,
-            title=display_title,
+            title=self.config.title,
             req_url=req_url,
-            accent_color=accent_color,
+            accent_color=self.config.accent_color,
             pagination=pagination,
             api_version=__version__
         )
 
-    @api.route("/documents/{document_id}")
-    def individual_document(req, resp, *, document_id):
+    def _upload_document(self):
         try:
-            resp.media = {
-                k: (str(v) if isinstance(v, pathlib.Path) else v)
-                for k, v in tagged_store.objects[document_id].items()
-            }
-        except KeyError:
-            resp.media = {"error": "Document %s not found!" % document_id}
-            resp.status_code = api.status_codes.HTTP_404
+            prepared_data = self._prepare_form_data()
+        except UserError as err:
+            return {"error": str(err)}, 400
 
-    @api.background.task
-    def create_doc_thumbnail(doc_id, doc):
-        absolute_file_identifier = file_manager.root / doc["file_identifier"]
+        doc_id = str(uuid.uuid4())
+        doc = index_helpers.index_new_document(
+            self.tagged_store,
+            self.file_manager,
+            doc_id=doc_id,
+            doc=prepared_data
+        )
 
-        doc["thumbnail_identifier"] = thumbnail_manager.create_thumbnail(
+        self.whitenoise_app.add_file_to_dictionary(
+            url=f"/files/{doc['file_identifier']}",
+            path=str(self.file_manager.root / doc["file_identifier"])
+        )
+
+        try:
+            self._create_doc_thumbnail(doc_id=doc_id, doc=doc)
+        except Exception:
+            pass
+
+        return {"id": doc_id}, 201
+
+    def _create_doc_thumbnail(self, doc_id, doc):
+        absolute_file_identifier = self.file_manager.root / doc["file_identifier"]
+
+        doc["thumbnail_identifier"] = self.thumbnail_manager.create_thumbnail(
             doc_id,
             absolute_file_identifier
         )
 
-        tagged_store.put(obj_id=doc_id, obj_data=doc)
+        self.tagged_store.put(obj_id=doc_id, obj_data=doc)
 
-        whitenoise_thumbs.add_file_to_dictionary(
-            url="/" + str(doc["thumbnail_identifier"]),
-            path=str(thumbnail_manager.root / doc["thumbnail_identifier"])
+        self.whitenoise_app.add_file_to_dictionary(
+            url=f"/thumbnails/{doc['thumbnail_identifier']}",
+            path=str(self.thumbnail_manager.root / doc["thumbnail_identifier"])
         )
 
-    async def _upload_document_api(req, resp):
-        if req.method == "post":
+    @staticmethod
+    def _prepare_form_data():
+        known_keys = ("title", "tags")
 
-            # This catches the error that gets thrown if the user doesn't include
-            # any files in their upload.
-            try:
-                user_data = await req.media(format="files")
-            except NonMultipartContentTypeException as err:
-                resp.media = {"error": str(err)}
-                resp.status_code = api.status_codes.HTTP_400
-                return
+        prepared_data = {
+            key: request.form[key]
+            for key in known_keys
+            if key in request.form
+        }
 
-            doc_id = str(uuid.uuid4())
-
-            try:
-                prepared_data = prepare_form_data(user_data)
-                doc = index_new_document(
-                    tagged_store,
-                    file_manager,
-                    doc_id=doc_id,
-                    doc=prepared_data
-                )
-            except UserError as err:
-                resp.media = {"error": str(err)}
-                resp.status_code = api.status_codes.HTTP_400
-                return
-
-            whitenoise_files.add_file_to_dictionary(
-                url="/" + str(doc["file_identifier"]),
-                path=str(file_manager.root / doc["file_identifier"])
-            )
-
-            create_doc_thumbnail(doc_id=doc_id, doc=doc)
-
-            resp.status_code = api.status_codes.HTTP_201
-            resp.media = {"id": doc_id}
-        else:
-            resp.status_code = api.status_codes.HTTP_405
-
-    @api.route("/upload")
-    async def upload_document(req, resp):
-        await _upload_document_api(req, resp)
-
-        # If the request came through the browser rather than via
-        # a script, redirect back to the original page (which we get
-        # in the "referer" header), along with a message to display.
         try:
-            url = hyperlink.URL.from_text(req.headers["referer"])
-
-            for key, value in resp.media.items():
-                url = url.add(f"_message.{key}", value)
-
-            resp.headers["Location"] = str(url)
-            resp.status_code = api.status_codes.HTTP_302
+            prepared_data["tags"] = prepared_data["tags"].split()
         except KeyError:
             pass
 
-    return api
+        if any(k not in known_keys for k in request.form):
+            prepared_data["user_data"] = {
+                k: request.form[k]
+                for k in request.form
+                if k not in known_keys
+            }
+
+        try:
+            uploaded_file = request.files["file"]
+        except KeyError:
+            raise UserError("No file in upload?")
+
+        prepared_data["file"] = uploaded_file.read()
+        prepared_data["filename"] = uploaded_file.filename
+
+        return prepared_data
 
 
 def run_api(config):  # pragma: no cover
@@ -309,18 +264,12 @@ def run_api(config):  # pragma: no cover
 
     migrations.apply_migrations(root=config.root, object_store=tagged_store)
 
-    compile_css(accent_color=config.accent_color)
+    # Compile the CSS file before the API starts
+    css.compile_css(accent_color=config.accent_color)
 
-    api = create_api(
-        tagged_store,
-        root=config.root,
-        display_title=config.title,
-        default_view=config.list_view,
-        tag_view=config.tag_view,
-        accent_color=config.accent_color
-    )
+    docstore = Docstore(tagged_store, config=config)
 
-    api.run()
+    docstore.app.run(port=8072, host="0.0.0.0", debug=True)
 
 
 if __name__ == "__main__":  # pragma: no cover

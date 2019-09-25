@@ -9,8 +9,6 @@ It includes small thumbnails to help identify files.
 
 ![](screenshot.png)
 
-It was originally written for me to play with [Responder](https://github.com/kennethreitz/responder) and newer versions of [Bootstrap](https://getbootstrap.com/), and now I use it to store.
-
 You can read some of what I learnt in the [what I learnt](what-i-learnt.md) file.
 
 

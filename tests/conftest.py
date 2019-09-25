@@ -7,9 +7,11 @@ import sys
 
 import pytest
 
+import helpers
+
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
-import api as service  # noqa
+import api, config  # noqa
 from file_manager import FileManager  # noqa
 from storage import MemoryTaggedObjectStore  # noqa
 
@@ -50,8 +52,11 @@ def file_identifier(store_root, pdf_path):
 
 
 @pytest.fixture()
-def api(tagged_store, store_root):
-    return service.create_api(tagged_store, root=store_root)
+def app(tagged_store, store_root):
+    return helpers.create_app(
+        tagged_store=tagged_store,
+        store_root=store_root
+    )
 
 
 @pytest.fixture
