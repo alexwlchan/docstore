@@ -1,31 +1,13 @@
 # -*- encoding: utf-8
 
-# Implementation note: I've found that using this pattern is very slow:
-#
-#   resp = requests.get("/")
-#   resp.text
-#
-# For some reason, encoding the bytes back into a UTF-8 string is really expensive.
-# Possibly something to do with coverage inspecting the contents of ``text``?
-#
-# This is significantly faster, and in most tests can be used with
-# minimal extra complexity:
-#
-#   resp = requests.get("/")
-#   resp.data
-#
-
 import io
-import random
-import time
 
 import bs4
 import hyperlink
 import pytest
 
-import api
-import config
 import css
+from file_manager import FileManager
 import helpers
 from index_helpers import index_new_document
 
@@ -156,8 +138,7 @@ def test_can_view_file_and_thumbnail(app, png_file, png_path):
 def test_can_view_existing_file_and_thumbnail(
     app, tagged_store, store_root, png_file, png_path
 ):
-    resp = app.post("/upload", data={"file": (png_file, "cluster.png")})
-    doc_id = resp.json["id"]
+    app.post("/upload", data={"file": (png_file, "cluster.png")})
 
     new_app = helpers.create_app(
         tagged_store=tagged_store,
@@ -178,7 +159,7 @@ def test_can_view_existing_file_and_thumbnail(
     assert len(png_links) == 1
     png_href = png_links[0]
 
-    png_resp = new_app.get(png_href)
+    png_resp = new_app.get("/" + png_href)
     assert png_resp.status_code == 200
     assert png_resp.data == open(png_path, "rb").read()
 
@@ -188,7 +169,7 @@ def test_can_view_existing_file_and_thumbnail(
     assert len(thumbnails_img) == 1
     thumb_src = thumbnails_img[0].attrs["src"]
 
-    thumb_resp = app.get(thumb_src)
+    thumb_resp = app.get("/" + thumb_src)
     assert thumb_resp.status_code == 200
 
 
@@ -251,17 +232,27 @@ def test_sets_content_disposition_header(app, png_file, filename, expected_heade
 
     file_identifier = resp.json["file_identifier"]
     resp = app.get(f"/files/{file_identifier}")
+    assert resp.status_code == 200
     assert resp.headers["Content-Disposition"] == expected_header
 
 
-def test_does_not_set_content_disposition_if_no_filename(app):
-    resp = app.post("/upload", data={"file": (io.BytesIO(b"hello world"))})
-    doc_id = resp.json["id"]
+def test_does_not_set_content_disposition_if_no_filename(tagged_store, store_root):
+    file_manager = FileManager(store_root / "files")
 
-    resp = app.get(f"/documents/{doc_id}")
+    doc = index_new_document(
+        tagged_object_store=tagged_store,
+        file_manager=file_manager,
+        doc_id="1",
+        doc={"file": b"hello world", "title": "greeting"}
+    )
 
-    file_identifier = resp.json["file_identifier"]
-    resp = app.get(f"/files/{file_identifier}")
+    app = helpers.create_app(
+        store_root=store_root,
+        tagged_store=tagged_store
+    )
+
+    resp = app.get(f"/files/{doc['file_identifier']}")
+    assert resp.status_code == 200
     assert "Content-Disposition" not in resp.headers
 
 
@@ -294,50 +285,10 @@ class TestBrowser:
         assert stored_doc["filename"] == "mydocument.png"
 
 
-# class TestPrepareData:
-#
-#     def test_deletes_empty_user_data_values(self):
-#         user_data = {
-#             "file": b"hello world",
-#             "source_url": b"https://example.org/",
-#             "external_identifier": b"",
-#         }
-#
-#         prepared_data = service.prepare_form_data(user_data)
-#         assert prepared_data["user_data"] == {
-#             "source_url": "https://example.org/",
-#         }
-#
-#     def test_deletes_empty_user_data(self):
-#         user_data = {
-#             "file": b"hello world",
-#             "external_identifier": b"",
-#         }
-#
-#         prepared_data = service.prepare_form_data(user_data)
-#         assert "user_data" not in prepared_data
-#
-#     def test_omits_user_data_if_no_extra_values(self):
-#         user_data = {"file": b"hello world"}
-#
-#         prepared_data = service.prepare_form_data(user_data)
-#         assert "user_data" not in prepared_data
-#
-#     def test_moves_sha256_checksum_to_user_data(self):
-#         user_data = {
-#             "file": b"hello world",
-#             "sha256_checksum": b"123456"
-#         }
-#
-#         prepared_data = service.prepare_form_data(user_data)
-#         assert prepared_data["user_data"] == {
-#             "sha256_checksum": "123456"
-#         }
-
-
 @pytest.mark.parametrize("tag", ["x-y", "x-&-y"])
-def test_can_navigate_to_tag(app, tag):
+def test_can_navigate_to_tag(tag, store_root):
     # Regression test for https://github.com/alexwlchan/docstore/issues/60
+    app = helpers.create_app(store_root=store_root, tag_view="list")
     resp = app.post(
         "/upload",
         data={
@@ -364,7 +315,7 @@ def test_sets_caching_headers_on_file(app, png_file):
 
     resp = app.get(f"/documents/{doc_id}")
 
-    file_resp = app.head(f"/files/{resp.json['file_identifier']}")
+    file_resp = app.get(f"/files/{resp.json['file_identifier']}")
     assert file_resp.status_code == 200
     assert file_resp.headers["Cache-Control"] == "public, max-age=31536000"
 

@@ -2,7 +2,6 @@
 
 import datetime as dt
 import pathlib
-import random
 import shutil
 import sys
 

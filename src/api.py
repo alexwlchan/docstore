@@ -42,9 +42,9 @@ class Docstore:
         for (static_dir, prefix) in [
             (config.root / "files", "/files"),
             (config.root / "thumbnails", "/thumbnails"),
-            (pathlib.Path("static"), "/static"),
+            ("static", "/static"),
         ]:
-            if static_dir.exists():
+            if pathlib.Path(static_dir).exists():
                 self.whitenoise_app.add_files(static_dir, prefix=prefix)
 
         self.file_manager = FileManager(config.root / "files")
@@ -99,8 +99,8 @@ class Docstore:
         #
         # For encoding as UTF-8, see https://stackoverflow.com/a/49481671/1558022
 
-        if path.startswith("files/"):
-            file_identifier = path.replace("/files/", "")
+        if url.startswith("/files/"):
+            file_identifier = url.replace("/files/", "")
 
             try:
                 # Because file identifiers are only ever a UUID or a slugified
@@ -200,7 +200,7 @@ class Docstore:
         )
 
         self.whitenoise_app.add_file_to_dictionary(
-            url="/" + str(doc["file_identifier"]),
+            url=f"/files/{doc['file_identifier']}",
             path=str(self.file_manager.root / doc["file_identifier"])
         )
 
@@ -222,7 +222,7 @@ class Docstore:
         self.tagged_store.put(obj_id=doc_id, obj_data=doc)
 
         self.whitenoise_app.add_file_to_dictionary(
-            url="/" + str(doc["thumbnail_identifier"]),
+            url=f"/thumbnails/{doc['thumbnail_identifier']}",
             path=str(self.thumbnail_manager.root / doc["thumbnail_identifier"])
         )
 
