@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.16.5 - 2019-09-25
+
+This is an internal refactor to replace responder/requests with Flask.  There should be no user-visible changes.
+
 ## v1.16.4 - 2019-09-19
 
 Improve the look of thumbnails in the grid view that don't have a title.
