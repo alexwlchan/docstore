@@ -8,6 +8,8 @@ import sys
 
 import pytest
 
+import helpers
+
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
 import api, config  # noqa
@@ -51,27 +53,11 @@ def file_identifier(store_root, pdf_path):
 
 
 @pytest.fixture()
-def app(store_root, tagged_store):
-    docstore = api.Docstore(
+def app(tagged_store, store_root):
+    return helpers.create_app(
         tagged_store=tagged_store,
-        config=config.DocstoreConfig(
-            root=store_root,
-            title="test docstore instance",
-            list_view=random.choice(["table", "grid"]),
-            tag_view=random.choice(["list", "cloud"]),
-            accent_color="#ff0000"
-        )
+        store_root=store_root
     )
-
-    # See https://flask.palletsprojects.com/en/1.1.x/testing/#the-testing-skeleton:
-    #
-    #   What [setting this flag] does is disable error catching during
-    #   request handling, so that you get better error reports when performing
-    #   test requests against the application.
-    #
-    docstore.app.config['TESTING'] = True
-
-    return docstore.app.test_client()
 
 
 @pytest.fixture

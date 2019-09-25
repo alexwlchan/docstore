@@ -82,7 +82,7 @@ class Docstore:
                 for key, value in resp.items():
                     url = url.add(f"_message.{key}", value)
 
-                return redirect(location=str(url), response=jsonify(resp))
+                return redirect(location=str(url))
             except KeyError:
                 pass
 
@@ -120,7 +120,7 @@ class Docstore:
         headers["Cache-Control"] = "public, max-age=31536000"
 
     def _list_documents(self):
-        tag_query = request.args.getlist("tag", [])
+        tag_query = request.args.getlist("tag")
 
         page = int(request.args.get("page", "1"))
         page_size = int(request.args.get("page_size", "250"))

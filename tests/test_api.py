@@ -26,6 +26,7 @@ import pytest
 import api
 import config
 import css
+import helpers
 from index_helpers import index_new_document
 
 
@@ -138,7 +139,7 @@ def test_can_view_file_and_thumbnail(app, png_file, png_path):
 
     print(png_href)
 
-    png_resp = app.get(png_href)
+    png_resp = app.get("/" + png_href)
     assert png_resp.status_code == 200
     assert png_resp.data == open(png_path, "rb").read()
 
@@ -148,7 +149,7 @@ def test_can_view_file_and_thumbnail(app, png_file, png_path):
     assert len(thumbnails_img) == 1
     thumb_src = thumbnails_img[0].attrs["src"]
 
-    thumb_resp = app.get(thumb_src)
+    thumb_resp = app.get("/" + thumb_src)
     assert thumb_resp.status_code == 200
 
 
@@ -158,18 +159,11 @@ def test_can_view_existing_file_and_thumbnail(
     resp = app.post("/upload", data={"file": (png_file, "cluster.png")})
     doc_id = resp.json["id"]
 
-    docstore = api.Docstore(
+    new_app = helpers.create_app(
         tagged_store=tagged_store,
-        config=config.DocstoreConfig(
-            root=store_root,
-            title="test docstore instance",
-            list_view=random.choice(["table", "grid"]),
-            tag_view=random.choice(["list", "cloud"]),
-            accent_color="#ff0000"
-        )
+        store_root=store_root
     )
 
-    new_app = docstore.app.test_client()
     resp = new_app.get("/")
     assert resp.status_code == 200
 
@@ -220,18 +214,11 @@ def test_lookup_missing_document_is_404(app):
 def test_resolves_css(tagged_store, store_root):
     css.compile_css(accent_color="#ff0000")
 
-    docstore = api.Docstore(
+    app = helpers.create_app(
         tagged_store=tagged_store,
-        config=config.DocstoreConfig(
-            root=store_root,
-            title="test docstore instance",
-            list_view=random.choice(["table", "grid"]),
-            tag_view=random.choice(["list", "cloud"]),
-            accent_color="#ff0000"
-        )
+        store_root=store_root
     )
 
-    app = docstore.app.test_client()
     resp = app.get("/")
     soup = bs4.BeautifulSoup(resp.data, "html.parser")
 
@@ -349,7 +336,7 @@ class TestBrowser:
 
 
 @pytest.mark.parametrize("tag", ["x-y", "x-&-y"])
-def test_can_navigate_to_tag(app, png_file, tag):
+def test_can_navigate_to_tag(app, tag):
     # Regression test for https://github.com/alexwlchan/docstore/issues/60
     resp = app.post(
         "/upload",
@@ -378,9 +365,11 @@ def test_sets_caching_headers_on_file(app, png_file):
     resp = app.get(f"/documents/{doc_id}")
 
     file_resp = app.head(f"/files/{resp.json['file_identifier']}")
+    assert file_resp.status_code == 200
     assert file_resp.headers["Cache-Control"] == "public, max-age=31536000"
 
     thumb_resp = app.head(f"/thumbnails/{resp.json['thumbnail_identifier']}")
+    assert file_resp.status_code == 200
     assert thumb_resp.headers["Cache-Control"] == "public, max-age=31536000"
 
 
@@ -409,14 +398,14 @@ def test_can_filter_by_tag(app, tagged_store, file_manager):
     resp_tag_x = app.get(
         "/", query_string=[("tag", "x")]
     )
-    html_x_bytes = resp_tag_x.raw.read()
+    html_x_bytes = resp_tag_x.data
     assert b"hello world" in html_x_bytes
     assert b"hi world" in html_x_bytes
 
     resp_tag_x_y = app.get(
         "/", query_string=[("tag", "x"), ("tag", "y")]
     )
-    html_x_y_bytes = resp_tag_x_y.raw.read()
+    html_x_y_bytes = resp_tag_x_y.data
     assert b"hello world" in html_x_y_bytes
     assert b"hi world" not in html_x_y_bytes
 
@@ -424,18 +413,12 @@ def test_can_filter_by_tag(app, tagged_store, file_manager):
 def test_uses_display_title(store_root, tagged_store):
     title = "My docstore title"
 
-    docstore = api.Docstore(
+    app = helpers.create_app(
+        store_root=store_root,
         tagged_store=tagged_store,
-        config=config.DocstoreConfig(
-            root=store_root,
-            title=title,
-            list_view=random.choice(["table", "grid"]),
-            tag_view=random.choice(["list", "cloud"]),
-            accent_color="#ff0000"
-        )
+        title=title
     )
 
-    app = docstore.app.test_client()
     resp = app.get("/")
 
     assert b"My docstore title" in resp.data
@@ -465,18 +448,12 @@ class TestListView:
             }
         )
 
-        docstore = api.Docstore(
+        app = helpers.create_app(
             tagged_store=tagged_store,
-            config=config.DocstoreConfig(
-                root=store_root,
-                title="test docstore instance",
-                list_view="table",
-                tag_view=random.choice(["list", "cloud"]),
-                accent_color="#ff0000"
-            )
+            store_root=store_root,
+            list_view="table"
         )
 
-        app = docstore.app.test_client()
         resp = app.get("/")
         self._assert_is_table(resp)
 
@@ -491,18 +468,12 @@ class TestListView:
             }
         )
 
-        docstore = api.Docstore(
+        app = helpers.create_app(
             tagged_store=tagged_store,
-            config=config.DocstoreConfig(
-                root=store_root,
-                title="test docstore instance",
-                list_view="grid",
-                tag_view=random.choice(["list", "cloud"]),
-                accent_color="#ff0000"
-            )
+            store_root=store_root,
+            list_view="grid"
         )
 
-        app = docstore.app.test_client()
         resp = app.get("/")
         self._assert_is_grid(resp)
 
