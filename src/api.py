@@ -2,12 +2,14 @@
 # -*- encoding: utf-8
 
 import json
+import multiprocessing
 import pathlib
 import sys
 import urllib.parse
 import uuid
 
 from flask import Flask, jsonify, redirect, request
+import gunicorn.app.base
 import hyperlink
 from whitenoise import WhiteNoise
 
@@ -269,7 +271,32 @@ def run_api(config):  # pragma: no cover
 
     docstore = Docstore(tagged_store, config=config)
 
-    docstore.app.run(port=8072, host="0.0.0.0", debug=True)
+    def number_of_workers():
+        return (multiprocessing.cpu_count() * 2) + 1
+
+    # From https://docs.gunicorn.org/en/stable/custom.html
+    class StandaloneApplication(gunicorn.app.base.BaseApplication):
+
+        def __init__(self, app, options=None):
+            self.options = options or {}
+            self.application = app
+            super(StandaloneApplication, self).__init__()
+
+        def load_config(self):
+            config = dict([(key, value) for key, value in self.options.items()
+                           if key in self.cfg.settings and value is not None])
+            for key, value in config.items():
+                self.cfg.set(key.lower(), value)
+
+        def load(self):
+            return self.application
+
+    options = {
+        "bind": "0.0.0.0:8072",
+        "workers": number_of_workers(),
+    }
+
+    StandaloneApplication(docstore.app.wsgi_app, options).run()
 
 
 if __name__ == "__main__":  # pragma: no cover
