@@ -3,6 +3,7 @@
 
 import json
 import multiprocessing
+import os
 import pathlib
 import sys
 import urllib.parse
@@ -292,7 +293,7 @@ def run_api(config):  # pragma: no cover
             return self.application
 
     options = {
-        "bind": "0.0.0.0:8072",
+        "bind": "0.0.0.0:%s" % os.environ.get("PORT", 8072),
         "workers": number_of_workers(),
     }
 
