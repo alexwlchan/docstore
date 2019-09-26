@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.16.6 - 2019-09-26
+
+Use gunicorn to run the server, not the Flask debug server (which isn't intended for production apps).
+
 ## v1.16.5 - 2019-09-25
 
 This is an internal refactor to replace responder/requests with Flask.  There should be no user-visible changes.
