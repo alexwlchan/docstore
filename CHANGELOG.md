@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.17.1 - 2019-09-29
+
+Remove a stray debugging line from 1.17.0.
+
 ## v1.17.0 - 2019-09-29
 
 Add the ability to soft delete documents by making an HTTP DELETE:
