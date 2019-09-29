@@ -154,8 +154,6 @@ class Docstore:
         os.unlink(self.files_root / retrieved_doc["file_identifier"])
         del self.whitenoise_app.files[f"/files/{retrieved_doc['file_identifier']}"]
 
-        print(self.whitenoise_app.files)
-
         try:
             os.unlink(self.thumbnails_root / retrieved_doc["thumbnail_identifier"])
             del self.whitenoise_app.files[f"/thumbnails/{retrieved_doc['thumbnail_identifier']}"]
