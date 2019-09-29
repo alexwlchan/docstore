@@ -5,6 +5,7 @@ import json
 import multiprocessing
 import os
 import pathlib
+import shutil
 import sys
 import urllib.parse
 import uuid
@@ -43,31 +44,47 @@ class Docstore:
         )
 
         for (static_dir, prefix) in [
-            (config.root / "files", "/files"),
-            (config.root / "thumbnails", "/thumbnails"),
+            (self.files_root, "/files"),
+            (self.thumbnails_root, "/thumbnails"),
             ("static", "/static"),
         ]:
             if pathlib.Path(static_dir).exists():
                 self.whitenoise_app.add_files(static_dir, prefix=prefix)
 
-        self.file_manager = FileManager(config.root / "files")
-        self.thumbnail_manager = ThumbnailManager(config.root / "thumbnails")
+        self.file_manager = FileManager(self.files_root)
+        self.thumbnail_manager = ThumbnailManager(self.thumbnails_root)
 
         @self.app.route("/")
         def list_documents():
             return self._list_documents()
 
-        @self.app.route("/documents/<doc_id>")
+        @self.app.route("/documents/<doc_id>", methods=["GET", "DELETE"])
         def get_document(doc_id):
             try:
-                retrieved_doc = tagged_store.objects[doc_id]
+                retrieved_doc = self.tagged_store.objects[doc_id]
             except KeyError:
                 return jsonify({"error": "Document %s not found!" % doc_id}), 404
 
-            return jsonify({
-                k: (str(v) if isinstance(v, pathlib.Path) else v)
-                for k, v in retrieved_doc.items()
-            })
+            if request.method == "GET":
+                return jsonify({
+                    k: (str(v) if isinstance(v, pathlib.Path) else v)
+                    for k, v in retrieved_doc.items()
+                })
+
+            elif request.method == "DELETE":
+                self._delete_document(doc_id, retrieved_doc)
+                return jsonify({"deleted": "ok"})
+
+            # This branch should be unhittable, but because the branch above is
+            # a DELETE, we don't want to else: into it.
+            #
+            # This is here in case we ever support modifying these endpoints with
+            # a PUT or POST or similar.
+            #
+            else:  # pragma: no cover
+                raise RuntimeError(
+                    f"Unexpected method to /documents/{doc_id}: {request.method}"
+                )
 
         @self.app.route("/upload", methods=["POST"])
         def upload_document():
@@ -94,6 +111,56 @@ class Docstore:
     @property
     def whitenoise_app(self):
         return self.app.wsgi_app
+
+    @property
+    def files_root(self):
+        return self.config.root / "files"
+
+    @property
+    def thumbnails_root(self):
+        return self.config.root / "thumbnails"
+
+    @property
+    def deleted_root(self):
+        return self.config.root / "deleted"
+
+    def _delete_document(self, doc_id, retrieved_doc):
+        data_to_save = {
+            key: value
+            for key, value in retrieved_doc.items()
+            if key != "thumbnail_identifier"
+        }
+
+        out_path = self.deleted_root / f"{doc_id}.json"
+        self.deleted_root.mkdir(exist_ok=True)
+
+        from storage.object_store import PosixPathEncoder
+        json_string = json.dumps(
+            data_to_save,
+            indent=2,
+            sort_keys=True,
+            cls=PosixPathEncoder
+        )
+        out_path.write_text(json_string)
+
+        file_path = self.deleted_root / retrieved_doc["file_identifier"]
+        file_path.parent.mkdir(exist_ok=True)
+        shutil.copyfile(
+            self.files_root / retrieved_doc["file_identifier"],
+            self.deleted_root / retrieved_doc["file_identifier"]
+        )
+
+        self.tagged_store.delete(doc_id)
+        os.unlink(self.files_root / retrieved_doc["file_identifier"])
+        del self.whitenoise_app.files[f"/files/{retrieved_doc['file_identifier']}"]
+
+        print(self.whitenoise_app.files)
+
+        try:
+            os.unlink(self.thumbnails_root / retrieved_doc["thumbnail_identifier"])
+            del self.whitenoise_app.files[f"/thumbnails/{retrieved_doc['thumbnail_identifier']}"]
+        except KeyError:
+            pass
 
     def _add_headers_function(self, headers, path, url):
         # Add the Content-Disposition header to file requests, so they can

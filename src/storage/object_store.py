@@ -31,6 +31,10 @@ class ObjectStore(abc.ABC):
         self.write({obj_id: obj_data})
 
     @abc.abstractmethod
+    def delete(self, obj_id):
+        pass
+
+    @abc.abstractmethod
     def write(self, writed_objects):
         pass
 
@@ -47,6 +51,12 @@ class MemoryObjectStore(ObjectStore):
     @property
     def objects(self):
         return self._objects
+
+    def delete(self, obj_id):
+        try:
+            del self._objects[obj_id]
+        except KeyError:
+            pass
 
     def write(self, writed_objects):
         self._objects.update(writed_objects)
@@ -72,6 +82,16 @@ class JsonObjectStore(ObjectStore):
             return self.lazy_json.read()
         except FileNotFoundError:
             return {}
+
+    def delete(self, obj_id):
+        all_objects = self.objects
+
+        try:
+            del all_objects[obj_id]
+        except KeyError:
+            pass
+
+        self.lazy_json.write(all_objects)
 
     def write(self, writed_objects):
         all_objects = self.objects
