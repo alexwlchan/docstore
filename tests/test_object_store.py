@@ -33,6 +33,20 @@ class ObjectStoreTestCasesMixin(abc.ABC):
         with self.create_store(initial_objects={}) as s:
             s.put(obj_id="1", obj_data=obj_data)
 
+    def test_can_delete_objects(self):
+        with self.create_store(initial_objects={"1": "one", "2": "two"}) as s:
+            s.get(obj_id="1")
+            s.delete(obj_id="1")
+
+            with pytest.raises(NoSuchObject):
+                s.get(obj_id="1")
+
+            s.get(obj_id="2")
+
+    def test_deleting_non_existent_object_is_noop(self):
+        with self.create_store(initial_objects={}) as s:
+            s.delete(obj_id="1")
+
     def test_can_only_init_object_that_doesnt_exist(self):
         with self.create_store(initial_objects={}) as s:
             s.init(obj_id="1", obj_data="one")
