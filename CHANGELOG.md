@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.17.2 - 2019-10-12
+
+Fix a bug where new thumbnails wouldn't reload until you restarted the app.
+
 ## v1.17.1 - 2019-09-29
 
 Remove a stray debugging line from 1.17.0.
