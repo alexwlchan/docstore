@@ -2,7 +2,6 @@
 # -*- encoding: utf-8
 
 import json
-import multiprocessing
 import os
 import pathlib
 import shutil
@@ -337,9 +336,6 @@ def run_api(config):  # pragma: no cover
 
     docstore = Docstore(tagged_store, config=config)
 
-    def number_of_workers():
-        return (multiprocessing.cpu_count() * 2) + 1
-
     # From https://docs.gunicorn.org/en/stable/custom.html
     class StandaloneApplication(gunicorn.app.base.BaseApplication):
 
@@ -359,7 +355,7 @@ def run_api(config):  # pragma: no cover
 
     options = {
         "bind": "0.0.0.0:%s" % os.environ.get("PORT", 8072),
-        "workers": number_of_workers(),
+        "workers": 1,
     }
 
     StandaloneApplication(docstore.app.wsgi_app, options).run()
