@@ -1,5 +1,6 @@
 # -*- encoding: utf-8
 
+import json
 import pathlib
 import urllib.parse
 
@@ -41,6 +42,11 @@ class ViewOptions:
             raise ValueError(f"Unrecognised value for tag_view: {value}")
 
 
+def dump_tag_aggregation(aggregation):
+    tags = sorted(aggregation.keys(), key=lambda k: aggregation[k], reverse=True)
+    return json.dumps(tags)
+
+
 def create_env(templates_dir):
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader([templates_dir]),
@@ -56,6 +62,8 @@ def create_env(templates_dir):
     env.filters["static_url"] = lambda filename: "static/" + filename
     env.filters["file_url"] = lambda doc: "files/" + str(doc["file_identifier"])
     env.filters["thumbnail_url"] = lambda doc: "thumbnails/" + str(doc["thumbnail_identifier"])
+
+    env.filters["dump_tag_aggregation"] = dump_tag_aggregation
 
     return env
 

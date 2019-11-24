@@ -25,12 +25,12 @@
         </div>
 
         <div class="form-group">
-          <label for="form_tags">Tags</label>
-          <input name="tags" type="text" class="form-control" id="form_tags" placeholder="Enter tags (space-separated)" value="{{ ' '.join(tag_query) }}" required>
+          <label for="form__tags">Tags</label>
+          <input name="tags" type="text" class="form-control" id="form__tags" placeholder="Enter tags (space-separated)" value="{{ ' '.join(tag_query) }}" required>
         </div>
 
         <div class="form-group">
-          <label for="form_tags">Source URL</label>
+          <label for="form__url">Source URL</label>
           <input name="source_url" type="url" class="form-control" id="form__url" placeholder="https://example.org/document.pdf">
         </div>
 
@@ -47,20 +47,9 @@
 
 {% include "_tag_browser.html" %}
 
-<script>
-  $("#collapseDocumentForm")
-    .on("show.bs.collapse", function() {
-      Cookies.set("form-collapse__show", true);
-    })
-    .on("hide.bs.collapse", function() {
-      Cookies.set("form-collapse__show", false);
-    })
+<script src="{{ 'forms.js' | static_url }}"></script>
 
-  $("#collapseTagList")
-    .on("show.bs.collapse", function() {
-      Cookies.set("tags-collapse__show", true);
-    })
-    .on("hide.bs.collapse", function() {
-      Cookies.set("tags-collapse__show", false);
-    })
+<script>
+  var availableTags = {{ tag_aggregation | dump_tag_aggregation | safe }};
+  configureAutocompleteWith(availableTags);
 </script>
