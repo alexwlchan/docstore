@@ -10,3 +10,4 @@ class DocstoreConfig:
     list_view = attr.ib()
     tag_view = attr.ib()
     accent_color = attr.ib()
+    page_size = attr.ib(converter=int)

@@ -588,3 +588,27 @@ class TestPagination:
         ]
 
         assert html_soup.find("nav", attrs={"id": "pagination"}) is not None
+
+    @pytest.mark.parametrize("page_size", [1, 5, 20])
+    def test_uses_page_size(self, page_size):
+        app = helpers.create_app(page_size=page_size)
+
+        for i in range(1, 25):
+            app.post(
+                "/upload",
+                data={
+                    "title": f"document {i}",
+                    "file": (io.BytesIO(b"hello world"), "greeting.txt")
+                }
+            )
+
+        resp = app.get("/")
+        html_soup = bs4.BeautifulSoup(resp.data, "html.parser")
+        assert str(html_soup) != "null"
+
+        titles = [
+            div.text.strip()
+            for div in html_soup.find_all("div", attrs={"class": "document__title"})
+        ]
+
+        assert len(titles) == page_size

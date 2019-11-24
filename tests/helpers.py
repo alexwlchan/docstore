@@ -3,6 +3,7 @@
 import pathlib
 import random
 import sys
+import tempfile
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
@@ -13,18 +14,21 @@ from storage import MemoryTaggedObjectStore  # noqa
 
 def create_app(
     *,
-    store_root,
+    store_root=None,
     tagged_store=None,
     title=None,
     list_view=None,
     tag_view=None,
-    accent_color=None
+    accent_color=None,
+    page_size=None,
 ):
+    store_root = store_root or pathlib.Path(tempfile.mkdtemp())
     tagged_store = tagged_store or MemoryTaggedObjectStore(initial_objects={})
     title = title or "test docstore instance"
     list_view = list_view or random.choice(["table", "grid"])
     tag_view = tag_view or random.choice(["list", "cloud"])
     accent_color = accent_color or "#ff0000"
+    page_size = page_size or 250
 
     docstore = api.Docstore(
         tagged_store=tagged_store,
@@ -33,7 +37,8 @@ def create_app(
             title=title,
             list_view=list_view,
             tag_view=tag_view,
-            accent_color=accent_color
+            accent_color=accent_color,
+            page_size=page_size
         )
     )
 

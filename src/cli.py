@@ -20,6 +20,8 @@ def parse_args(prog, *, version, argv):
                                       [default: list]
       --accent_color=<COLOR>          The tint color for links and tags.
                                       [default: #007bff]
+      --page_size=<PAGE_SIZE>         How many documents to show on a single page.
+                                      [default: 250]
     """
 
     args = docopt.docopt(help_string, argv=argv, version=version)
@@ -39,5 +41,6 @@ def parse_args(prog, *, version, argv):
         title=args["--title"],
         list_view=args["--default_view"],
         tag_view=args["--tag_view"],
-        accent_color=args["--accent_color"]
+        accent_color=args["--accent_color"],
+        page_size=args["--page_size"]
     )

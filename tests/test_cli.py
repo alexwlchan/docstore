@@ -111,3 +111,14 @@ def test_unrecognised_tag_view_is_rejected(tag_view):
             version="1.2.3",
             argv=["/path/to/docstore", "--tag_view", tag_view]
         )
+
+
+@pytest.mark.parametrize("page_size", [5, 15, 30, 100])
+def test_setting_page_size(page_size):
+    config = cli.parse_args(
+        "docstore",
+        version="1.2.3",
+        argv=["/path/to/docstore", "--page_size", str(page_size)]
+    )
+
+    assert config.page_size == page_size

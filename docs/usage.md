@@ -114,3 +114,18 @@ which looks like:
 ![Two documents, with the tags highlighted in green](accent_green.png)
 
 If you want help picking hex colours, I recommend [HSL Picker](http://www.hslpicker.com/#08a008).
+
+<br/>
+
+## -&#820;3-page_size: Change the default page size
+
+By default, docstore shows 250 documents on each page.
+You can change this by passing the `?page_size` parameter in a request, or change the default by passing the `--page_size` option.
+
+For example, if you only want 10 documents per page:
+
+```
+docker run greengloves/docstore --page_size=10
+```
+
+This is especially useful if the page is slow to load -- for example, you have a lot of animated GIFs as thumbnails.
