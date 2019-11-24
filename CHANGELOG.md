@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v1.18.0 - 2019-11-24
+
+Add an option to set the page size in the GUI app.
+
+By default, docstore shows 250 documents per page.  You can change the number of
+documents on each page by passing the `--page_size` flag (for example, to reduce
+the number of thumbnails if you have lots of animated GIFs).
+
 ## v1.17.2 - 2019-10-12
 
 Fix a bug where new thumbnails wouldn't reload until you restarted the app.
