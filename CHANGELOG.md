@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.19.0 - 2019-11-24
+
+If you're using the web app, it offers to autocomplete tags used in the current
+context (that is, tags used by other documents on the same page).  This should
+reduce typing and ensure more consistent tagging.
+
 ## v1.18.0 - 2019-11-24
 
 Add an option to set the page size in the GUI app.
