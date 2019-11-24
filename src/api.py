@@ -190,7 +190,7 @@ class Docstore:
         tag_query = request.args.getlist("tag")
 
         page = int(request.args.get("page", "1"))
-        page_size = int(request.args.get("page_size", "250"))
+        page_size = int(request.args.get("page_size", self.config.page_size))
 
         matching_documents = self.tagged_store.query(tag_query)
 
