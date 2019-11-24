@@ -136,8 +136,13 @@ def test_can_view_file_and_thumbnail(app, png_file, png_path):
 
 
 def test_can_view_existing_file_and_thumbnail(
-    app, tagged_store, store_root, png_file, png_path
+    tagged_store, store_root, png_file, png_path
 ):
+    app = helpers.create_app(
+        tagged_store=tagged_store,
+        store_root=store_root
+    )
+
     app.post("/upload", data={"file": (png_file, "cluster.png")})
 
     new_app = helpers.create_app(
@@ -195,10 +200,7 @@ def test_lookup_missing_document_is_404(app):
 def test_resolves_css(tagged_store, store_root):
     css.compile_css(accent_color="#ff0000")
 
-    app = helpers.create_app(
-        tagged_store=tagged_store,
-        store_root=store_root
-    )
+    app = helpers.create_app()
 
     resp = app.get("/")
     soup = bs4.BeautifulSoup(resp.data, "html.parser")
@@ -236,7 +238,7 @@ def test_sets_content_disposition_header(app, png_file, filename, expected_heade
     assert resp.headers["Content-Disposition"] == expected_header
 
 
-def test_does_not_set_content_disposition_if_no_filename(tagged_store, store_root):
+def test_does_not_set_content_disposition_if_no_filename(store_root, tagged_store):
     file_manager = FileManager(store_root / "files")
 
     doc = index_new_document(
@@ -247,8 +249,8 @@ def test_does_not_set_content_disposition_if_no_filename(tagged_store, store_roo
     )
 
     app = helpers.create_app(
-        store_root=store_root,
-        tagged_store=tagged_store
+        tagged_store=tagged_store,
+        store_root=store_root
     )
 
     resp = app.get(f"/files/{doc['file_identifier']}")
@@ -286,9 +288,9 @@ class TestBrowser:
 
 
 @pytest.mark.parametrize("tag", ["x-y", "x-&-y"])
-def test_can_navigate_to_tag(tag, store_root):
+def test_can_navigate_to_tag(tag):
     # Regression test for https://github.com/alexwlchan/docstore/issues/60
-    app = helpers.create_app(store_root=store_root, tag_view="list")
+    app = helpers.create_app(tag_view="list")
     resp = app.post(
         "/upload",
         data={
@@ -324,7 +326,9 @@ def test_sets_caching_headers_on_file(app, png_file):
     assert thumb_resp.headers["Cache-Control"] == "public, max-age=31536000"
 
 
-def test_can_filter_by_tag(app, tagged_store, file_manager):
+def test_can_filter_by_tag(tagged_store, file_manager):
+    app = helpers.create_app(tagged_store=tagged_store)
+
     index_new_document(
         tagged_store,
         file_manager,
@@ -361,14 +365,10 @@ def test_can_filter_by_tag(app, tagged_store, file_manager):
     assert b"hi world" not in html_x_y_bytes
 
 
-def test_uses_display_title(store_root, tagged_store):
+def test_uses_display_title():
     title = "My docstore title"
 
-    app = helpers.create_app(
-        store_root=store_root,
-        tagged_store=tagged_store,
-        title=title
-    )
+    app = helpers.create_app(title=title)
 
     resp = app.get("/")
 
@@ -388,7 +388,7 @@ class TestListView:
         assert b'<main class="documents documents__view_grid">' in html_bytes
         assert b'<main class="documents documents__view_table">' not in html_bytes
 
-    def test_can_set_default_table_view(self, store_root, tagged_store, file_manager):
+    def test_can_set_default_table_view(self, tagged_store, file_manager):
         index_new_document(
             tagged_store,
             file_manager,
@@ -401,14 +401,13 @@ class TestListView:
 
         app = helpers.create_app(
             tagged_store=tagged_store,
-            store_root=store_root,
             list_view="table"
         )
 
         resp = app.get("/")
         self._assert_is_table(resp)
 
-    def test_can_set_default_grid_view(self, store_root, tagged_store, file_manager):
+    def test_can_set_default_grid_view(self, tagged_store, file_manager):
         index_new_document(
             tagged_store,
             file_manager,
@@ -421,7 +420,6 @@ class TestListView:
 
         app = helpers.create_app(
             tagged_store=tagged_store,
-            store_root=store_root,
             list_view="grid"
         )
 
