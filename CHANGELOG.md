@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.19.1 - 2019-11-26
+
+Tweak a bit of wording in the UI.
+
 ## v1.19.0 - 2019-11-24
 
 If you're using the web app, it offers to autocomplete tags used in the current
