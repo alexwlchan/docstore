@@ -49,6 +49,7 @@ I've written some documents that explain a bit about how to use docstore:
     These instructions can be adapted for any tool that can make HTTP requests.
 *   [Usage options](docs/usage.md) -- setting title, accent color, changing the port, and so on
 
+I've written some [implementation notes](implementation-notes.md) that explain some of the design choices.
 
 
 ## License
