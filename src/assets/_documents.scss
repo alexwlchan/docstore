@@ -146,24 +146,37 @@ main.documents {
         display: inline-block;
         margin-top:    auto;
         margin-bottom: auto;
-      }
 
-      &__info {
-        display: grid;
-        grid-template-columns: 150px auto;
-        margin-top:    10px;
-        margin-bottom: 10px;
-      }
-
-      &__title {
-        margin-top: 14px;
-
-        a {
-          color: black
+        &__info {
+          display: grid;
+          grid-template-columns: 150px auto;
+          margin-top:    10px;
+          margin-bottom: 10px;
         }
 
-        h3 {
-          font-size: 1.25rem;
+        &__title {
+          margin-top: 14px;
+
+          a {
+            color: black
+          }
+
+          h3 {
+            font-size: 1.25rem;
+          }
+        }
+      }
+
+      &__delete {
+        grid-row: 1 / 1;
+        grid-column: 3 / 3;
+        display: inline-block;
+        margin-top:    auto;
+        margin-bottom: auto;
+
+        button {
+          float: right;
+          margin-right: 2em;
         }
       }
 
@@ -201,4 +214,10 @@ main.documents {
       }
     }
   }
+}
+
+// By default, the delete button isn't shown -- the user has to explicitly opt into
+// seeing it in the UI.
+.document__delete button {
+  display: none;
 }

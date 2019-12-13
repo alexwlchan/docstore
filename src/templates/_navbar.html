@@ -27,6 +27,16 @@
             <a class="dropdown-item" href="{{ req_url.set('view', 'grid') | query_str_only }}">grid</a>
           </div>
         </li>
+        <li class="nav-item dropdown float-right" id="navbarViewAs">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarViewAsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            actions
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarViewAsDropdown">
+            <a class="dropdown-item" href="#" onclick="enableDeleteDocuments();">
+              delete documents &#128465;&#xFE0E;
+            </a>
+          </div>
+        </li>
       </ul>
     </div>
   </div>

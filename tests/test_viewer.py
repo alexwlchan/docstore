@@ -12,10 +12,10 @@ import viewer
 
 
 def get_html(
-    documents=[],
-    tag_aggregation={},
+    documents=None,
+    tag_aggregation=None,
     view_options=viewer.ViewOptions(),
-    tag_query=[],
+    tag_query=None,
     req_url=hyperlink.URL.from_text("http://localhost:9000/request"),
     title="docstore test instance",
     pagination=Pagination(
@@ -26,10 +26,10 @@ def get_html(
     api_version="test_1.0.0"
 ):
     return viewer.render_document_list(
-        documents=documents,
-        tag_aggregation=tag_aggregation,
+        documents=documents or [],
+        tag_aggregation=tag_aggregation or {},
         view_options=view_options,
-        tag_query=tag_query,
+        tag_query=tag_query or [],
         req_url=req_url,
         title=title,
         pagination=pagination,
@@ -63,7 +63,7 @@ class TestViewOptions:
 
     def test_table_view(self, document):
         html = get_html(
-            documents=[document],
+            documents=[(1, document)],
             view_options=viewer.ViewOptions(list_view="table")
         )
 
@@ -71,7 +71,7 @@ class TestViewOptions:
 
     def test_grid_view(self, document):
         html = get_html(
-            documents=[document],
+            documents=[(1, document)],
             view_options=viewer.ViewOptions(list_view="grid")
         )
 
@@ -79,7 +79,7 @@ class TestViewOptions:
 
     def test_default_is_table_view(self, document):
         html = get_html(
-            documents=[document],
+            documents=[(1, document)],
             view_options=viewer.ViewOptions()
         )
 
@@ -92,7 +92,7 @@ class TestViewOptions:
 
     def test_tag_list_view(self, document):
         html_soup = get_html_soup(
-            documents=[document],
+            documents=[(1, document)],
             tag_aggregation={"x": 5, "y": 3},
             view_options=viewer.ViewOptions(tag_view="list")
         )
@@ -103,7 +103,7 @@ class TestViewOptions:
 
     def test_tag_cloud_view(self, document):
         html_soup = get_html_soup(
-            documents=[document],
+            documents=[(1, document)],
             tag_aggregation={"x": 5, "y": 3},
             view_options=viewer.ViewOptions(tag_view="cloud")
         )
@@ -114,7 +114,7 @@ class TestViewOptions:
 
     def test_tag_view_default_is_list(self, document):
         html_soup = get_html_soup(
-            documents=[document],
+            documents=[(1, document)],
             tag_aggregation={"x": 5, "y": 3},
             view_options=viewer.ViewOptions(tag_view="list")
         )
@@ -169,7 +169,7 @@ def test_renders_title(title, expected_title):
 def test_all_urls_are_relative(document):
     document["tags"] = ["x", "y"]
 
-    html_soup = get_html_soup(documents=[document])
+    html_soup = get_html_soup(documents=[(1, document)])
     links = [a.attrs["href"] for a in html_soup.find("main").find_all("a")]
 
     for href in links:
@@ -185,7 +185,7 @@ def test_version_is_shown_in_footer():
 def test_includes_created_date(document):
     document["created_date"] = dt.datetime.now().isoformat()
 
-    html_soup = get_html_soup(documents=[document])
+    html_soup = get_html_soup(documents=[(1, document)])
     date_created_div = html_soup.find(
         "div", attrs={"class": "document__metadata__date_created"})
     assert date_created_div.find(
@@ -210,7 +210,7 @@ class TestStoreDocumentForm:
         document["tags"] = ["colour:blue"]
 
         html_soup = get_html_soup(
-            documents=[document],
+            documents=[(1, document)],
             tag_query=["colour:blue"]
         )
         tag_field = html_soup.find("input", attrs={"name": "tags"})
@@ -223,7 +223,7 @@ def test_includes_source_url(document, list_view):
     document["user_data"] = {"source_url": source_url}
 
     html = get_html(
-        documents=[document],
+        documents=[(1, document)],
         view_options=viewer.ViewOptions(list_view=list_view)
     )
 
@@ -233,7 +233,7 @@ def test_includes_source_url(document, list_view):
 def test_omits_source_url_if_empty(document):
     document["user_data"] = {"source_url": ""}
 
-    html_soup = get_html_soup(documents=[document])
+    html_soup = get_html_soup(documents=[(1, document)])
     assert len(html_soup.find_all("section")) == 1
     assert html_soup.find("div", attrs={"id": "document__metadata__source_url"}) is None
 
@@ -241,7 +241,7 @@ def test_omits_source_url_if_empty(document):
 def test_renders_document_title_with_pretty_quotes(document):
     document["title"] = "Isn't it a wonderful day? -- an optimist"
 
-    html_soup = get_html_soup(documents=[document])
+    html_soup = get_html_soup(documents=[(1, document)])
     title = html_soup.find("div", attrs={"class": "document__title"})
     assert "Isn’t it a wonderful day? — an optimist" in title.text
 
@@ -361,7 +361,7 @@ def test_selected_tags_are_not_links_in_tag_cloud(document):
     document["tags"] = ["a", "b", "c", "d"]
 
     html_soup = get_html_soup(
-        documents=[document],
+        documents=[(1, document)],
         tag_query=["a", "b"],
         view_options=viewer.ViewOptions(tag_view="cloud"),
         tag_aggregation={"a": 1, "b": 1, "c": 1, "d": 1}
@@ -399,7 +399,7 @@ def test_displays_list_of_tags_on_document(document):
     document["tags"] = ["alfa", "bravo", "charlie"]
 
     html_soup = get_html_soup(
-        documents=[document],
+        documents=[(1, document)],
         tag_query=["alfa", "bravo"],
         req_url=hyperlink.URL.from_text("http://localhost:1234/?tag=alfa&tag=bravo")
     )
@@ -597,12 +597,12 @@ class TestPagination:
 
     def test_only_shows_relevant_documents(self):
         documents = [
-            {
-                "title": f"document {i}",
-                "file_identifier": f"{i}/{i}.pdf",
+            (doc_id, {
+                "title": f"document {doc_id}",
+                "file_identifier": f"{doc_id}/{doc_id}.pdf",
                 "date_created": dt.datetime.now().isoformat()
-            }
-            for i in range(1, 20)
+            })
+            for doc_id in range(1, 20)
         ]
 
         html_soup = get_html_soup(
@@ -619,7 +619,7 @@ class TestPagination:
             for div in html_soup.find_all("div", attrs={"class": "document__title"})
         ]
 
-        assert titles == [f"document {i}" for i in range(6, 11)]
+        assert titles == [f"document {doc_id}" for doc_id in range(6, 11)]
 
 
 class TestLinksResetPagination:
@@ -660,7 +660,7 @@ class TestLinksResetPagination:
     def test_removes_page_pagesize_in_document_tags(self, document):
         document["tags"] = ["alfa", "bravo"]
         html_soup = get_html_soup(
-            documents=[document],
+            documents=[(1, document)],
             req_url=hyperlink.URL.from_text("http://localhost:1234?page=4")
         )
 
