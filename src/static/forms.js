@@ -55,3 +55,34 @@ function configureAutocompleteWith(availableTags) {
       }
     });
   }
+
+function enableDeleteDocuments() {
+  $(".document__delete button").css("display", "block");
+}
+
+function deleteDocument(documentId, title) {
+  if (title !== "") {
+    confirmation = window.confirm("Are you sure you want to delete " + title + "?");
+  } else {
+    confirmation = window.confirm("Are you sure you want to delete this document?");
+  }
+
+  if (!confirmation) {
+    return;
+  }
+
+  $.ajax({
+    type: "DELETE",
+  	url: "/documents/" + documentId,
+
+  	success: function(_) {
+  		$("#document__" + documentId).remove()
+  	},
+
+  	error: function(jqXHR, textStatus, errorThrown) {
+  		console.log("Error trying to delete document " + documentId);
+  		console.log("jqXHR=" + jqXHR + "; textStatus=" + textStatus + "; errorThrown=" + errorThrown);
+  		alert("Something went wrong trying to delete the document!");
+  	}
+  })
+}

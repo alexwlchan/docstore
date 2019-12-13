@@ -210,14 +210,16 @@ class Docstore:
                 "error": f"Unrecognised sort parameter: {sort_param}"}), 400
 
         sorted_documents = sorted(
-            matching_documents.values(),
-            key=lambda doc: doc.get(sort_field, ""),
+            matching_documents.items(),
+            key=lambda doc: doc[1].get(sort_field, ""),
             reverse=sort_order_reverse
         )
 
         display_documents = sorted_documents
 
-        tag_aggregation = search_helpers.get_tag_aggregation(display_documents)
+        tag_aggregation = search_helpers.get_tag_aggregation(
+            [doc for (_, doc) in display_documents]
+        )
 
         req_url = hyperlink.DecodedURL.from_text(request.url)
 

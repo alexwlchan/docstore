@@ -27,8 +27,8 @@
 
     {% if display_documents %}
       <main class="documents documents__view_{{ view_options.list_view }}">
-      {% for doc in display_documents %}
-      <section>
+      {% for doc_id, doc in display_documents %}
+      <section id="document__{{ doc_id }}">
         <div class="document card {% if not doc.title %}document__notitle{% endif %}">
           <div class="document__image">
             <a href="{{ doc | file_url }}" target="_blank">
@@ -41,7 +41,6 @@
           </div>
 
           <div class="document__panel">
-
             {% if doc.title %}
             <div class="document__title">
               <a href="{{ doc | file_url }}" target="_blank">
@@ -80,8 +79,17 @@
               </div>
               {% endif %}
 
+              {% if view_options.list_view == "grid" %}
+              <div class="document__metadata">
+                {% include "_delete_button.html" %}
+              </div>
+              {% endif %}
             </div>
           </div>
+
+          {% if view_options.list_view == "table" %}
+            {% include "_delete_button.html" %}
+          {% endif %}
         </div>
       </section>
       {% endfor %}

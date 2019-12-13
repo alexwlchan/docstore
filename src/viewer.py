@@ -65,6 +65,8 @@ def create_env(templates_dir):
 
     env.filters["dump_tag_aggregation"] = dump_tag_aggregation
 
+    env.filters["json"] = lambda s: json.dumps(s)
+
     return env
 
 
