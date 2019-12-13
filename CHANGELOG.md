@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.20.1 - 2019-12-13
+
+Fix a cosmetic bug introduced in v1.20.0.
+
 ## v1.20.0 - 2019-12-13
 
 If you use the new "actions" menu, there's an option to delete documents directly from the UI, which is something I've wanted for a while.
