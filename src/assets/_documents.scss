@@ -146,24 +146,24 @@ main.documents {
         display: inline-block;
         margin-top:    auto;
         margin-bottom: auto;
+      }
 
-        &__info {
-          display: grid;
-          grid-template-columns: 150px auto;
-          margin-top:    10px;
-          margin-bottom: 10px;
+      &__info {
+        display: grid;
+        grid-template-columns: 150px auto;
+        margin-top:    10px;
+        margin-bottom: 10px;
+      }
+
+      &__title {
+        margin-top: 14px;
+
+        a {
+          color: black
         }
 
-        &__title {
-          margin-top: 14px;
-
-          a {
-            color: black
-          }
-
-          h3 {
-            font-size: 1.25rem;
-          }
+        h3 {
+          font-size: 1.25rem;
         }
       }
 
