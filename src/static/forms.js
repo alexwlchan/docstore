@@ -73,7 +73,7 @@ function deleteDocument(documentId, title) {
 
   $.ajax({
     type: "DELETE",
-  	url: "/documents/" + documentId,
+  	url: "documents/" + documentId,
 
   	success: function(_) {
   		$("#document__" + documentId).remove()
