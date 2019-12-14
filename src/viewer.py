@@ -1,14 +1,15 @@
 # -*- encoding: utf-8
 
+import datetime as dt
 import json
 import pathlib
 import urllib.parse
 
 import attr
+import humanize
 import jinja2
 import smartypants
 
-import date_helpers
 import multilevel_tag_list
 
 
@@ -20,6 +21,18 @@ def query_str_only(url):
         return "?"
     else:
         return "?" + str(url).split("?")[1]
+
+
+def since_now_date_str(x):
+    result = humanize.naturaltime(
+        dt.datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f"),
+        dt.datetime.now()
+    )
+
+    if result == "now":
+        return "just now"
+    else:
+        return result
 
 
 @attr.s(frozen=True)
@@ -53,7 +66,7 @@ def create_env(templates_dir):
         autoescape=jinja2.select_autoescape(["html"])
     )
 
-    env.filters["since_now_date_str"] = date_helpers.since_now_date_str
+    env.filters["since_now_date_str"] = since_now_date_str
     env.filters["short_url"] = lambda u: urllib.parse.urlparse(u).netloc
     env.filters["query_str_only"] = query_str_only
     env.filters["smartypants"] = smartypants.smartypants

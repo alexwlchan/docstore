@@ -37,7 +37,7 @@ test_requirements.txt: test_requirements.in requirements.txt
 	docker run -v $(ROOT):/src --workdir /src docstore_pip_tools test_requirements.in
 
 check_release_file:
-	python tooling/autorelease.py check_release_file
+	python3 tooling/autorelease.py check_release_file
 
 autorelease:
-	python tooling/autorelease.py release
+	python3 tooling/autorelease.py release

@@ -194,7 +194,7 @@ def update_changelog_json(version, date, release_contents):
 
     major, minor, patch = version
 
-    changelog[f"v{major}.{minor}"][patch] = {
+    changelog["v%s.%s" % (major, minor)][patch] = {
         "date": date,
         "release_contents": release_contents,
     }
