@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.20.2 - 2019-12-14
+
+Fix a bug in v1.20.x where deleting a document from the UI wouldn't work if you were running docstore under a path, e.g. `https://example.net/docstore`.
+
 ## v1.20.1 - 2019-12-13
 
 Fix a cosmetic bug introduced in v1.20.0.
