@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v1.20.3 - 2019-12-14
+
+Internal refactoring.
+
+Specifically, I'm using `humanize.naturaltime` from the [humanize module](https://pypi.org/project/humanize/), rather than hand-rolling my own code for printing date strings.  Less code for me to maintain!
+
 ## v1.20.2 - 2019-12-14
 
 Fix a bug in v1.20.x where deleting a document from the UI wouldn't work if you were running docstore under a path, e.g. `https://example.net/docstore`.
