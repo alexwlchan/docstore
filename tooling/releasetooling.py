@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8
 
+import collections
 import datetime as dt
+import json
 import os
 import re
 import subprocess
@@ -181,6 +183,26 @@ def get_new_version_string(release_type):
     return "v" + ".".join(map(str, new_version))
 
 
+CHANGELOG_JSON = os.path.join(ROOT, "changelog.json")
+
+
+def update_changelog_json(version, date, release_contents):
+    with open(CHANGELOG_JSON) as infile:
+        changelog = json.load(infile)
+
+    changelog = collections.defaultdict(dict)
+
+    major, minor, patch = version
+
+    changelog[f"v{major}.{minor}"][patch] = {
+        "date": date,
+        "release_contents": release_contents,
+    }
+
+    with open(CHANGELOG_JSON, "w") as outfile:
+        outfile.write(json.dumps(changelog, indent=2, sort_keys=True))
+
+
 def update_changelog_and_version():
     contents = changelog()
     assert "\r" not in contents
@@ -197,7 +219,6 @@ def update_changelog_and_version():
 
     new_version = get_new_version(release_type)
     new_version_string = get_new_version_string(release_type)
-
     print("New version: %s" % new_version_string)
 
     now = dt.datetime.utcnow()
@@ -205,6 +226,12 @@ def update_changelog_and_version():
     date = max([
         d.strftime("%Y-%m-%d") for d in (now, now + dt.timedelta(hours=1))
     ])
+
+    # Write the contents of the release to changelog.json.  We don't use this
+    # to build the changelog yet, but we can start tracking the metadata.
+    update_changelog_json(
+        version=new_version, date=date, release_contents=release_contents
+    )
 
     heading_for_new_version = "## " + " - ".join((new_version_string, date))
 
@@ -245,6 +272,7 @@ def update_for_pending_release():
 
     git("rm", RELEASE_FILE)
     git("add", CHANGELOG_FILE)
+    git("add", CHANGELOG_JSON)
     git("add", VERSION_PY)
 
     new_version = get_new_version_string(release_type)
