@@ -63,3 +63,14 @@ def test_creates_mobi_thumbnail():
 def test_creates_qpdf_thumbnail():
     path = pathlib.Path("tests/files/qpdfconvert.pdf")
     create_thumbnail(path)
+
+
+def test_can_substitute_helvetica_in_pdf():
+    # This PDF uses the Helvetica font, but it isn't embedded.  Check that
+    # when the PDF gets thumbnailed, it isn't just white pixels -- some
+    # approximation of the text gets included.
+    path = pathlib.Path("tests/files/helvetica_with_no_embedded_fonts.pdf")
+    result = create_thumbnail(path)
+
+    im = Image.open(result)
+    assert im.getcolors() != [(226000, 255)]
