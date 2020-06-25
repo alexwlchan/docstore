@@ -1,8 +1,8 @@
 {
   "v1.20": {
-    "3": {
-      "date": "2019-12-14",
-      "release_contents": "Internal refactoring.\n\nSpecifically, I'm using `humanize.naturaltime` from the [humanize module](https://pypi.org/project/humanize/), rather than hand-rolling my own code for printing date strings.  Less code for me to maintain!"
+    "4": {
+      "date": "2020-06-25",
+      "release_contents": "This release adds Arial fonts to the base image, which can be substituted for Helvetica when creating thumbnails of PDFs that use Helvetica but don't include an embedded font.\n\nThis occurs in PDFs downloaded from [Workday](https://en.wikipedia.org/wiki/Workday,_Inc.), the HR software we use at Welcome."
     }
   }
 }
