@@ -1,11 +1,12 @@
 package main
 
 import (
-    "bytes"
+    // "bufio"
   "fmt"
   "io"
   "io/ioutil"
   "filippo.io/age"
+  // "filippo.io/age/armor"
   "os"
   // "path/filepath"
   )
@@ -36,32 +37,68 @@ func (efs EncryptedFilesystemStore) Write(name string, buffer []byte, password s
     if err != nil {
         return err
     }
-    r.SetWorkFactor(15)
+    // r.SetWorkFactor(15)
 
-    f, err := os.Create(name)
+    // TODO: Consider using os.OpenFile to open the file exclusively
+    f, err := os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0666)
 
     if err != nil {
         return err
     }
 
-    buf := &bytes.Buffer{}
     w, err := age.Encrypt(f, r)
     if err != nil {
         return err
     }
 
+
     if _, err = io.WriteString(w, "Hello world"); err != nil {
         return err
     }
 
-    fmt.Println(buf)
+    // If I don't call w.Close(), I get an "unexpected EOF" when trying to
+    // decrypt the file.
+    w.Close()
+    f.Close()
 
     return nil
 }
 
+func (efs EncryptedFilesystemStore) Read(name string, password string) (buffer []byte, err error) {
+    i, err := age.NewScryptIdentity(password)
+    if err != nil {
+        return nil, err
+    }
+
+    f, err := os.Open(name)
+    if err != nil {
+        return nil, err
+    }
+    // defer f.Close()
+
+    outDe, err := age.Decrypt(f, i)
+    if err != nil {
+        return nil, err
+    }
+
+    // fmt.Println(outDe)
+
+    outBytes, err := ioutil.ReadAll(outDe)
+    if err != nil {
+        fmt.Println("Error when calling ReadAll")
+        return nil, err
+    }
+
+    return outBytes, nil
+}
+
 func main() {
   s := EncryptedFilesystemStore { root: "." }
-  s.Write("greeting.txt", []byte("hello world\n"), "password123")
+  err := s.Write("greeting.txt.age", []byte("hello world\n"), "password123")
+  fmt.Println(err)
+  bytes, err := s.Read("greeting.txt.age", "password123")
+  fmt.Println(string(bytes))
+   fmt.Println(err)
   // data, _ := s.Read("hello.txt")
   // fmt.Println(string(data))
     // fmt.Println("Hello, 世界")
