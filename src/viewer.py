@@ -23,11 +23,8 @@ def query_str_only(url):
         return "?" + str(url).split("?")[1]
 
 
-def since_now_date_str(x):
-    result = humanize.naturaltime(
-        dt.datetime.strptime(x, "%Y-%m-%dT%H:%M:%S.%f"),
-        dt.datetime.now()
-    )
+def since_now_date_str(ds):
+    result = humanize.naturaltime(dt.datetime.fromisoformat(ds), dt.datetime.now())
 
     if result == "now":
         return "just now"

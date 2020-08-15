@@ -672,3 +672,9 @@ class TestLinksResetPagination:
             "?tag=alfa",
             "?tag=bravo",
         ]
+
+
+def test_since_now_date_str():
+    assert (
+        viewer.since_now_date_str(dt.datetime(2020, 1, 1).isoformat()) == "7 months ago"
+    )

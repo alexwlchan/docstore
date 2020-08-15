@@ -1,35 +1,9 @@
 # -*- encoding: utf-8
 
-import logging
 import mimetypes
 import pathlib
 import subprocess
 import tempfile
-
-from preview_generator.manager import PreviewManager
-from preview_generator.utils import LOGGER_NAME as PREVIEW_GENERATOR_LOGGER_NAME
-
-
-def create_preview_manager():
-    # When you create an instance of `PreviewManager`, you get warnings
-    # about builders with missing dependencies (e.g. inkscape).  This is
-    # mostly noise, so turn off all the logging from preview_manager while
-    # we construct a new instance.
-
-    class NoBuilderWarningFilter(logging.Filter):
-        def filter(self, record):
-            return False
-
-    logger = logging.getLogger(PREVIEW_GENERATOR_LOGGER_NAME)
-    f = NoBuilderWarningFilter()
-    logger.addFilter(f)
-    pm = PreviewManager(tempfile.mkdtemp())
-    logger.removeFilter(f)
-
-    return pm
-
-
-PREVIEW_MANAGER = create_preview_manager()
 
 
 def _get_epub_cover(path):
@@ -78,17 +52,16 @@ def _get_imagemagick_preview(path):
     return pathlib.Path(out_path)
 
 
-def _get_preview_manager_preview(path):
-
-    # Somewhere inside preview_manager it's calling `mimetypes.guess_type()`,
-    # which you can't use with Pathlib.Path.  There's a patch to fix that;
-    # when it's released (probably Python 3.8),  you can drop the casts.
-    # See:
-    #   https://bugs.python.org/issue34926
-    #   https://github.com/python/cpython/pull/9777
-    #
-    pm_path = PREVIEW_MANAGER.get_jpeg_preview(str(path), height=1200, width=1200)
-    return _get_imagemagick_preview(pathlib.Path(pm_path))
+def _get_pdf_preview(path):
+    # https://alexwlchan.net/2019/07/creating-preview-thumbnails-of-pdf-documents/
+    assert isinstance(path, pathlib.Path)
+    _, out_path = tempfile.mkstemp()
+    subprocess.check_call([
+        "pdftocairo", str(path), "-jpeg", "-singlefile", "-scale-to-x", "1200", "-scale-to-y", "1", out_path
+    ])
+    jpg_path = pathlib.Path(out_path + ".jpg")
+    assert jpg_path.exists()
+    return jpg_path
 
 
 def create_thumbnail(path):
@@ -105,17 +78,21 @@ def create_thumbnail(path):
         mobi_thumbnail_path.unlink()
         return thumbnail_path
 
+    elif path.suffix == ".pdf":
+        pdf_thumbnail_path = _get_pdf_preview(path)
+        thumbnail_path = _get_imagemagick_preview(pdf_thumbnail_path)
+        pdf_thumbnail_path.unlink()
+        return thumbnail_path
+
     # You can't pass a Pathlib.Path instance into mimetypes.guess_type yet.
     # There's a patch to fix that; when it's released (probably Python 3.8),
     # you can drop the `str`()`.  See:
     #   https://bugs.python.org/issue34926
     #   https://github.com/python/cpython/pull/9777
     #
+    guessed_type = mimetypes.guess_type(str(path))[0]
+
+    if guessed_type is not None and guessed_type.startswith("image/"):
+        return _get_imagemagick_preview(path)
     else:
-        guessed_type = mimetypes.guess_type(str(path))[0]
-
-        if guessed_type is not None and guessed_type.startswith("image/"):
-            return _get_imagemagick_preview(path)
-
-        else:
-            return _get_preview_manager_preview(path)
+        raise ValueError(f"Unsupported MIME type: {guessed_type}")

@@ -4,7 +4,6 @@ import pathlib
 
 from PIL import Image
 import pytest
-from preview_generator.exception import UnsupportedMimeType
 
 from thumbnails import create_thumbnail
 
@@ -15,7 +14,7 @@ from thumbnails import create_thumbnail
         ("bridge.jpg", ".jpg"),
         ("cluster.png", ".png"),
         ("metamorphosis.epub", ".jpg"),
-        ("snakes.pdf", ".jpeg"),
+        ("snakes.pdf", ".jpg"),
     ]
 )
 def test_create_thumbnail(filename, expected_ext):
@@ -25,19 +24,10 @@ def test_create_thumbnail(filename, expected_ext):
     assert result.exists()
 
 
-def test_errors_if_cannot_create_thumbnail():
-    with pytest.raises(UnsupportedMimeType):
-        create_thumbnail(pathlib.Path("tests/files/helloworld.rb"))
-
-
-def test_can_use_external_mimetype_to_check_mimetype():
-    # Inside the preview_generator library, it shells out to an external
-    # program "mimetype" if it can't work out the mimetype with Python.
-    #
-    # Markdown seems to be a format that it shells out for, so check
-    # that it works.
-    with pytest.raises(UnsupportedMimeType):
-        create_thumbnail(pathlib.Path("tests/files/README.md"))
+@pytest.mark.parametrize("filename", ["helloworld.rb", "README.md"])
+def test_errors_if_cannot_create_thumbnail(filename):
+    with pytest.raises(ValueError, match="Unsupported MIME type"):
+        create_thumbnail(pathlib.Path(f"tests/files/{filename}"))
 
 
 def test_creates_animated_gif_thumbnail():
