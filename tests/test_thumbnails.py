@@ -15,7 +15,7 @@ from thumbnails import create_thumbnail
         ("bridge.jpg", ".jpg"),
         ("cluster.png", ".png"),
         ("metamorphosis.epub", ".jpg"),
-        ("snakes.pdf", ".jpeg"),
+        ("snakes.pdf", ".jpg"),
     ]
 )
 def test_create_thumbnail(filename, expected_ext):

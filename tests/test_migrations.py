@@ -96,7 +96,7 @@ class TestMissingThumbnailCreation:
         assert store.objects == {
             "1": {
                 "file_identifier": file_identifier,
-                "thumbnail_identifier": pathlib.Path("1/1.jpeg")
+                "thumbnail_identifier": pathlib.Path("1/1.jpg")
             }
         }
 
@@ -123,5 +123,5 @@ def test_applies_migrations_in_turn(store_root, file_identifier):
     assert store.objects["1"] == {"checksum": "sha256:abcd"}
     assert store.objects["2"] == {
         "file_identifier": file_identifier,
-        "thumbnail_identifier": pathlib.Path("2/2.jpeg")
+        "thumbnail_identifier": pathlib.Path("2/2.jpg")
     }

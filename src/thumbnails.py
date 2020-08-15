@@ -78,6 +78,18 @@ def _get_imagemagick_preview(path):
     return pathlib.Path(out_path)
 
 
+def _get_pdf_preview(path):
+    # https://alexwlchan.net/2019/07/creating-preview-thumbnails-of-pdf-documents/
+    assert isinstance(path, pathlib.Path)
+    _, out_path = tempfile.mkstemp()
+    subprocess.check_call([
+        "pdftocairo", str(path), "-jpeg", "-singlefile", "-scale-to-x", "1200", "-scale-to-y", "1", out_path
+    ])
+    jpg_path = pathlib.Path(out_path + ".jpg")
+    assert jpg_path.exists()
+    return jpg_path
+
+
 def _get_preview_manager_preview(path):
 
     # Somewhere inside preview_manager it's calling `mimetypes.guess_type()`,
@@ -103,6 +115,12 @@ def create_thumbnail(path):
         mobi_thumbnail_path = _get_mobi_cover(path)
         thumbnail_path = _get_imagemagick_preview(mobi_thumbnail_path)
         mobi_thumbnail_path.unlink()
+        return thumbnail_path
+
+    elif path.suffix == ".pdf":
+        pdf_thumbnail_path = _get_pdf_preview(path)
+        thumbnail_path = _get_imagemagick_preview(pdf_thumbnail_path)
+        pdf_thumbnail_path.unlink()
         return thumbnail_path
 
     # You can't pass a Pathlib.Path instance into mimetypes.guess_type yet.
