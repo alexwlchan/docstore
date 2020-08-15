@@ -1,7 +1,6 @@
 FROM alpine
 
 RUN apk add --update \
-    exiftool \
     imagemagick \
     jpeg-dev \
     libmagic \
