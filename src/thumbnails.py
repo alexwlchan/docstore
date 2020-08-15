@@ -129,11 +129,9 @@ def create_thumbnail(path):
     #   https://bugs.python.org/issue34926
     #   https://github.com/python/cpython/pull/9777
     #
+    guessed_type = mimetypes.guess_type(str(path))[0]
+
+    if guessed_type is not None and guessed_type.startswith("image/"):
+        return _get_imagemagick_preview(path)
     else:
-        guessed_type = mimetypes.guess_type(str(path))[0]
-
-        if guessed_type is not None and guessed_type.startswith("image/"):
-            return _get_imagemagick_preview(path)
-
-        else:
-            return _get_preview_manager_preview(path)
+        raise ValueError(f"Unsupported MIME type: {guessed_type}")
