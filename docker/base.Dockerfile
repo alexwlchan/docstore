@@ -3,7 +3,6 @@ FROM alpine
 RUN apk add --update \
     exiftool \
     imagemagick \
-    imagemagick-dev \
     jpeg-dev \
     libmagic \
     poppler-utils \
