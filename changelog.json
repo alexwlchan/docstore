@@ -1,8 +1,8 @@
 {
   "v1.20": {
-    "4": {
-      "date": "2020-06-25",
-      "release_contents": "This release adds Arial fonts to the base image, which can be substituted for Helvetica when creating thumbnails of PDFs that use Helvetica but don't include an embedded font.\n\nThis occurs in PDFs downloaded from [Workday](https://en.wikipedia.org/wiki/Workday,_Inc.), the HR software we use at Welcome."
+    "5": {
+      "date": "2020-08-15",
+      "release_contents": "Some internal refactoring to reduce the size of the Docker image and reduce the number of dependencies."
     }
   }
 }

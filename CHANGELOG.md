@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.20.5 - 2020-08-15
+
+Some internal refactoring to reduce the size of the Docker image and reduce the number of dependencies.
+
 ## v1.20.4 - 2020-06-25
 
 This release adds Arial fonts to the base image, which can be substituted for Helvetica when creating thumbnails of PDFs that use Helvetica but don't include an embedded font.
