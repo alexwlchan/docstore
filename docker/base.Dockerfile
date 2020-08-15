@@ -13,13 +13,6 @@ RUN apk add --update \
     zlib-dev && \
     rm -rf /var/cache/apk/*
 
-# Install mimetype
-RUN apk add --update apkbuild-cpan build-base perl perl-dev shared-mime-info && \
-    PERL_MM_USE_DEFAULT=1 cpan File::BaseDir && \
-    PERL_MM_USE_DEFAULT=1 cpan File::MimeInfo && \
-    apk del apkbuild-cpan build-base perl-dev && \
-    rm -rf /var/cache/apk/*
-
 # Install the Microsoft fonts package.  This adds the Arial font,
 # which can be substituted for Helvetica in PDFs that use the font but
 # don't embed it.

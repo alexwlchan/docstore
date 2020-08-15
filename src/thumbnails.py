@@ -1,35 +1,9 @@
 # -*- encoding: utf-8
 
-import logging
 import mimetypes
 import pathlib
 import subprocess
 import tempfile
-
-from preview_generator.manager import PreviewManager
-from preview_generator.utils import LOGGER_NAME as PREVIEW_GENERATOR_LOGGER_NAME
-
-
-def create_preview_manager():
-    # When you create an instance of `PreviewManager`, you get warnings
-    # about builders with missing dependencies (e.g. inkscape).  This is
-    # mostly noise, so turn off all the logging from preview_manager while
-    # we construct a new instance.
-
-    class NoBuilderWarningFilter(logging.Filter):
-        def filter(self, record):
-            return False
-
-    logger = logging.getLogger(PREVIEW_GENERATOR_LOGGER_NAME)
-    f = NoBuilderWarningFilter()
-    logger.addFilter(f)
-    pm = PreviewManager(tempfile.mkdtemp())
-    logger.removeFilter(f)
-
-    return pm
-
-
-PREVIEW_MANAGER = create_preview_manager()
 
 
 def _get_epub_cover(path):
@@ -88,19 +62,6 @@ def _get_pdf_preview(path):
     jpg_path = pathlib.Path(out_path + ".jpg")
     assert jpg_path.exists()
     return jpg_path
-
-
-def _get_preview_manager_preview(path):
-
-    # Somewhere inside preview_manager it's calling `mimetypes.guess_type()`,
-    # which you can't use with Pathlib.Path.  There's a patch to fix that;
-    # when it's released (probably Python 3.8),  you can drop the casts.
-    # See:
-    #   https://bugs.python.org/issue34926
-    #   https://github.com/python/cpython/pull/9777
-    #
-    pm_path = PREVIEW_MANAGER.get_jpeg_preview(str(path), height=1200, width=1200)
-    return _get_imagemagick_preview(pathlib.Path(pm_path))
 
 
 def create_thumbnail(path):
