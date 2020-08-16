@@ -57,7 +57,7 @@ def _get_pdf_preview(path):
     assert isinstance(path, pathlib.Path)
     _, out_path = tempfile.mkstemp()
     subprocess.check_call([
-        "pdftocairo", str(path), "-jpeg", "-singlefile", "-scale-to-x", "1200", "-scale-to-y", "1", out_path
+        "pdftocairo", str(path), "-jpeg", "-singlefile", "-scale-to-x", "1200", out_path
     ])
     jpg_path = pathlib.Path(out_path + ".jpg")
     assert jpg_path.exists()

@@ -9,19 +9,23 @@ from thumbnails import create_thumbnail
 
 
 @pytest.mark.parametrize(
-    "filename, expected_ext",
+    "filename, expected_ext, expected_height",
     [
-        ("bridge.jpg", ".jpg"),
-        ("cluster.png", ".png"),
-        ("metamorphosis.epub", ".jpg"),
-        ("snakes.pdf", ".jpg"),
+        ("bridge.jpg", ".jpg", 300),
+        ("cluster.png", ".png", 260),
+        ("metamorphosis.epub", ".jpg", 533),
+        ("snakes.pdf", ".jpg", 585),
     ]
 )
-def test_create_thumbnail(filename, expected_ext):
+def test_create_thumbnail(filename, expected_ext, expected_height):
     path = pathlib.Path("tests/files") / filename
     result = create_thumbnail(path)
     assert result.suffix == expected_ext
     assert result.exists()
+
+    im = Image.open(result)
+    assert im.width == 400
+    assert im.height == expected_height
 
 
 @pytest.mark.parametrize("filename", ["helloworld.rb", "README.md"])
