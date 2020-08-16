@@ -1,8 +1,8 @@
 {
   "v1.20": {
-    "5": {
-      "date": "2020-08-15",
-      "release_contents": "Some internal refactoring to reduce the size of the Docker image and reduce the number of dependencies."
+    "6": {
+      "date": "2020-08-16",
+      "release_contents": "Fix a bug in v1.20.5 that broke thumbnailing of PDFs."
     }
   }
 }

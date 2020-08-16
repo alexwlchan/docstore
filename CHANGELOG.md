@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.20.6 - 2020-08-16
+
+Fix a bug in v1.20.5 that broke thumbnailing of PDFs.
+
 ## v1.20.5 - 2020-08-15
 
 Some internal refactoring to reduce the size of the Docker image and reduce the number of dependencies.
