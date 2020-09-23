@@ -27,17 +27,6 @@ class Document:
     files = attr.ib(factory=list)
 
 
-def test_document_defaults():
-    d1 = Document()
-    assert isinstance(d1.id, uuid.UUID)
-    assert (datetime.datetime.now() - d1.date_created).seconds < 2
-    assert d1.tags == []
-    assert d1.files == []
-
-    d2 = Document()
-    assert d1.id != d2.id
-
-
 class DocumentEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, uuid.UUID):
@@ -46,9 +35,3 @@ class DocumentEncoder(json.JSONEncoder):
             return obj.isoformat()
         else:  # pragma: no cover
             return obj
-
-
-def test_can_serialise_to_json():
-    d = Document()
-    json_string = json.dumps(attr.asdict(d), cls=DocumentEncoder)
-    assert Document(**json.loads(json_string)) == d
