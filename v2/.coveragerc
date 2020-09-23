@@ -1,14 +1,8 @@
 [run]
 branch = True
+source = docstore
 include =
-    src/*.py
-    src/**/*.py
     tests/*.py
-omit =
-    **/.virtualenvs/**/*.py
-    /usr/local/**/*.py
-    **/python3.6/**/*.py
-    /opt/python/**/*.py
 
 [report]
 show_missing = true
