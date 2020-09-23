@@ -17,7 +17,15 @@ setuptools.setup(
     packages=setuptools.find_packages(SOURCE),
     package_dir={"": SOURCE},
     url="https://github.com/alexwlchan/docstore",
-    install_requires=["attrs>=20.2.0", "cattrs>=1.0.0", "click>=7.1.2", "Flask>=1.1.2", "Pillow>=7.2.0", "Unidecode>=1.1.1"],
+    install_requires=[
+        "attrs>=20.2.0",
+        "cattrs>=1.0.0",
+        "click>=7.1.2",
+        "Flask>=1.1.2",
+        "hyperlink>=20.0.1",
+        "Pillow>=7.2.0",
+        "Unidecode>=1.1.1",
+    ],
     python_requires=">=3.8",
     entry_points={
         "console_scripts": [

@@ -1,6 +1,8 @@
+import collections
 import os
 
-from flask import Flask, jsonify, render_template, send_from_directory
+from flask import Flask, jsonify, render_template, request, send_from_directory
+import hyperlink
 
 from docstore.files import get_documents
 
@@ -10,8 +12,25 @@ def create_app(root):
 
     @app.route('/')
     def list_documents():
-        documents = get_documents(root)
-        return render_template('index.html', documents=sorted(documents, key=lambda d: d.date_created, reverse=True))
+        request_tags = set(request.args.getlist('tag'))
+        documents = [
+            doc
+            for doc in get_documents(root)
+            if request_tags.issubset(set(doc.tags))
+        ]
+
+        tag_tally = collections.Counter()
+        for doc in documents:
+            for t in doc.tags:
+                tag_tally[t] += 1
+
+        return render_template(
+            'index.html',
+            documents=sorted(documents, key=lambda d: d.date_created, reverse=True),
+            request_tags=request_tags,
+            request_url=hyperlink.DecodedURL.from_text(request.url),
+            tag_tally=tag_tally
+        )
 
     @app.route('/thumbnails/<shard>/<filename>')
     def thumbnails(shard, filename):
@@ -28,7 +47,6 @@ def create_app(root):
     @app.template_filter('display_title')
     def display_title(document):
         parts = []
-        print(repr(document.title))
         if document.title is not None:
             parts.append(document.title)
 
@@ -36,11 +54,7 @@ def create_app(root):
         if by_tags:
             parts.append('by %s' % ', '.join(by_tags))
 
-        print(parts)
-        if not parts:
-            return ''
-        else:
-            return ' '.join(parts)
+        return ' '.join(parts)
 
     @app.template_filter('display_tags')
     def display_tags(document):
