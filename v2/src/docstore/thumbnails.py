@@ -18,7 +18,7 @@ def _is_animated_gif(path):
         return im.n_frames > 1
 
 
-def create_thumbnail(path, *, max_size):
+def create_thumbnail(path, *, max_size=400):
     """
     Creates a thumbnail of the file at ``path``.
 
