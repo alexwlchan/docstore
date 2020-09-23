@@ -50,6 +50,7 @@ class File:
 
 @attr.s
 class Document:
+    title = attr.ib(type=str)
     id = attr.ib(factory=uuid.uuid4, converter=_convert_to_uuid)
     date_created = attr.ib(
         factory=datetime.datetime.now, converter=_convert_to_datetime

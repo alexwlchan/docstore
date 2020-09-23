@@ -9,13 +9,13 @@ from docstore.models import Document, File, Thumbnail, from_json, to_json
 
 
 def test_document_defaults():
-    d1 = Document()
+    d1 = Document(title="My test document")
     assert isinstance(d1.id, uuid.UUID)
     assert (datetime.datetime.now() - d1.date_created).seconds < 2
     assert d1.tags == []
     assert d1.files == []
 
-    d2 = Document()
+    d2 = Document(title="A different document")
     assert d1.id != d2.id
 
 
@@ -39,7 +39,7 @@ def test_can_serialise_document_to_json():
         thumbnail=Thumbnail(path="thumbnails/c/cats.jpg"),
     )
 
-    documents = [Document(files=[f])]
+    documents = [Document(title="Another test document", files=[f])]
     assert from_json(to_json(documents)) == documents
 
 

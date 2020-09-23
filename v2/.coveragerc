@@ -1,13 +1,8 @@
 [run]
 branch = True
 source = docstore
-include =
-    tests/*.py
+# TODO: Capture coverage data for the 'tests' directory
 
 [report]
 show_missing = true
 fail_under = 100
-exclude_lines =
-    pragma: no cover
-    @abc.abstractmethod
-    @abc.abstractproperty

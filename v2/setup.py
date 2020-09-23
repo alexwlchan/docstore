@@ -17,6 +17,6 @@ setuptools.setup(
     packages=setuptools.find_packages(SOURCE),
     package_dir={"": SOURCE},
     url="https://github.com/alexwlchan/docstore",
-    install_requires=["attrs>=20.2.0", "cattrs>=1.0.0"],
+    install_requires=["attrs>=20.2.0", "cattrs>=1.0.0", "Pillow>=7.2.0"],
     python_requires=">=3.8",
 )
