@@ -4,7 +4,7 @@ import uuid
 
 import attr
 
-from docstore.models import Document, DocumentEncoder
+from docstore.models import Document, File, Thumbnail, from_json, to_json
 
 
 def test_document_defaults():
@@ -18,7 +18,25 @@ def test_document_defaults():
     assert d1.id != d2.id
 
 
-def test_can_serialise_to_json():
-    d = Document()
-    json_string = json.dumps(attr.asdict(d), cls=DocumentEncoder)
-    assert Document(**json.loads(json_string)) == d
+def test_file_defaults():
+    f = File(
+        filename="cats.jpg",
+        path="files/c/cats.jpg",
+        size=100,
+        checksum="sha256:123",
+        thumbnail=Thumbnail(path="thumbnails/c/cats.jpg"),
+    )
+    assert isinstance(f.id, uuid.UUID)
+
+
+def test_can_serialise_document_to_json():
+    f = File(
+        filename="cats.jpg",
+        path="files/c/cats.jpg",
+        size=100,
+        checksum="sha256:123",
+        thumbnail=Thumbnail(path="thumbnails/c/cats.jpg"),
+    )
+
+    documents = [Document(files=[f])]
+    assert from_json(to_json(documents)) == documents
