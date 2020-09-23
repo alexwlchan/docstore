@@ -83,20 +83,24 @@
   .tag_info hr {
     height: 1px;
   }
+
+  #tag_cloud .tag {
+    display: inline-block;
+  }
 </style>
 
 <main>
   {% if request_tags or tag_tally %}
   <div class="tag_info">
-    <div class="tag_cloud">
+    <div id="tag_cloud">
       {% for t, count in tag_tally.items()|sort() %}
-        <span class="tag">
+        <div class="tag" rel="{{ count }}">
           {% if t in request_tags %}
           {{ t }}
           {% else %}
           <a href="{{ request_url.add('tag', t) }}">{{ t }}</a>
           {% endif %}
-        </span>
+        </div>
       {% endfor %}
     </div>
 
@@ -149,3 +153,16 @@
     {% endfor %}
   </table>
 </main>
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='jquery.tagcloud.js') }}"></script>
+<script>
+  $.fn.tagcloud.defaults = {
+    size: { start: 12, end: 18, unit: 'pt' },
+    color: { start: '#999', end: '#7300ff' },
+  };
+
+  $(function() {
+    $('#tag_cloud .tag').tagcloud();
+  })
+</script>
