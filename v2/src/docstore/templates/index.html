@@ -1,23 +1,81 @@
-<table>
-  {% for doc in documents %}
-    <tr>
-      <td>
-        {% for f in doc.files %}
-        <a href="/{{ f.path }}"><img src="/{{ f.thumbnail.path }}"></a>
-        {% endfor %}
-      </td>
-      <td>
-        <span class="title">{{ doc|display_title }}</span><br/>
-        {{ doc.files[0].source_url }}<br/>
-        {% for t in doc|display_tags %}
-          {{ t }}
-        {% endfor %}
-      </td>
-    </tr>
-    {% if not loop.last %}
-    <tr>
-      <td colspan="2"><hr/></td>
-    </tr>
-    {% endif %}
-  {% endfor %}
-</table>
+<style>
+  body {
+    background: url('/static/natural_paper.png');
+    font: 16pt Helvetica;
+    line-height: 1.35em;
+  }
+
+  main {
+    max-width: 750px;
+    margin-left:  auto;
+    margin-right: auto;
+  }
+
+  .thumbnail {
+    width: 200px;
+    padding-right: 15px;
+  }
+
+  .thumbnail img {
+    width: 200px;
+  }
+
+  h3 {
+    margin-bottom: 0.5em;
+  }
+
+  table {
+    width: 100%;
+  }
+
+  hr {
+    margin-left:  1em;
+    margin-right: 1em;
+    border: none;
+    height: 0.5px;
+    background: rgba(115, 0, 255, 0.5);
+  }
+
+  .thumbnail a {
+    display: block;
+  }
+
+  .thumbnail a:hover {
+    background: #7300ff;
+  }
+
+  .thumbnail a img:hover {
+    opacity: 0.8;
+    border: 1px solid #7300ff;
+    margin: -1px;
+  }
+</style>
+
+<main>
+  <table>
+    {% for doc in documents %}
+      <tr>
+        <td class="thumbnail">
+          {% for f in doc.files %}
+          <a href="/{{ f.path }}"><img src="/{{ f.thumbnail.path }}"></a>
+          {% if not loop.last %}
+            <br/>
+          {% endif %}
+          {% endfor %}
+        </td>
+        <td>
+          <h3 class="title">{{ doc|display_title }}</h3>
+          {{ doc.files[0].source_url }}<br/>
+          {% for t in doc|display_tags %}
+            {{ t }}
+          {% endfor %}
+        </td>
+      </tr>
+      {% if not loop.last %}
+      <tr>
+        <td colspan="2"><hr/></td>
+      </tr>
+      {% endif %}
+    {% endfor %}
+  </table>
+</main>

@@ -28,14 +28,19 @@ def create_app(root):
     @app.template_filter('display_title')
     def display_title(document):
         parts = []
-        if document.title:
+        print(repr(document.title))
+        if document.title is not None:
             parts.append(document.title)
 
         by_tags = [t[len('by:'):] for t in document.tags if t.startswith('by:')]
         if by_tags:
             parts.append('by %s' % ', '.join(by_tags))
 
-        return ' '.join(parts)
+        print(parts)
+        if not parts:
+            return ''
+        else:
+            return ' '.join(parts)
 
     @app.template_filter('display_tags')
     def display_tags(document):

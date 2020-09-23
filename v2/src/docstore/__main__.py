@@ -31,6 +31,8 @@ def add(root, path, title, tags, source_url, date_created):
     tags = tags or ''
     tags = [t.strip() for t in tags.split(',') if t.strip()]
 
+    title = title or ''
+
     if date_created is not None:
         date_created = datetime.datetime.fromisoformat(date_created)
     else:
