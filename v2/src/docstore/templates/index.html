@@ -1,1 +1,23 @@
-{{ documents }}
+<table>
+  {% for doc in documents %}
+    <tr>
+      <td>
+        {% for f in doc.files %}
+        <a href="/{{ f.path }}"><img src="/{{ f.thumbnail.path }}"></a>
+        {% endfor %}
+      </td>
+      <td>
+        <span class="title">{{ doc|display_title }}</span><br/>
+        {{ doc.files[0].source_url }}<br/>
+        {% for t in doc|display_tags %}
+          {{ t }}
+        {% endfor %}
+      </td>
+    </tr>
+    {% if not loop.last %}
+    <tr>
+      <td colspan="2"><hr/></td>
+    </tr>
+    {% endif %}
+  {% endfor %}
+</table>

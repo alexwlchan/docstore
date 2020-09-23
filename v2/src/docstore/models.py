@@ -45,6 +45,7 @@ class File:
     size = attr.ib(type=int)
     checksum = attr.ib(type=str)
     thumbnail = attr.ib(type=Thumbnail, converter=_convert_to_thumbnail)
+    source_url = attr.ib(type=str, default=None)
     id = attr.ib(factory=uuid.uuid4, converter=_convert_to_uuid)
 
 

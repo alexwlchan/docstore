@@ -25,8 +25,9 @@ def serve(host, port, debug, root):
 @click.option('--path', help='The file to store.', type=click.Path(), required=True)
 @click.option('--title', help='The title of the file.')
 @click.option('--tags', help='The tags to apply to the file.')
+@click.option('--source_url', help='Where was this file downloaded from?.')
 @click.option('--date_created', help='When the file was created in docstore.')
-def add(root, path, title, tags, date_created):
+def add(root, path, title, tags, source_url, date_created):
     tags = tags or ''
     tags = [t.strip() for t in tags.split(',') if t.strip()]
 
@@ -36,5 +37,5 @@ def add(root, path, title, tags, date_created):
         date_created = datetime.datetime.now()
 
     store_new_document(
-        root=root, path=path, title=title, tags=tags, date_created=date_created
+        root=root, path=path, title=title, tags=tags, source_url=source_url, date_created=date_created
     )

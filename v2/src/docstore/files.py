@@ -48,7 +48,7 @@ def _sha256(path):
     return 'sha256:%s' % h.hexdigest()
 
 
-def store_new_document(*, root, path, title, tags, date_created):
+def store_new_document(*, root, path, title, tags, source_url, date_created):
     filename = os.path.basename(path)
     name, ext = os.path.splitext(filename)
     slug = slugify(name) + ext
@@ -76,7 +76,8 @@ def store_new_document(*, root, path, title, tags, date_created):
                     path=out_path,
                     size=os.stat(out_path).st_size,
                     checksum=_sha256(out_path),
-                    thumbnail=Thumbnail(thumb_out_path)
+                    source_url=source_url,
+                    thumbnail=Thumbnail(thumb_out_path),
                 )
             ]
         )
