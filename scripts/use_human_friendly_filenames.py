@@ -52,12 +52,11 @@ if __name__ == "__main__":
         new_identifier = fm.write_bytes(
             file_id=doc_id,
             buffer=(root / "files" / doc["file_identifier"]).read_bytes(),
-            original_filename=doc["filename"]
+            original_filename=doc["filename"],
         )
 
         assert filecmp.cmp(
-            root / "files" / doc["file_identifier"],
-            root / "files" / new_identifier
+            root / "files" / doc["file_identifier"], root / "files" / new_identifier
         )
 
         print(f"{doc['file_identifier']} ~> {new_identifier}")
@@ -66,9 +65,6 @@ if __name__ == "__main__":
         doc["file_identifier"] = new_identifier
 
     json_string = json.dumps(
-        documents_data,
-        indent=2,
-        sort_keys=True,
-        cls=PosixPathEncoder
+        documents_data, indent=2, sort_keys=True, cls=PosixPathEncoder
     )
     documents.write_text(json_string)

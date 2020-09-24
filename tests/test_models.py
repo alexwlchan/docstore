@@ -12,7 +12,6 @@ def is_recent(ds):
     return (datetime.datetime.now() - ds).seconds < 2
 
 
-
 def test_document_defaults():
     d1 = Document(title="My test document")
     assert uuid.UUID(d1.id)

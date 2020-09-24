@@ -2,6 +2,7 @@ import os
 
 import setuptools
 
+
 def local_file(name):
     return os.path.relpath(os.path.join(os.path.dirname(__file__), name))
 
@@ -30,5 +31,5 @@ setuptools.setup(
         "console_scripts": [
             "docstore = docstore.__main__:main",
         ]
-    }
+    },
 )
