@@ -8,10 +8,15 @@ import pytest
 from docstore.models import Document, File, Thumbnail, from_json, to_json
 
 
+def is_recent(ds):
+    return (datetime.datetime.now() - ds).seconds < 2
+
+
+
 def test_document_defaults():
     d1 = Document(title="My test document")
-    assert isinstance(d1.id, uuid.UUID)
-    assert (datetime.datetime.now() - d1.date_created).seconds < 2
+    assert uuid.UUID(d1.id)
+    assert is_recent(d1.date_saved)
     assert d1.tags == []
     assert d1.files == []
 
@@ -27,7 +32,8 @@ def test_file_defaults():
         checksum="sha256:123",
         thumbnail=Thumbnail(path="thumbnails/c/cats.jpg"),
     )
-    assert isinstance(f.id, uuid.UUID)
+    uuid.UUID(f.id)
+    assert is_recent(f.date_saved)
 
 
 def test_can_serialise_document_to_json():

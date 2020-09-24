@@ -7,13 +7,6 @@ import attr
 import cattr
 
 
-def _convert_to_uuid(u):
-    if isinstance(u, uuid.UUID):
-        return u
-    else:
-        return uuid.UUID(u)
-
-
 def _convert_to_datetime(d):
     if isinstance(d, datetime.datetime):
         return d
@@ -48,13 +41,13 @@ class File:
     date_saved = attr.ib(
         factory=datetime.datetime.now, converter=_convert_to_datetime
     )
-    id = attr.ib(default=attr.Factory(lambda self: str(uuid.uuid4())))
+    id = attr.ib(default=attr.Factory(lambda: str(uuid.uuid4())))
 
 
 @attr.s
 class Document:
     title = attr.ib(type=str)
-    id = attr.ib(default=attr.Factory(lambda self: str(uuid.uuid4())))
+    id = attr.ib(default=attr.Factory(lambda: str(uuid.uuid4())))
     date_saved = attr.ib(
         factory=datetime.datetime.now, converter=_convert_to_datetime
     )
