@@ -1,11 +1,13 @@
 import datetime
 import json
 import os
+import sys
 
 import click
 
-from docstore.files import store_new_document
+from docstore.files import read_documents, store_new_document, write_documents
 from docstore.server import run_profiler, run_server
+from docstore.text_utils import common_prefix
 
 
 @click.group()
@@ -104,3 +106,71 @@ def migrate(root, v1_path):
                 date_created=datetime.datetime.fromisoformat(doc["date_created"]),
             )
             print(doc.get("filename", os.path.basename(doc["file_identifier"])))
+
+
+@main.command(help="Merge the files on two documents")
+@click.option(
+    "--root",
+    default=".",
+    help="The root of the docstore database.",
+    type=click.Path(),
+    show_default=True,
+)
+@click.argument("doc_ids", nargs=-1)
+def merge(root, doc_ids):
+    first_doc_id = doc_ids[0]
+
+    for later_doc_id in doc_ids[1:]:
+        documents = {d.id: d for d in read_documents(root)}
+
+        try:
+            first_doc = documents[first_doc_id]
+        except KeyError:
+            click.echo(f"Unable to find document {first_doc_id}", file=sys.stderr)
+            raise click.Abort()
+
+        try:
+            later_doc = documents[later_doc_id]
+        except KeyError:
+            click.echo(f"Unable to find document {later_doc_id}", file=sys.stderr)
+            raise click.Abort()
+
+        click.echo(f'{first_doc_id.split("-")[0]} {click.style(first_doc.title, fg="yellow") or "<untitled>"}')
+        click.echo(f'{later_doc_id.split("-")[0]} {click.style(later_doc.title, fg="yellow") or "<untitled>"}')
+        click.confirm('Merge these two documents?', abort=True)
+
+        title_candidates = [first_doc.title, later_doc.title]
+        guessed_title = common_prefix(title_candidates)
+
+        print("")
+        click.echo(f'Guessed title: {click.style(guessed_title, fg="blue")}')
+        if click.confirm('Use title?'):
+            new_title = guessed_title
+        else:
+            if guessed_title and guessed_title not in title_candidates:
+                title_candidates.insert(0, guessed_title)
+
+            new_title = click.edit('\n'.join(title_candidates)).strip()
+
+        if first_doc.tags != later_doc.tags:
+            candidate_tags = first_doc.tags
+            for t in later_doc.tags:
+                if t not in candidate_tags:
+                    candidate_tags.append(t)
+
+            print("")
+            click.echo(f"Guessed tags: {click.style(', '.join(candidate_tags), fg='blue')}")
+            if click.confirm('Use title?'):
+                new_tags = candidate_tags
+            else:
+                new_tags = click.edit('\n'.join(candidate_tags)).strip().splitlines()
+
+            first_doc.tags = new_tags
+
+        first_doc.date_saved = min([first_doc.date_saved, later_doc.date_saved])
+        first_doc.title = new_title
+        first_doc.files.extend(later_doc.files)
+        del documents[later_doc_id]
+
+        write_documents(root=root, documents=list(documents.values()))
+        print('')

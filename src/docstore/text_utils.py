@@ -1,6 +1,20 @@
+import os
 import re
 
 from unidecode import unidecode
+
+
+def common_prefix(values):
+    prefix = os.path.commonprefix(values).strip()
+
+    prefix = prefix.strip('()').strip()
+    if prefix.lower().endswith('(part'):
+        prefix = prefix[:-len('(part')].strip()
+
+    if prefix.lower().endswith('- part'):
+        prefix = prefix[:-len('- part')].strip()
+
+    return prefix
 
 
 def slugify(u):

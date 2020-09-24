@@ -4,7 +4,7 @@ import secrets
 import shutil
 
 from docstore.models import Document, File, Thumbnail, from_json, to_json
-from docstore.slugify import slugify
+from docstore.text_utils import slugify
 from docstore.thumbnails import create_thumbnail
 
 
@@ -14,7 +14,7 @@ _cached_documents = {
 }
 
 
-def get_documents(root):
+def read_documents(root):
     """
     Get a list of all the documents.
     """
@@ -48,10 +48,11 @@ def write_documents(*, root, documents):
         out_file.write(json_string)
 
 
-def _sha256(path):
+def sha256(path):
     h = hashlib.sha256()
     with open(path, "rb") as infile:
-        h.update(infile.read())
+        for byte_block in iter(lambda: infile.read(4096), b""):
+            h.update(byte_block)
 
     return "sha256:%s" % h.hexdigest()
 
@@ -77,7 +78,7 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
     os.makedirs(os.path.dirname(thumb_out_path), exist_ok=True)
     shutil.move(thumbnail_path, thumb_out_path)
 
-    documents = get_documents(root)
+    documents = read_documents(root)
     documents.append(
         Document(
             title=title,
@@ -88,7 +89,7 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
                     filename=filename,
                     path=out_path,
                     size=os.stat(out_path).st_size,
-                    checksum=_sha256(out_path),
+                    checksum=sha256(out_path),
                     source_url=source_url,
                     thumbnail=Thumbnail(thumb_out_path),
                     date_saved=date_saved,

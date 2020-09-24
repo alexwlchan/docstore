@@ -7,7 +7,7 @@ from urllib.parse import parse_qsl, urlparse, urlencode
 from flask import Flask, jsonify, render_template, request, send_from_directory
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
-from docstore.files import get_documents
+from docstore.files import read_documents
 
 
 def create_app(root):
@@ -19,7 +19,7 @@ def create_app(root):
     def list_documents():
         request_tags = set(request.args.getlist("tag"))
         documents = [
-            doc for doc in get_documents(root) if request_tags.issubset(set(doc.tags))
+            doc for doc in read_documents(root) if request_tags.issubset(set(doc.tags))
         ]
 
         tag_tally = collections.Counter()
