@@ -1,10 +1,10 @@
 import collections
 import datetime
+import functools
 import os
+from urllib.parse import parse_qsl, urlparse, urlencode
 
 from flask import Flask, jsonify, render_template, request, send_from_directory
-import htmlmin
-import hyperlink
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from docstore.files import get_documents
@@ -12,11 +12,11 @@ from docstore.files import get_documents
 
 def create_app(root):
     app = Flask(__name__)
+    app.jinja_env.trim_blocks = True
+    app.jinja_env.lstrip_blocks = True
 
     @app.route('/')
     def list_documents():
-        import time
-        t0 = time.time()
         request_tags = set(request.args.getlist('tag'))
         documents = [
             doc
@@ -34,25 +34,16 @@ def create_app(root):
         except KeyError:
             page = 1
 
-        t1 = time.time()
-        print(t1 - t0)
-
         html = render_template(
             'index.html',
             documents=sorted(documents, key=lambda d: d.date_saved, reverse=True),
             request_tags=request_tags,
-            request_url=hyperlink.DecodedURL.from_text(request.url),
+            query_string=tuple(parse_qsl(urlparse(request.url).query)),
             tag_tally=tag_tally,
             page=page,
         )
-        t2 = time.time()
-        print(t2 - t1)
 
-        html2 = htmlmin.minify(html)
-        t3 = time.time()
-        print(t3 - t2)
-
-        return html2
+        return html
 
     @app.route('/thumbnails/<shard>/<filename>')
     def thumbnails(shard, filename):
@@ -77,12 +68,31 @@ def create_app(root):
         )
 
     @app.template_filter('add_tag')
-    def add_tag(url, tag):
-        return url.add('tag', tag).remove('page')
+    @functools.lru_cache()
+    def add_tag(query_string, tag):
+        return '?' + urlencode(
+            [(k, v) for k, v in query_string if k != 'page'] +
+            [('tag', tag)]
+        )
+
+    @app.template_filter('remove_tag')
+    def remove_tag(query_string, tag):
+        return '?' + urlencode(
+            [(k, v) for k, v in query_string if (k, v) != ('tag', tag)]
+        )
+
+    @app.template_filter('set_page')
+    @functools.lru_cache()
+    def set_page(query_string, page):
+        pageless_qs = [(k, v) for k, v in query_string if k != 'page']
+        if page == 1:
+            return '?' + urlencode(pageless_qs)
+        else:
+            return '?' + urlencode(pageless_qs + [('page', page)])
 
     @app.template_filter('hostname')
     def hostname(url):
-        return hyperlink.URL.from_text(url).host
+        return url.split("/")[2]
 
     @app.template_filter('pretty_date')
     def pretty_date(d):

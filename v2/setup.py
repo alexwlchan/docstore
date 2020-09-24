@@ -22,8 +22,6 @@ setuptools.setup(
         "cattrs>=1.0.0",
         "click>=7.1.2",
         "Flask>=1.1.2",
-        "htmlmin>=0.1.12",
-        "hyperlink>=20.0.1",
         "Pillow>=7.2.0",
         "Unidecode>=1.1.1",
     ],

@@ -1,6 +1,5 @@
 import datetime
 import json
-import pathlib
 from typing import List
 import uuid
 
@@ -35,12 +34,12 @@ def _convert_to_file(f_list):
 
 @attr.s
 class Thumbnail:
-    path = attr.ib(converter=pathlib.Path)
+    path = attr.ib(type=str)
 
 
 @attr.s
 class File:
-    filename = attr.ib(converter=pathlib.Path)
+    filename = attr.ib(converter=str)
     path = attr.ib(type=str)
     size = attr.ib(type=int)
     checksum = attr.ib(type=str)
@@ -49,13 +48,13 @@ class File:
     date_saved = attr.ib(
         factory=datetime.datetime.now, converter=_convert_to_datetime
     )
-    id = attr.ib(factory=uuid.uuid4, converter=_convert_to_uuid)
+    id = attr.ib(default=attr.Factory(lambda self: str(uuid.uuid4())))
 
 
 @attr.s
 class Document:
     title = attr.ib(type=str)
-    id = attr.ib(factory=uuid.uuid4, converter=_convert_to_uuid)
+    id = attr.ib(default=attr.Factory(lambda self: str(uuid.uuid4())))
     date_saved = attr.ib(
         factory=datetime.datetime.now, converter=_convert_to_datetime
     )
@@ -65,9 +64,7 @@ class Document:
 
 class DocstoreEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, uuid.UUID):
-            return str(obj)
-        elif isinstance(obj, datetime.datetime):
+        if isinstance(obj, datetime.datetime):
             return obj.isoformat()
         elif isinstance(obj, pathlib.Path):
             return str(obj)
