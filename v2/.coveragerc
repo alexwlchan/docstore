@@ -1,8 +1,0 @@
-[run]
-branch = True
-source = docstore
-# TODO: Capture coverage data for the 'tests' directory
-
-[report]
-show_missing = true
-fail_under = 100

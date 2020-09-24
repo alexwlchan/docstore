@@ -1,11 +1,4 @@
+.tox
+*.egg-info
 *.pyc
 .coverage
-.DS_Store
-style.css
-.docker
-.hypothesis
-
-id_rsa
-id_rsa.pub
-docker_password.txt
-secrets.zip

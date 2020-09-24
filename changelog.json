@@ -1,8 +1,0 @@
-{
-  "v1.20": {
-    "6": {
-      "date": "2020-08-16",
-      "release_contents": "Fix a bug in v1.20.5 that broke thumbnailing of PDFs."
-    }
-  }
-}

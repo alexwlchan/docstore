@@ -1,70 +1,38 @@
-# -*- encoding: utf-8
-
-import pathlib
-
 from PIL import Image
 import pytest
 
-from thumbnails import create_thumbnail
+from docstore.thumbnails import create_thumbnail
 
 
 @pytest.mark.parametrize(
-    "filename, expected_ext, expected_height",
-    [
-        ("bridge.jpg", ".jpg", 300),
-        ("cluster.png", ".png", 260),
-        ("metamorphosis.epub", ".jpg", 533),
-        ("snakes.pdf", ".jpg", 585),
-    ]
+    "filename", ["Newtons_cradle.gif", "Rotating_earth_(large).gif"]
 )
-def test_create_thumbnail(filename, expected_ext, expected_height):
-    path = pathlib.Path("tests/files") / filename
-    result = create_thumbnail(path)
-    assert result.suffix == expected_ext
-    assert result.exists()
-
-    im = Image.open(result)
-    assert im.width == 400
-    assert im.height == expected_height
+def test_creates_thumbnail_of_animated_gif(filename):
+    path = create_thumbnail(f"tests/files/{filename}", max_size=400)
+    assert path.endswith(".mp4")
 
 
-@pytest.mark.parametrize("filename", ["helloworld.rb", "README.md"])
-def test_errors_if_cannot_create_thumbnail(filename):
-    with pytest.raises(ValueError, match="Unsupported MIME type"):
-        create_thumbnail(pathlib.Path(f"tests/files/{filename}"))
+def test_creates_thumbnail_of_single_frame_gif():
+    path = create_thumbnail(
+        "tests/files/Rotating_earth_(large)_singleframe.gif", max_size=400
+    )
+    assert path.endswith(".png")
+
+    im = Image.open(path)
+    assert im.size == (400, 400)
 
 
-def test_creates_animated_gif_thumbnail():
-    path = pathlib.Path("tests/files/movingsun.gif")
-    result = create_thumbnail(path)
+def test_creates_thumbnail_of_png():
+    path = create_thumbnail("tests/files/cluster.png", max_size=250)
+    assert path.endswith("/cluster.png.png")
 
-    assert result.suffix == ".gif"
-    im = Image.open(result)
-    assert im.format == "GIF"
-    im.seek(1)  # throws an EOFError if not animated
+    im = Image.open(path)
+    assert im.size == (250, 162)
 
 
-def test_creates_mobi_thumbnail():
-    path = pathlib.Path("tests/files/grundfragen.mobi")
-    result = create_thumbnail(path)
+def test_creates_thumbnail_of_pdf():
+    path = create_thumbnail("tests/files/snakes.pdf", max_size=350)
+    assert path.endswith("/snakes.pdf.png")
 
-    assert result.suffix == ".jpeg"
-    im = Image.open(result)
-    assert im.format == "JPEG"
-    assert im.size == (400, 631)
-
-
-def test_creates_qpdf_thumbnail():
-    path = pathlib.Path("tests/files/qpdfconvert.pdf")
-    create_thumbnail(path)
-
-
-def test_can_substitute_helvetica_in_pdf():
-    # This PDF uses the Helvetica font, but it isn't embedded.  Check that
-    # when the PDF gets thumbnailed, it isn't just white pixels -- some
-    # approximation of the text gets included.
-    path = pathlib.Path("tests/files/helvetica_with_no_embedded_fonts.pdf")
-    result = create_thumbnail(path)
-
-    im = Image.open(result)
-    assert im.getcolors() != [(226000, 255)]
+    im = Image.open(path)
+    assert im.size == (247, 350)
