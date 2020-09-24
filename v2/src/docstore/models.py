@@ -46,6 +46,9 @@ class File:
     checksum = attr.ib(type=str)
     thumbnail = attr.ib(type=Thumbnail, converter=_convert_to_thumbnail)
     source_url = attr.ib(type=str, default=None)
+    date_saved = attr.ib(
+        factory=datetime.datetime.now, converter=_convert_to_datetime
+    )
     id = attr.ib(factory=uuid.uuid4, converter=_convert_to_uuid)
 
 
@@ -53,7 +56,7 @@ class File:
 class Document:
     title = attr.ib(type=str)
     id = attr.ib(factory=uuid.uuid4, converter=_convert_to_uuid)
-    date_created = attr.ib(
+    date_saved = attr.ib(
         factory=datetime.datetime.now, converter=_convert_to_datetime
     )
     tags = attr.ib(factory=list)

@@ -1,0 +1,59 @@
+{% if documents|length <= page_end %}
+  {% set next_url = "#" %}
+{% else %}
+  {% set next_url = request_url.set('page', (page + 1)|string) %}
+{% endif %}
+
+{% if page == 1 %}
+  {% set prev_url = "#" %}
+{% elif page == 2 %}
+  {% set prev_url = request_url.remove('page') %}
+{% else %}
+  {% set prev_url = request_url.set('page', (page - 1)|string) %}
+{% endif %}
+
+<div class="meta_info">
+  {% if documents|length == 0 %}
+    No documents found!
+  {% else %}
+    Showing document{% if page_start != page_end %}s{% endif %} {{ page_start }}{% if page_start != page_end %}&ndash;{{ page_end }}{% endif %} of {{ documents|length }}.
+
+    {% if (prev_url != "#") or (next_url != "#") %}
+      <a {% if prev_url == "#" %}class="disabled"{% endif %} href="{{ prev_url }}">« prev</a>
+      •
+      <a {% if next_url == "#" %}class="disabled"{% endif %} href="{{ next_url }}">next »</a>
+    {% endif %}
+  {% endif %}
+
+  {% if request_tags or tag_tally %}
+  <hr/>
+  {% endif %}
+
+  {% if tag_tally|length > 15 %}
+    <details><summary>Tag cloud</summary>
+  {% endif %}
+  <div id="tag_cloud">
+    {% for t, count in tag_tally.items()|sort() %}
+      {% if t in request_tags %}
+      {{ t }}
+      {% else %}
+      <a class="tag" href="{{ request_url|add_tag(t) }}" rel="{{ count }}">{{ t }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if tag_tally|length > 15 %}
+    </details>
+  {% endif %}
+
+
+  {% if tag_tally and request_tags %}
+  <hr/>
+  {% endif %}
+  {% if request_tags %}
+    Filtering to tag{% if request_tags|length > 1 %}s{% endif %}
+    {% for t in request_tags %}
+      <span class="tag"><strong>{{ t }}</strong> <a href="{{ request_url.remove('tag', t) }}" class="remove_tag">[x]</a></span>
+    {% endfor %}
+  {% endif %}
+</div>

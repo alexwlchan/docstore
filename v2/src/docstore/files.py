@@ -1,6 +1,8 @@
 import hashlib
 import os
 import re
+import secrets
+import shutil
 
 from unidecode import unidecode
 
@@ -8,14 +10,37 @@ from docstore.models import Document, File, Thumbnail, from_json, to_json
 from docstore.thumbnails import create_thumbnail
 
 
+_cached_documents = {
+    'last_modified': None,
+    'contents': None,
+}
+
 def get_documents(root):
+    """
+    Get a list of all the documents.
+    """
     db_path = os.path.join(root, 'documents.json')
+
+    # JSON parsing is somewhat expensive.  By caching the result rather than
+    # going to disk each time, we see a ~10x speedup in returning responses
+    # from the server.
+    if (
+        _cached_documents['last_modified'] is not None and
+        os.stat(db_path).st_mtime <= cached_documents['last_modified']
+    ):
+        return _cached_documents['contents']
 
     try:
         with open(db_path) as infile:
-            return from_json(infile.read())
+            result = from_json(infile.read())
     except FileNotFoundError:
         return []
+
+    _cached_documents['last_modified'] = os.stat(db_path).st_mtime
+    _cached_documents['contents'] = result
+
+    return result
+
 
 
 def write_documents(*, root, documents):
@@ -48,27 +73,32 @@ def _sha256(path):
     return 'sha256:%s' % h.hexdigest()
 
 
-def store_new_document(*, root, path, title, tags, source_url, date_created):
+def store_new_document(*, root, path, title, tags, source_url, date_saved):
     filename = os.path.basename(path)
     name, ext = os.path.splitext(filename)
     slug = slugify(name) + ext
 
     out_path = os.path.join('files', slug[0], slug)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    assert not os.path.exists(out_path)
-    os.rename(path, out_path)
+
+    while os.path.exists(out_path):
+        out_path = os.path.join(
+            'files', slug[0], slugify(name) + '_' + secrets.token_hex(2) + ext
+        )
+
+    shutil.move(path, out_path)
 
     thumbnail_path = create_thumbnail(out_path)
     thumbnail_name = os.path.basename(thumbnail_path)
     thumb_out_path = os.path.join('thumbnails', thumbnail_name[0], thumbnail_name)
     os.makedirs(os.path.dirname(thumb_out_path), exist_ok=True)
-    os.rename(thumbnail_path, thumb_out_path)
+    shutil.move(thumbnail_path, thumb_out_path)
 
     documents = get_documents(root)
     documents.append(
         Document(
             title=title,
-            date_created=date_created,
+            date_saved=date_saved,
             tags=tags,
             files=[
                 File(
@@ -78,6 +108,7 @@ def store_new_document(*, root, path, title, tags, source_url, date_created):
                     checksum=_sha256(out_path),
                     source_url=source_url,
                     thumbnail=Thumbnail(thumb_out_path),
+                    date_saved=date_saved,
                 )
             ]
         )
