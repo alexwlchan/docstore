@@ -74,10 +74,6 @@
     background: rgba(208, 28, 17, 0.3);
   }
 
-/*  .meta_info .tag:not(:last-child) {
-    margin-right: 1px;
-  }*/
-
   .meta_info {
     background: rgba(115, 0, 255, 0.15);
     border: 3px solid rgba(115, 0, 255);
@@ -121,14 +117,14 @@
 
   <table>
     {% for doc in documents[page_start - 1:page_end] %}
-      <tr>
+      <tr id="doc_{{ doc.id }}">
         <td class="thumbnail">
-          {% for f in doc.files %}
+          {%- for f in doc.files %}
           <a href="/{{ f.path }}"><img src="/{{ f.thumbnail.path }}"></a>
-          {% if not loop.last %}
+          {%- if not loop.last -%}
             <br/>
-          {% endif %}
-          {% endfor %}
+          {%- endif -%}
+          {%- endfor %}
         </td>
         <td>
           {% if doc.title or doc|attrib_tags %}

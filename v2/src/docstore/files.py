@@ -26,7 +26,7 @@ def get_documents(root):
     # from the server.
     if (
         _cached_documents['last_modified'] is not None and
-        os.stat(db_path).st_mtime <= cached_documents['last_modified']
+        os.stat(db_path).st_mtime <= _cached_documents['last_modified']
     ):
         return _cached_documents['contents']
 

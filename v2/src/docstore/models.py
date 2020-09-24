@@ -81,6 +81,10 @@ def to_json(documents):
     ):
         raise TypeError("Expected type List[Document]!")
 
+    # Use the same order that's used to serve the documents; Python's sort()
+    # function goes faster if the documents are already in the right order.
+    documents = sorted(documents, key=lambda d: d.date_saved, reverse=True)
+
     return json.dumps(
         cattr.unstructure(documents), indent=2, sort_keys=True, cls=DocstoreEncoder
     )

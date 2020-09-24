@@ -5,7 +5,7 @@ import os
 import click
 
 from docstore.files import store_new_document
-from docstore.server import run_server
+from docstore.server import run_profiler, run_server
 
 
 @click.group()
@@ -18,8 +18,12 @@ def main():
 @click.option('--host', default='127.0.0.1', help='The interface to bind to.', show_default=True)
 @click.option('--port', default=3391, help='The port to bind to.', show_default=True)
 @click.option('--debug', default=False, is_flag=True, help='Run in debug mode.')
-def serve(host, port, debug, root):
-    run_server(root=root, host=host, port=port, debug=debug)
+@click.option('--profile', default=False, is_flag=True, help='Run a profiler.')
+def serve(host, port, debug, root, profile):
+    if profile:
+        run_profiler(root=root, host=host, port=port)
+    else:
+        run_server(root=root, host=host, port=port, debug=debug)
 
 
 @main.command(help="Store a file in docstore")

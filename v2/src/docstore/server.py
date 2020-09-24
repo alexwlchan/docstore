@@ -3,7 +3,9 @@ import datetime
 import os
 
 from flask import Flask, jsonify, render_template, request, send_from_directory
+import htmlmin
 import hyperlink
+from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from docstore.files import get_documents
 
@@ -32,9 +34,10 @@ def create_app(root):
         except KeyError:
             page = 1
 
-        print(time.time() - t0)
+        t1 = time.time()
+        print(t1 - t0)
 
-        return render_template(
+        html = render_template(
             'index.html',
             documents=sorted(documents, key=lambda d: d.date_saved, reverse=True),
             request_tags=request_tags,
@@ -42,6 +45,14 @@ def create_app(root):
             tag_tally=tag_tally,
             page=page,
         )
+        t2 = time.time()
+        print(t2 - t1)
+
+        html2 = htmlmin.minify(html)
+        t3 = time.time()
+        print(t3 - t2)
+
+        return html2
 
     @app.route('/thumbnails/<shard>/<filename>')
     def thumbnails(shard, filename):
@@ -90,6 +101,13 @@ def create_app(root):
             return d.strftime("%-d %b %Y")
 
     return app
+
+
+def run_profiler(*, root, host, port):
+    app = create_app(root)
+    app.config['PROFILE'] = True
+    app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
+    app.run(host=host, port=port, debug=True)
 
 
 def run_server(*, root, host, port, debug):
