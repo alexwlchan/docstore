@@ -1,7 +1,5 @@
-import time
-
 from docstore.files import read_documents, sha256, write_documents
-from docstore.models import Document, to_json
+from docstore.models import Document
 
 
 def test_sha256():

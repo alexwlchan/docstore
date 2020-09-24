@@ -4,7 +4,7 @@ import functools
 import os
 from urllib.parse import parse_qsl, urlparse, urlencode
 
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, render_template, request, send_from_directory
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from docstore.files import read_documents

@@ -1,8 +1,6 @@
 import datetime
-import json
 import uuid
 
-import attr
 import pytest
 
 from docstore.models import Document, File, Thumbnail, from_json, to_json

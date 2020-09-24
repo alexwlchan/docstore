@@ -49,14 +49,14 @@ def serve(host, port, debug, root, profile):
 @click.option("--tags", help="The tags to apply to the file.")
 @click.option("--source_url", help="Where was this file downloaded from?.")
 @click.option("--date_saved", help="When the file was saved in docstore.")
-def add(root, path, title, tags, source_url, date_created):
+def add(root, path, title, tags, source_url, date_saved):
     tags = tags or ""
     tags = [t.strip() for t in tags.split(",") if t.strip()]
 
     title = title or ""
 
     if date_saved is not None:
-        date_saved = datetime.datetime.fromisoformat(date_created)
+        date_saved = datetime.datetime.fromisoformat(date_saved)
     else:
         date_saved = datetime.datetime.now()
 

@@ -24,8 +24,8 @@ def read_documents(root):
     # going to disk each time, we see a ~10x speedup in returning responses
     # from the server.
     if (
-        _cached_documents["last_modified"] is not None
-        and os.stat(db_path).st_mtime <= _cached_documents["last_modified"]
+        _cached_documents["last_modified"] is not None and
+        os.stat(db_path).st_mtime <= _cached_documents["last_modified"]
     ):
         return _cached_documents["contents"]
 
