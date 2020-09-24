@@ -1,12 +1,10 @@
 import hashlib
 import os
-import re
 import secrets
 import shutil
 
-from unidecode import unidecode
-
 from docstore.models import Document, File, Thumbnail, from_json, to_json
+from docstore.slugify import slugify
 from docstore.thumbnails import create_thumbnail
 
 
@@ -48,21 +46,6 @@ def write_documents(*, root, documents):
     json_string = to_json(documents)
     with open(db_path, "w") as out_file:
         out_file.write(json_string)
-
-
-def slugify(u):
-    """
-    Convert Unicode string into blog slug.
-
-    Based on http://www.leancrew.com/all-this/2014/10/asciifying/
-
-    """
-    u = re.sub(u"[–—/:;,._]", "-", u)  # replace separating punctuation
-    a = unidecode(u).lower()  # best ASCII substitutions, lowercased
-    a = re.sub(r"[^a-z0-9 -]", "", a)  # delete any other characters
-    a = a.replace(" ", "-")  # spaces to hyphens
-    a = re.sub(r"-+", "-", a)  # condense repeated hyphens
-    return a
 
 
 def _sha256(path):
