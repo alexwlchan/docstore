@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-import sys
 
 import click
 
@@ -118,63 +117,63 @@ def migrate(root, v1_path):
 )
 @click.argument("doc_ids", nargs=-1)
 def merge(root, doc_ids):
-    first_doc_id = doc_ids[0]
+    if len(doc_ids) == 1:
+        return
 
-    for later_doc_id in doc_ids[1:]:
-        documents = {d.id: d for d in read_documents(root)}
+    documents = {d.id: d for d in read_documents(root)}
 
-        try:
-            first_doc = documents[first_doc_id]
-        except KeyError:
-            click.echo(f"Unable to find document {first_doc_id}", file=sys.stderr)
-            raise click.Abort()
+    for d_id in doc_ids:
+        doc = documents[d_id]
+        click.echo(f'{doc.id.split("-")[0]} {click.style(doc.title, fg="yellow") or "<untitled>"}')
 
-        try:
-            later_doc = documents[later_doc_id]
-        except KeyError:
-            click.echo(f"Unable to find document {later_doc_id}", file=sys.stderr)
-            raise click.Abort()
+    click.confirm(f'Merge these {len(doc_ids)} documents?', abort=True)
 
-        click.echo(f'{first_doc_id.split("-")[0]} {click.style(first_doc.title, fg="yellow") or "<untitled>"}')
-        click.echo(f'{later_doc_id.split("-")[0]} {click.style(later_doc.title, fg="yellow") or "<untitled>"}')
-        click.confirm('Merge these two documents?', abort=True)
+    # What should the title of the merged document be?
+    title_candidates = []
 
-        title_candidates = [first_doc.title, later_doc.title]
-        if first_doc.title == later_doc.title:
-            title_candidates = [first_doc.title]
-        guessed_title = common_prefix(title_candidates)
+    for d_id in doc_ids:
+        doc = documents[d_id]
+        if doc.title not in title_candidates:
+            title_candidates.append(doc.title)
 
+    guessed_title = common_prefix(title_candidates)
+
+    print("")
+    click.echo(f'Guessed title: {click.style(guessed_title, fg="blue")}')
+    if click.confirm('Use title?'):
+        new_title = guessed_title
+    else:
+        if guessed_title and guessed_title not in title_candidates:
+            title_candidates.insert(0, guessed_title)
+
+        new_title = click.edit('\n'.join(title_candidates)).strip()
+
+    # What should the tags on the merged document be?
+    tag_candidates = []
+    all_tags = []
+
+    for d_id in doc_ids:
+        doc = documents[d_id]
+        if doc.tags not in tag_candidates:
+            tag_candidates.append(doc.tags)
+        for t in doc.tags:
+            if t not in all_tags:
+                all_tags.append(t)
+
+    # Every document has the same set of tags
+    if len(tag_candidates) == 1:
+        new_tags = tag_candidates[0]
+    else:
         print("")
-        click.echo(f'Guessed title: {click.style(guessed_title, fg="blue")}')
+        click.echo(f"Guessed tags: {click.style(', '.join(all_tags), fg='blue')}")
         if click.confirm('Use title?'):
-            new_title = guessed_title
+            new_tags = all_tags
         else:
-            if guessed_title and guessed_title not in title_candidates:
-                title_candidates.insert(0, guessed_title)
+            new_tags = click.edit('\n'.join(all_tags)).strip().splitlines()
 
-            new_title = click.edit('\n'.join(title_candidates)).strip()
-
-        if first_doc.tags == later_doc.tags:
-            new_tags = first_doc.tags
-        else:
-            candidate_tags = first_doc.tags
-            for t in later_doc.tags:
-                if t not in candidate_tags:
-                    candidate_tags.append(t)
-
-            print("")
-            click.echo(f"Guessed tags: {click.style(', '.join(candidate_tags), fg='blue')}")
-            if click.confirm('Use title?'):
-                new_tags = candidate_tags
-            else:
-                new_tags = click.edit('\n'.join(candidate_tags)).strip().splitlines()
-
+    doc1 = documents[doc_ids[0]]
+    for doc2_id in doc_ids[1:]:
+        doc2 = documents[doc2_id]
         pairwise_merge_documents(
-            root=root,
-            doc1=first_doc,
-            doc2=later_doc,
-            new_title=new_title,
-            new_tags=new_tags
+            root=root, doc1=doc1, doc2=doc2, new_title=new_title, new_tags=new_tags
         )
-
-        print('')
