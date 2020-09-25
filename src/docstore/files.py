@@ -99,3 +99,26 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
     )
 
     write_documents(root=root, documents=documents)
+
+
+def pairwise_merge_documents(root, *, doc1, doc2, new_title, new_tags):
+    """
+    Merge the files on two documents together.
+
+    Before: 2 documents with 1 file each
+    After:  1 document with 2 files
+    """
+    documents = read_documents(root)
+    assert doc2 in documents
+    documents.remove(doc2)
+
+    # Modify the copy of the document that's about to be written; this will
+    # throw an error if the document has changed between starting and finishing
+    # the merge.
+    stored_doc1 = documents[documents.index(doc1)]
+
+    stored_doc1.date_saved = min([stored_doc1.date_saved, doc2.date_saved])
+    stored_doc1.tags = new_tags
+    stored_doc1.title = new_title
+    stored_doc1.files.extend(doc2.files)
+    write_documents(root=root, documents=documents)

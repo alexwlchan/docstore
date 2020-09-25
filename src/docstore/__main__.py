@@ -5,7 +5,7 @@ import sys
 
 import click
 
-from docstore.files import read_documents, store_new_document, write_documents
+from docstore.files import pairwise_merge_documents, read_documents, store_new_document
 from docstore.server import run_profiler, run_server
 from docstore.text_utils import common_prefix
 
@@ -140,6 +140,8 @@ def merge(root, doc_ids):
         click.confirm('Merge these two documents?', abort=True)
 
         title_candidates = [first_doc.title, later_doc.title]
+        if first_doc.title == later_doc.title:
+            title_candidates = [first_doc.title]
         guessed_title = common_prefix(title_candidates)
 
         print("")
@@ -152,7 +154,9 @@ def merge(root, doc_ids):
 
             new_title = click.edit('\n'.join(title_candidates)).strip()
 
-        if first_doc.tags != later_doc.tags:
+        if first_doc.tags == later_doc.tags:
+            new_tags = first_doc.tags
+        else:
             candidate_tags = first_doc.tags
             for t in later_doc.tags:
                 if t not in candidate_tags:
@@ -165,12 +169,12 @@ def merge(root, doc_ids):
             else:
                 new_tags = click.edit('\n'.join(candidate_tags)).strip().splitlines()
 
-            first_doc.tags = new_tags
+        pairwise_merge_documents(
+            root=root,
+            doc1=first_doc,
+            doc2=later_doc,
+            new_title=new_title,
+            new_tags=new_tags
+        )
 
-        first_doc.date_saved = min([first_doc.date_saved, later_doc.date_saved])
-        first_doc.title = new_title
-        first_doc.files.extend(later_doc.files)
-        del documents[later_doc_id]
-
-        write_documents(root=root, documents=list(documents.values()))
         print('')
