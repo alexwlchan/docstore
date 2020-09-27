@@ -4,7 +4,7 @@ import os
 
 import click
 
-from docstore.files import pairwise_merge_documents, read_documents, store_new_document
+from docstore.documents import pairwise_merge_documents, read_documents, store_new_document
 from docstore.server import run_profiler, run_server
 from docstore.text_utils import common_prefix
 
