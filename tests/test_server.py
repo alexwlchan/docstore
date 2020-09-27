@@ -25,9 +25,7 @@ def test_empty_response(client):
 
 def test_shows_documents(tmpdir, root, client):
     for _ in range(3):
-        shutil.copyfile(
-            "tests/files/cluster.png", str(tmpdir / "cluster.png")
-        )
+        shutil.copyfile("tests/files/cluster.png", str(tmpdir / "cluster.png"))
         store_new_document(
             root=root,
             path=str(tmpdir / "cluster.png"),
@@ -40,6 +38,7 @@ def test_shows_documents(tmpdir, root, client):
     resp = client.get("/")
     assert resp.status_code == 200
     assert resp.data.count(b"My test document") == 3
+    assert b"date saved: just now" in resp.data
 
     # TODO: Detect this thumbnail URL from the page HTML
     resp = client.get("/thumbnails/c/cluster.png")

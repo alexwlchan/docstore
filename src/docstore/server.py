@@ -8,12 +8,17 @@ from flask import Flask, render_template, request, send_from_directory
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from docstore.documents import read_documents
+from docstore.text_utils import pretty_date
 
 
 def create_app(root):
     app = Flask(__name__)
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
+
+    app.jinja_env.filters["pretty_date"] = lambda d: pretty_date(
+        d, now=datetime.datetime.now()
+    )
 
     @app.route("/")
     def list_documents():
@@ -88,22 +93,6 @@ def create_app(root):
     @app.template_filter("hostname")
     def hostname(url):
         return url.split("/")[2]
-
-    @app.template_filter("pretty_date")
-    def pretty_date(d):
-        delta = datetime.datetime.now() - d
-        if delta.seconds < 120:
-            return "just now"
-        elif delta.seconds < 60 * 60:
-            return f"{int(delta.seconds / 60)} minutes ago"
-        elif d.date() == datetime.date.today():
-            return "earlier today"
-        elif d.date() == datetime.date.today() - datetime.timedelta(days=1):
-            return "yesterday"
-        elif delta.days < 7:
-            return f"{delta.days} days ago"
-        else:
-            return d.strftime("%-d %b %Y")
 
     return app
 
