@@ -44,6 +44,9 @@ def test_shows_documents(tmpdir, root, client):
     resp = client.get("/thumbnails/c/cluster.png")
     assert resp.data[:8] == b"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"  # PNG magic number
 
+    resp = client.get("/files/c/cluster.png")
+    assert resp.data == open("tests/files/cluster.png", "rb").read()
+
 
 def test_filters_documents_by_tag(root, client):
     documents = [Document(title=f"Document {i}", tags=[f"tag{i}"]) for i in range(3)]
