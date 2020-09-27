@@ -61,4 +61,11 @@ def create_thumbnail(path, *, max_size=400):
             ["qlmanage", "-t", path, "-s", f"{max_size}x{max_size}", "-o", out_dir],
             stdout=subprocess.DEVNULL,
         )
-        return os.path.join(out_dir, os.listdir(out_dir)[0])
+        result = os.path.join(out_dir, os.listdir(out_dir)[0])
+
+        # Don't double up the .png extension on PNG images
+        if result.endswith(".png.png"):
+            os.rename(result, result.replace(".png.png", ".png"))
+            result = result.replace(".png.png", ".png")
+
+        return result

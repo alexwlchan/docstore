@@ -24,7 +24,7 @@ def test_creates_thumbnail_of_single_frame_gif():
 
 def test_creates_thumbnail_of_png():
     path = create_thumbnail("tests/files/cluster.png", max_size=250)
-    assert path.endswith("/cluster.png.png")
+    assert path.endswith("/cluster.png")
 
     im = Image.open(path)
     assert im.size == (250, 162)
