@@ -6,7 +6,6 @@ import click
 
 from docstore.documents import pairwise_merge_documents, read_documents, store_new_document
 from docstore.server import run_profiler, run_server
-from docstore.text_utils import common_prefix
 
 
 @click.group()
@@ -121,32 +120,24 @@ def merge(root, doc_ids):
         return
 
     documents = {d.id: d for d in read_documents(root)}
+    documents_to_merge = [documents[d_id] for d_id in doc_ids]
 
-    for d_id in doc_ids:
-        doc = documents[d_id]
-        click.echo(f'{doc.id.split("-")[0]} {click.style(doc.title, fg="yellow") or "<untitled>"}')
+    for doc in documents_to_merge:
+        click.echo(
+            f'{doc.id.split("-")[0]} {click.style(doc.title, fg="yellow") or "<untitled>"}'
+        )
 
-    click.confirm(f'Merge these {len(doc_ids)} documents?', abort=True)
+    click.confirm(f"Merge these {len(doc_ids)} documents?", abort=True)
 
     # What should the title of the merged document be?
-    title_candidates = []
-
-    for d_id in doc_ids:
-        doc = documents[d_id]
-        if doc.title not in title_candidates:
-            title_candidates.append(doc.title)
-
-    guessed_title = common_prefix(title_candidates)
+    title_candidates = get_title_candidates(documents_to_merge)
 
     print("")
-    click.echo(f'Guessed title: {click.style(guessed_title, fg="blue")}')
-    if click.confirm('Use title?'):
-        new_title = guessed_title
+    click.echo(f'Guessed title: {click.style(title_candidates[0], fg="blue")}')
+    if click.confirm("Use title?"):
+        new_title = title_candidates[0]
     else:
-        if guessed_title and guessed_title not in title_candidates:
-            title_candidates.insert(0, guessed_title)
-
-        new_title = click.edit('\n'.join(title_candidates)).strip()
+        new_title = click.edit("\n".join(title_candidates)).strip()
 
     # What should the tags on the merged document be?
     tag_candidates = []
