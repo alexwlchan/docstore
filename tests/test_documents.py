@@ -2,7 +2,13 @@ import datetime
 import os
 import shutil
 
-from docstore.documents import pairwise_merge_documents, read_documents, sha256, store_new_document, write_documents
+from docstore.documents import (
+    pairwise_merge_documents,
+    read_documents,
+    sha256,
+    store_new_document,
+    write_documents,
+)
 from docstore.models import Document, File, Thumbnail
 
 
@@ -74,7 +80,11 @@ def test_merging_uses_earliest_date(tmpdir):
     write_documents(root=tmpdir, documents=[doc1, doc2])
 
     pairwise_merge_documents(
-        root=tmpdir, doc1=doc1, doc2=doc2, new_title="DocMerged", new_tags=[],
+        root=tmpdir,
+        doc1=doc1,
+        doc2=doc2,
+        new_title="DocMerged",
+        new_tags=[],
     )
 
     stored_documents = read_documents(tmpdir)
@@ -99,7 +109,7 @@ def test_store_new_document(tmpdir):
         title="My cluster title",
         tags=["tag1", "tag2", "tag3"],
         source_url="https://example.org/cluster.png",
-        date_saved=now
+        date_saved=now,
     )
 
     assert isinstance(new_document, Document)
@@ -113,7 +123,10 @@ def test_store_new_document(tmpdir):
     assert new_file.filename == "My Cluster.png"
     assert new_file.path == "files/m/my-cluster.png"
     assert new_file.size == 41151
-    assert new_file.checksum == "sha256:683cbee0c2dda22b42fd92bda0f31e4b6b49cd8650a7924d72a14a30f11bfbe5"
+    assert (
+        new_file.checksum
+        == "sha256:683cbee0c2dda22b42fd92bda0f31e4b6b49cd8650a7924d72a14a30f11bfbe5"
+    )
     assert new_file.source_url == "https://example.org/cluster.png"
     assert new_file.date_saved == now
 
@@ -130,7 +143,7 @@ def test_store_new_document(tmpdir):
         title="My second cluster title",
         tags=["tag1", "tag2", "tag3", "tag4"],
         source_url="https://example.org/cluster2.png",
-        date_saved=now
+        date_saved=now,
     )
 
     assert isinstance(new_document2, Document)

@@ -4,7 +4,12 @@ import os
 
 import click
 
-from docstore.documents import pairwise_merge_documents, read_documents, store_new_document
+from docstore.documents import (
+    pairwise_merge_documents,
+    read_documents,
+    store_new_document,
+)
+from docstore.merging import get_title_candidates
 from docstore.server import run_profiler, run_server
 
 
@@ -157,10 +162,10 @@ def merge(root, doc_ids):
     else:
         print("")
         click.echo(f"Guessed tags: {click.style(', '.join(all_tags), fg='blue')}")
-        if click.confirm('Use title?'):
+        if click.confirm("Use title?"):
             new_tags = all_tags
         else:
-            new_tags = click.edit('\n'.join(all_tags)).strip().splitlines()
+            new_tags = click.edit("\n".join(all_tags)).strip().splitlines()
 
     doc1 = documents[doc_ids[0]]
     for doc2_id in doc_ids[1:]:
