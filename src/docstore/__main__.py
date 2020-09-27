@@ -1,1 +1,0 @@
-from docstore.cli import main
