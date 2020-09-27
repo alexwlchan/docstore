@@ -1,8 +1,11 @@
+import cgi
 import datetime
 import json
 import os
+import tempfile
 
 import click
+import requests
 
 from docstore.documents import (
     pairwise_merge_documents,
@@ -11,6 +14,27 @@ from docstore.documents import (
 )
 from docstore.merging import get_title_candidates, get_union_of_tags
 from docstore.server import run_profiler, run_server
+
+
+def _download_file(url):
+    try:
+        resp = requests.head(url)
+        _, params = cgi.parse_header(resp.headers["Content-Disposition"])
+        filename = params["filename"]
+    except KeyError:
+        filename = hyperlink.DecodedURL.from_text(url).path[-1]
+
+    tmp_dir = tempfile.mkdtemp()
+    tmp_path = os.path.join(tmp_dir, os.path.basename(filename))
+
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(tmp_path, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+
+    return tmp_path
 
 
 @click.group()
@@ -39,19 +63,7 @@ def serve(host, port, debug, root, profile):
         run_server(root=root, host=host, port=port, debug=debug)
 
 
-@main.command(help="Store a file in docstore")
-@click.option(
-    "--root",
-    default=".",
-    help="The root of the docstore database.",
-    type=click.Path(),
-    show_default=True,
-)
-@click.option("--path", help="The file to store.", type=click.Path(), required=True)
-@click.option("--title", help="The title of the file.")
-@click.option("--tags", help="The tags to apply to the file.")
-@click.option("--source_url", help="Where was this file downloaded from?.")
-def add(root, path, title, tags, source_url):
+def _add_document(root, path, title, tags, source_url):
     tags = tags or ""
     tags = [t.strip() for t in tags.split(",") if t.strip()]
 
@@ -67,6 +79,40 @@ def add(root, path, title, tags, source_url):
     )
 
     print(document.id)
+
+
+@main.command(help="Store a file in docstore")
+@click.option(
+    "--root",
+    default=".",
+    help="The root of the docstore database.",
+    type=click.Path(),
+    show_default=True,
+)
+@click.option("--path", help="The file to store.", type=click.Path(), required=True)
+@click.option("--title", help="The title of the file.")
+@click.option("--tags", help="The tags to apply to the file.")
+@click.option("--source_url", help="Where was this file downloaded from?.")
+def add(root, path, title, tags, source_url):
+    return _add_document(root=root, path=path, title=title, tags=tags, source_url=source_url)
+
+
+@main.command(help="Store a file on the web in docstore")
+@click.option(
+    "--root",
+    default=".",
+    help="The root of the docstore database.",
+    type=click.Path(),
+    show_default=True,
+)
+@click.option("--url", help="URL of the file to store.", type=click.Path(), required=True)
+@click.option("--title", help="The title of the file.")
+@click.option("--tags", help="The tags to apply to the file.")
+@click.option("--source_url", help="Where was this file downloaded from?.")
+def add_from_url(root, url, title, tags, source_url):
+    path = _download_file(url)
+
+    return _add_document(root=root, path=path, title=title, tags=tags, source_url=source_url)
 
 
 @main.command(help="Migrate a V1 docstore")
