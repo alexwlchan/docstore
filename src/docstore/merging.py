@@ -14,3 +14,17 @@ def get_title_candidates(documents):
         title_candidates.insert(0, guessed_title)
 
     return title_candidates
+
+
+def get_union_of_tags(documents):
+    """
+    Get a list of every tag on any document in ``documents``.
+    """
+    tags = []
+
+    for doc in documents:
+        for t in doc.tags:
+            if t not in tags:
+                tags.append(t)
+
+    return tags

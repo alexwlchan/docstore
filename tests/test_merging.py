@@ -1,9 +1,5 @@
-from docstore.merging import get_title_candidates
+from docstore.merging import get_title_candidates, get_union_of_tags
 from docstore.models import Document
-
-
-def create_document_with(*, title):
-    return Document(title=title)
 
 
 class TestGetTitleCandidates:
@@ -34,3 +30,24 @@ class TestGetTitleCandidates:
         doc1 = Document(title="My document")
         doc2 = Document(title="Another document")
         assert get_title_candidates([doc1, doc2]) == ["My document", "Another document"]
+
+
+class TestGetUnionOfTags:
+    def create_document_with_tags(self, tags):
+        return Document(title="A test document", tags=tags)
+
+    def test_tags_on_one_document_are_tags(self):
+        doc = self.create_document_with_tags(tags=["tag1", "tag2", "tag3"])
+        assert get_union_of_tags([doc]) == ["tag1", "tag2", "tag3"]
+
+    def test_get_tags_on_multiple_documents_with_no_overlap(self):
+        doc1 = self.create_document_with_tags(tags=["tag1"])
+        doc2 = self.create_document_with_tags(tags=["tag2"])
+        doc3 = self.create_document_with_tags(tags=["tag3"])
+        assert get_union_of_tags([doc1, doc2, doc3]) == ["tag1", "tag2", "tag3"]
+
+    def test_union_tags_deduplicates(self):
+        doc1 = self.create_document_with_tags(tags=["tag1", "tag2"])
+        doc2 = self.create_document_with_tags(tags=["tag3", "tag2"])
+        doc3 = self.create_document_with_tags(tags=["tag3"])
+        assert get_union_of_tags([doc1, doc2, doc3]) == ["tag1", "tag2", "tag3"]

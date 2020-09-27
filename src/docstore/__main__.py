@@ -9,7 +9,7 @@ from docstore.documents import (
     read_documents,
     store_new_document,
 )
-from docstore.merging import get_title_candidates
+from docstore.merging import get_title_candidates, get_union_of_tags
 from docstore.server import run_profiler, run_server
 
 
@@ -137,32 +137,27 @@ def merge(root, doc_ids):
     # What should the title of the merged document be?
     title_candidates = get_title_candidates(documents_to_merge)
 
-    print("")
-    click.echo(f'Guessed title: {click.style(title_candidates[0], fg="blue")}')
-    if click.confirm("Use title?"):
+    if len(title_candidates) == 1:
+        click.echo("Using common title: {click.style(title_candidates[0], fg='blue')}")
         new_title = title_candidates[0]
     else:
-        new_title = click.edit("\n".join(title_candidates)).strip()
+        print("")
+        click.echo(f'Guessed title: {click.style(title_candidates[0], fg="blue")}')
+        if click.confirm("Use title?"):
+            new_title = title_candidates[0]
+        else:
+            new_title = click.edit("\n".join(title_candidates)).strip()
 
     # What should the tags on the merged document be?
-    tag_candidates = []
-    all_tags = []
+    all_tags = get_union_of_tags(documents_to_merge)
 
-    for d_id in doc_ids:
-        doc = documents[d_id]
-        if doc.tags not in tag_candidates:
-            tag_candidates.append(doc.tags)
-        for t in doc.tags:
-            if t not in all_tags:
-                all_tags.append(t)
-
-    # Every document has the same set of tags
-    if len(tag_candidates) == 1:
-        new_tags = tag_candidates[0]
+    if all(doc.tags == all_tags for doc in documents_to_merge):
+        click.echo("Using common tags: {click.style(', '.join(all_tags) fg='blue')}")
+        new_tags = title_candidates[0]
     else:
         print("")
         click.echo(f"Guessed tags: {click.style(', '.join(all_tags), fg='blue')}")
-        if click.confirm("Use title?"):
+        if click.confirm("Use tags?"):
             new_tags = all_tags
         else:
             new_tags = click.edit("\n".join(all_tags)).strip().splitlines()
