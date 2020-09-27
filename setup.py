@@ -9,13 +9,20 @@ def local_file(name):
 
 SOURCE = local_file("src")
 
-
 setuptools.setup(
     name="docstore",
     version="2.0.0",
     author="Alex Chan",
     author_email="alex@alexwlchan.net",
     packages=setuptools.find_packages(SOURCE),
+    package_data={
+        "docstore": [
+            "static/jquery.tagcloud.js",
+            "static/natural_paper.png",
+            "templates/_meta_info.html",
+            "templates/index.html",
+        ]
+    },
     package_dir={"": SOURCE},
     url="https://github.com/alexwlchan/docstore",
     install_requires=[

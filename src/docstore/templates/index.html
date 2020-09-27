@@ -163,9 +163,9 @@
           {% endif %}
 
           date saved: {{ doc.date_saved | pretty_date }}
-          {% if doc.files[0].source_url or doc|display_tags %}<br/>{% endif %}
+          {% if (doc.files and doc.files[0].source_url) or doc|display_tags %}<br/>{% endif %}
 
-          {% if doc.files[0].source_url %}
+          {% if doc.files and doc.files[0].source_url %}
             source: <a href="{{ doc.files[0].source_url }}">{{ doc.files[0].source_url|hostname }}</a></br>
           {% endif %}
 
@@ -201,7 +201,7 @@
 <script src="{{ url_for('static', filename='jquery.tagcloud.js') }}"></script>
 <script>
   $.fn.tagcloud.defaults = {
-    size: { start: 11, end: 18, unit: 'pt' },
+    size: { start: 10, end: 24, unit: 'pt' },
     color: { start: '#999', end: '#7300ff' },
   };
 
