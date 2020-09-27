@@ -7,7 +7,7 @@ from urllib.parse import parse_qsl, urlparse, urlencode
 from flask import Flask, render_template, request, send_from_directory
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
-from docstore.files import read_documents
+from docstore.documents import read_documents
 
 
 def create_app(root):
