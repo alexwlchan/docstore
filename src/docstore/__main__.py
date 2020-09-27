@@ -151,11 +151,12 @@ def merge(root, doc_ids):
     # What should the tags on the merged document be?
     all_tags = get_union_of_tags(documents_to_merge)
 
+    print("")
+
     if all(doc.tags == all_tags for doc in documents_to_merge):
-        click.echo("Using common tags: {click.style(', '.join(all_tags) fg='blue')}")
+        click.echo(f"Using common tags: {click.style(', '.join(all_tags), fg='blue')}")
         new_tags = title_candidates[0]
     else:
-        print("")
         click.echo(f"Guessed tags: {click.style(', '.join(all_tags), fg='blue')}")
         if click.confirm("Use tags?"):
             new_tags = all_tags
