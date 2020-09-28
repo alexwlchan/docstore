@@ -4,7 +4,7 @@ from click.testing import CliRunner
 import pytest
 
 from docstore.cli import main
-from docstore.documents import read_documents
+from docstore.documents import read_documents, write_documents
 from docstore.models import Document
 from test_models import is_recent
 
@@ -73,3 +73,26 @@ class TestAdd:
 
         documents = read_documents(root)
         assert documents[0].files[0].source_url == expected_source_url
+
+
+class TestMerge:
+    def test_merges_two_documents_with_identical_metadata(self, root, runner):
+        documents = [
+            Document(title="My Document", tags=["tag1", "tag2", "tag3"])
+            for _ in range(3)
+        ]
+
+        write_documents(root=root, documents=documents)
+
+        result = runner.invoke(
+            main,
+            ["merge", "--yes", "--root", root] + [doc.id for doc in documents]
+        )
+        assert result.exit_code == 0, result.output
+
+        stored_documents = read_documents(root)
+
+        assert len(stored_documents) == 1
+        assert stored_documents[0].id == documents[0].id
+        assert stored_documents[0].title == "My Document"
+        assert stored_documents[0].tags == ["tag1", "tag2", "tag3"]

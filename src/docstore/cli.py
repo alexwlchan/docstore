@@ -162,7 +162,8 @@ def migrate(root, v1_path):
     show_default=True,
 )
 @click.argument("doc_ids", nargs=-1)
-def merge(root, doc_ids):
+@click.option('--yes', is_flag=True, help="Skip confirmation prompts.")
+def merge(root, doc_ids, yes):
     if len(doc_ids) == 1:
         return
 
@@ -174,7 +175,8 @@ def merge(root, doc_ids):
             f'{doc.id.split("-")[0]} {click.style(doc.title, fg="yellow") or "<untitled>"}'
         )
 
-    click.confirm(f"Merge these {len(doc_ids)} documents?", abort=True)
+    if not yes:
+        click.confirm(f"Merge these {len(doc_ids)} documents?", abort=True)
 
     # What should the title of the merged document be?
     title_candidates = get_title_candidates(documents_to_merge)
@@ -197,7 +199,7 @@ def merge(root, doc_ids):
 
     if all(doc.tags == all_tags for doc in documents_to_merge):
         click.echo(f"Using common tags: {click.style(', '.join(all_tags), fg='blue')}")
-        new_tags = title_candidates[0]
+        new_tags = all_tags
     else:
         click.echo(f"Guessed tags: {click.style(', '.join(all_tags), fg='blue')}")
         if click.confirm("Use tags?"):
