@@ -124,3 +124,36 @@ class TestMerge:
         assert stored_documents[0].id == documents[0].id
         assert stored_documents[0].title == "My Document"
         assert stored_documents[0].tags == ["tag1", "tag2", "tag3"]
+
+    def test_merges_documents_with_inferred_metadata(self, root, runner):
+        documents = [
+            Document(title=f"My Document {i}", tags=[f"tag{i}"]) for i in range(3)
+        ]
+
+        write_documents(root=root, documents=documents)
+
+        result = runner.invoke(
+            main, ["merge", "--yes", "--root", root] + [doc.id for doc in documents]
+        )
+        assert result.exit_code == 0, result.output
+
+        assert "Guessed title: My Document\n" in result.output
+        assert "Guessed tags: tag0, tag1, tag2\n" in result.output
+
+        stored_documents = read_documents(root)
+
+        assert len(stored_documents) == 1
+        assert stored_documents[0].id == documents[0].id
+        assert stored_documents[0].title == "My Document"
+        assert stored_documents[0].tags == ["tag0", "tag1", "tag2"]
+
+    def test_merging_one_document_is_noop(self, root, runner):
+        documents = [Document(title="My Document")]
+        write_documents(root=root, documents=documents)
+
+        result = runner.invoke(
+            main, ["merge", "--yes", "--root", root, documents[0].id]
+        )
+        assert result.exit_code == 0, result.output
+
+        assert read_documents(root) == documents

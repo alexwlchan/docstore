@@ -162,7 +162,7 @@ def migrate(root, v1_path):
     show_default=True,
 )
 @click.argument("doc_ids", nargs=-1)
-@click.option('--yes', is_flag=True, help="Skip confirmation prompts.")
+@click.option("--yes", is_flag=True, help="Skip confirmation prompts.")
 def merge(root, doc_ids, yes):
     if len(doc_ids) == 1:
         return
@@ -175,7 +175,7 @@ def merge(root, doc_ids, yes):
             f'{doc.id.split("-")[0]} {click.style(doc.title, fg="yellow") or "<untitled>"}'
         )
 
-    if not yes:
+    if not yes:  # pragma: no cover
         click.confirm(f"Merge these {len(doc_ids)} documents?", abort=True)
 
     # What should the title of the merged document be?
@@ -187,9 +187,9 @@ def merge(root, doc_ids, yes):
     else:
         print("")
         click.echo(f'Guessed title: {click.style(title_candidates[0], fg="blue")}')
-        if click.confirm("Use title?"):
+        if yes or click.confirm("Use title?"):
             new_title = title_candidates[0]
-        else:
+        else:  # pragma: no cover
             new_title = click.edit("\n".join(title_candidates)).strip()
 
     # What should the tags on the merged document be?
@@ -202,9 +202,9 @@ def merge(root, doc_ids, yes):
         new_tags = all_tags
     else:
         click.echo(f"Guessed tags: {click.style(', '.join(all_tags), fg='blue')}")
-        if click.confirm("Use tags?"):
+        if yes or click.confirm("Use tags?"):
             new_tags = all_tags
-        else:
+        else:  # pragma: no cover
             new_tags = click.edit("\n".join(all_tags)).strip().splitlines()
 
     doc1 = documents[doc_ids[0]]
