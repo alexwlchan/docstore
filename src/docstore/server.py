@@ -97,13 +97,13 @@ def create_app(root):
     return app
 
 
-def run_profiler(*, root, host, port):
+def run_profiler(*, root, host, port):  # pragma: no cover
     app = create_app(root)
     app.config["PROFILE"] = True
     app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
     app.run(host=host, port=port, debug=True)
 
 
-def run_server(*, root, host, port, debug):
+def run_server(*, root, host, port, debug):  # pragma: no cover
     app = create_app(root)
     app.run(host=host, port=port, debug=debug)

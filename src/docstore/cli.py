@@ -2,10 +2,10 @@ import cgi
 import datetime
 import json
 import os
-import tempfile
+from urllib.parse import urlparse
+from urllib.request import urlretrieve
 
 import click
-import requests
 
 from docstore.documents import (
     pairwise_merge_documents,
@@ -16,23 +16,17 @@ from docstore.merging import get_title_candidates, get_union_of_tags
 from docstore.server import run_profiler, run_server
 
 
-def _download_file(url):
+def _download_file(url):  # pragma: no cover
+    tmp_path, headers = urlretrieve(url)
+
     try:
-        resp = requests.head(url)
-        _, params = cgi.parse_header(resp.headers["Content-Disposition"])
+        _, params = cgi.parse_header(headers["Content-Disposition"])
         filename = params["filename"]
     except KeyError:
-        filename = hyperlink.DecodedURL.from_text(url).path[-1]
+        filename = os.path.basename(urlparse(url).path)
 
-    tmp_dir = tempfile.mkdtemp()
-    tmp_path = os.path.join(tmp_dir, os.path.basename(filename))
-
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(tmp_path, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
+    out_path = os.path.join(os.path.dirname(tmp_path), filename)
+    os.rename(tmp_path, out_path)
 
     return tmp_path
 
@@ -56,7 +50,7 @@ def main():
 @click.option("--port", default=3391, help="The port to bind to.", show_default=True)
 @click.option("--debug", default=False, is_flag=True, help="Run in debug mode.")
 @click.option("--profile", default=False, is_flag=True, help="Run a profiler.")
-def serve(host, port, debug, root, profile):
+def serve(host, port, debug, root, profile):  # pragma: no cover
     if profile:
         run_profiler(root=root, host=host, port=port)
     else:
@@ -75,7 +69,7 @@ def _add_document(root, path, title, tags, source_url):
         title=title,
         tags=tags,
         source_url=source_url,
-        date_saved=datetime.datetime.now()
+        date_saved=datetime.datetime.now(),
     )
 
     print(document.id)
@@ -94,7 +88,9 @@ def _add_document(root, path, title, tags, source_url):
 @click.option("--tags", help="The tags to apply to the file.")
 @click.option("--source_url", help="Where was this file downloaded from?.")
 def add(root, path, title, tags, source_url):
-    return _add_document(root=root, path=path, title=title, tags=tags, source_url=source_url)
+    return _add_document(
+        root=root, path=path, title=title, tags=tags, source_url=source_url
+    )
 
 
 @main.command(help="Store a file on the web in docstore")
@@ -105,14 +101,18 @@ def add(root, path, title, tags, source_url):
     type=click.Path(),
     show_default=True,
 )
-@click.option("--url", help="URL of the file to store.", type=click.Path(), required=True)
+@click.option(
+    "--url", help="URL of the file to store.", type=click.Path(), required=True
+)
 @click.option("--title", help="The title of the file.")
 @click.option("--tags", help="The tags to apply to the file.")
 @click.option("--source_url", help="Where was this file downloaded from?.")
-def add_from_url(root, url, title, tags, source_url):
+def add_from_url(root, url, title, tags, source_url):  # pragma: no cover
     path = _download_file(url)
 
-    return _add_document(root=root, path=path, title=title, tags=tags, source_url=source_url)
+    return _add_document(
+        root=root, path=path, title=title, tags=tags, source_url=source_url
+    )
 
 
 @main.command(help="Migrate a V1 docstore")
@@ -129,7 +129,7 @@ def add_from_url(root, url, title, tags, source_url):
     type=click.Path(),
     required=True,
 )
-def migrate(root, v1_path):
+def migrate(root, v1_path):  # pragma: no cover
     documents = json.load(open(os.path.join(v1_path, "documents.json")))
 
     for _, doc in documents.items():
