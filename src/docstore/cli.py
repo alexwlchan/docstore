@@ -182,7 +182,7 @@ def merge(root, doc_ids, yes):
     title_candidates = get_title_candidates(documents_to_merge)
 
     if len(title_candidates) == 1:
-        click.echo("Using common title: {click.style(title_candidates[0], fg='blue')}")
+        click.echo(f"Using common title: {click.style(title_candidates[0], fg='blue')}")
         new_title = title_candidates[0]
     else:
         print("")

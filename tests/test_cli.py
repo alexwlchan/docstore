@@ -90,6 +90,9 @@ class TestMerge:
         )
         assert result.exit_code == 0, result.output
 
+        assert 'Using common title: My Document' in result.output
+        assert 'Using common tags: tag1, tag2, tag3' in result.output
+
         stored_documents = read_documents(root)
 
         assert len(stored_documents) == 1
