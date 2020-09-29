@@ -15,7 +15,7 @@ def _is_animated_gif(path):
         # Not an image
         return False
     else:
-        return hasattr(im, "n_frames") and im.n_frames > 1
+        return im.is_animated
 
 
 def create_thumbnail(path, *, max_size=400):
