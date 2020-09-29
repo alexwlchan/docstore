@@ -28,7 +28,7 @@ def _download_file(url):  # pragma: no cover
     out_path = os.path.join(os.path.dirname(tmp_path), filename)
     os.rename(tmp_path, out_path)
 
-    return tmp_path
+    return out_path
 
 
 @click.group()

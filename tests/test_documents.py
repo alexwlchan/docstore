@@ -43,24 +43,28 @@ def test_can_write_and_read_documents(tmpdir):
         assert read_documents(tmpdir) == documents
 
 
-def test_can_merge_documents(tmpdir):
-    f1 = create_file("cat1.jpg")
-    f2 = create_file("cat2.jpg")
+def test_can_merge_documents(root):
+    os.makedirs(root / "files")
+    shutil.copyfile(src="tests/files/cluster.png", dst=root / "files" / "cluster1.png")
+    shutil.copyfile(src="tests/files/cluster.png", dst=root / "files" / "cluster2.png")
+
+    f1 = create_file("cluster1.png")
+    f2 = create_file("cluster2.png")
 
     doc1 = Document(title="My first document", files=[f1], tags=["tag1"])
     doc2 = Document(title="My second document", files=[f2], tags=["tag2"])
 
-    write_documents(root=tmpdir, documents=[doc1, doc2])
+    write_documents(root=root, documents=[doc1, doc2])
 
     pairwise_merge_documents(
-        root=tmpdir,
+        root=root,
         doc1=doc1,
         doc2=doc2,
         new_title="My merged document",
         new_tags=["tag1", "tag2", "new_merged_tag"],
     )
 
-    stored_documents = read_documents(tmpdir)
+    stored_documents = read_documents(root)
 
     assert stored_documents == [
         Document(

@@ -1,4 +1,12 @@
+import collections
+import colorsys
+import json
+import math
+import os
+
 from PIL import Image
+from sklearn.cluster import KMeans
+import wcag_contrast_ratio as contrast
 
 
 def _get_colors_from_im(im):
@@ -22,13 +30,112 @@ def get_colors_from(path):
     """
     Returns a list of the colors in the image at ``path``.
     """
-    im = Image.open(path)
+    im = Image.open(str(path))
 
-    if im.is_animated:
+    if getattr(im, 'is_animated', False):
         result = []
-        for frame in range(im.n_frames):
+
+        frame_count = im.n_frames
+
+        # Don't get all the frames from an animated GIF; if it has hundreds of
+        # frames this massively increases computation required for little gain.
+        # Take a sample and work from that.
+        for frame in range(0, im.n_frames, int(math.ceil(im.n_frames / 25))):
             im.seek(frame)
             result.extend(_get_colors_from_im(im))
         return result
     else:
         return _get_colors_from_im(im)
+
+
+def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
+    """
+    Given a set of dominant colors (say, from a k-means algorithm) and the
+    background against which they'll be displayed, choose a tint color.
+
+    Both ``dominant_colors`` and ``background_color`` should be tuples in [0,1].
+    """
+    # Clamp colours to the range 0.0 - 1.0; occasionally sklearn has spat out
+    # numbers outside this range.
+    dominant_colors = [
+        (min(max(col[0], 0), 1), min(max(col[1], 0), 1), min(max(col[2], 0), 1))
+        for col in dominant_colors
+    ]
+
+    # The minimum contrast ratio for text and background to meet WCAG AA
+    # is 4.5:1, so discard any dominant colours with a lower contrast.
+    # print({col: contrast.rgb(col, background_color) for col in dominant_colors})
+    sufficient_contrast_colors = [
+        col for col in dominant_colors if contrast.rgb(col, background_color) >= 4.5
+    ]
+
+    # If none of the dominant colours meet WCAG AA with the background,
+    # try again with black and white -- every colour in the RGB space
+    # has a contrast ratio of 4.5:1 with at least one of these, so we'll
+    # get a tint colour, even if it's not a good one.
+    #
+    # Note: you could modify the dominant colours until one of them
+    # has sufficient contrast, but that's omitted here because it adds
+    # a lot of complexity for a relatively unusual case.
+    if not sufficient_contrast_colors:
+        return choose_tint_color_from_dominant_colors(
+            dominant_colors=dominant_colors + [(0, 0, 0), (1, 1, 1)],
+            background_color=background_color,
+        )
+
+    # Of the colors with sufficient contrast, pick the one with the
+    # highest saturation.  This is meant to optimise for colors that are
+    # more colourful/interesting than simple greys and browns.
+    hsv_background = colorsys.rgb_to_hsv(*background_color)
+    hsv_candidates = {
+        tuple(rgb_col): colorsys.rgb_to_hsv(*rgb_col)
+        for rgb_col in sufficient_contrast_colors
+    }
+
+    # print(hsv_candidates)
+
+    return max(hsv_candidates, key=lambda rgb_col: hsv_candidates[rgb_col][2])
+
+
+def choose_tint_color(*, root, document, background_color):
+    try:
+        background_color = {"black": (0, 0, 0), "white": (1, 1, 1)}[background_color]
+    except KeyError:
+        raise ValueError(f"Unrecognised background color: {background_color!r}")
+
+    colors = []
+
+    for f in document.files:
+        colors.extend(get_colors_from(os.path.join(root, f.path)))
+
+    if not colors:
+        return ''
+
+    # Normalise to [0, 1]
+    colors = [(r / 255, g / 255, b / 255) for (r, g, b) in colors]
+
+    pixel_tally = collections.Counter(colors)
+    most_common, most_common_count = pixel_tally.most_common(1)[0]
+    if most_common_count >= len(colors) * 0.15 and contrast.rgb(most_common, background_color) >= 4.5:
+        return most_common
+
+    dominant_colors = KMeans(n_clusters=12).fit(colors).cluster_centers_
+
+    return choose_tint_color_from_dominant_colors(
+        dominant_colors=dominant_colors, background_color=background_color
+    )
+
+
+def get_tint_colors(root):
+    try:
+        return json.load(open(os.path.join(root, 'palette.json')))
+    except FileNotFoundError:
+        return {}
+
+
+def store_tint_color(root, *, document):
+    tint_colors = get_tint_colors(root)
+    tint_colors[document.id] = choose_tint_color(root=root, document=document, background_color='white')
+
+    with open(os.path.join(root, 'palette.json'), 'w') as outfile:
+        outfile.write(json.dumps(tint_colors, indent=2, sort_keys=True))

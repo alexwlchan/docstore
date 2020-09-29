@@ -6,6 +6,7 @@ import shutil
 from docstore.models import Document, File, Thumbnail, from_json, to_json
 from docstore.text_utils import slugify
 from docstore.thumbnails import create_thumbnail
+from docstore.tint_colors import store_tint_color
 
 
 _cached_documents = {
@@ -106,6 +107,8 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
 
     write_documents(root=root, documents=documents)
 
+    store_tint_color(root=root, document=new_document)
+
     return new_document
 
 
@@ -131,5 +134,4 @@ def pairwise_merge_documents(root, *, doc1, doc2, new_title, new_tags):
     stored_doc1.files.extend(doc2.files)
     write_documents(root=root, documents=documents)
 
-
-# def merge_documents(root, *, documents, new_title, new_tags)
+    store_tint_color(root=root, document=stored_doc1)

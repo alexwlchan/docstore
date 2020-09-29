@@ -135,6 +135,30 @@
   <table>
     {% for doc in documents[page_start - 1:page_end] %}
       <tr class="doc" id="doc_{{ doc.id }}">
+        {% if colors[doc.id] %}
+          {% set red = (colors[doc.id][0] * 255) | int %}
+          {% set green = (colors[doc.id][1] * 255) | int %}
+          {% set blue = (colors[doc.id][2] * 255) | int %}
+          <style>
+          #doc_{{ doc.id }} a {
+            color: rgb({{ red }}, {{ green }}, {{ blue }});
+          }
+
+          #doc_{{ doc.id }} a:hover {
+            background: rgba({{ red }}, {{ green }}, {{ blue }}, 0.3);
+          }
+
+          #doc_{{ doc.id }} .thumbnail a:hover {
+            background: rgb({{ red }}, {{ green }}, {{ blue }});
+          }
+
+          #doc_{{ doc.id }} .thumbnail a img:hover {
+            opacity: 0.8;
+            border: 1px solid rgb({{ red }}, {{ green }}, {{ blue }});
+            margin: -1px;
+          }
+          </style>
+        {% endif %}
         <td class="thumbnail">
           {%- for f in doc.files %}
           <a href="/{{ f.path }}"><img src="/{{ f.thumbnail.path }}"></a>

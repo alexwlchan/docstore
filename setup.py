@@ -31,7 +31,9 @@ setuptools.setup(
         "click>=7.1.2",
         "Flask>=1.1.2",
         "Pillow>=7.2.0",
+        "scikit-learn>=0.23.2",
         "Unidecode>=1.1.1",
+        "wcag_contrast_ratio>=0.9",
     ],
     python_requires=">=3.8",
     entry_points={

@@ -9,6 +9,7 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from docstore.documents import read_documents
 from docstore.text_utils import pretty_date
+from docstore.tint_colors import get_tint_colors
 
 
 def create_app(root):
@@ -37,6 +38,8 @@ def create_app(root):
         except KeyError:
             page = 1
 
+        colors = get_tint_colors(root)
+
         html = render_template(
             "index.html",
             documents=sorted(documents, key=lambda d: d.date_saved, reverse=True),
@@ -44,6 +47,7 @@ def create_app(root):
             query_string=tuple(parse_qsl(urlparse(request.url).query)),
             tag_tally=tag_tally,
             page=page,
+            colors=colors,
         )
 
         return html
