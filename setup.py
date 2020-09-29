@@ -31,7 +31,6 @@ setuptools.setup(
         "click>=7.1.2",
         "Flask>=1.1.2",
         "Pillow>=7.2.0",
-        "requests>=2.24.0",
         "Unidecode>=1.1.1",
     ],
     python_requires=">=3.8",
