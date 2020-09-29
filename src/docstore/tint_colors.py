@@ -1,12 +1,7 @@
 from PIL import Image
 
 
-def get_colors_from(path):
-    """
-    Returns a list of the colors in the image at ``path``.
-    """
-    im = Image.open(path)
-
+def _get_colors_from_im(im):
     # Resizing means less pixels to handle, so the *k*-means clustering converges
     # faster.  Small details are lost, but the main details will be preserved.
     if im.size > (100, 100):
@@ -21,3 +16,19 @@ def get_colors_from(path):
     im = im.convert("RGB")
 
     return list(im.getdata())
+
+
+def get_colors_from(path):
+    """
+    Returns a list of the colors in the image at ``path``.
+    """
+    im = Image.open(path)
+
+    if im.is_animated:
+        result = []
+        for frame in range(im.n_frames):
+            im.seek(frame)
+            result.extend(_get_colors_from_im(im))
+        return result
+    else:
+        return _get_colors_from_im(im)
