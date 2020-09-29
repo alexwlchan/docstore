@@ -5,6 +5,7 @@ import os
 from urllib.parse import parse_qsl, urlparse, urlencode
 
 from flask import Flask, render_template, request, send_from_directory
+import smartypants
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from docstore.documents import read_documents
@@ -20,6 +21,7 @@ def create_app(root):
     app.jinja_env.filters["pretty_date"] = lambda d: pretty_date(
         d, now=datetime.datetime.now()
     )
+    app.jinja_env.filters["smartypants"] = smartypants.smartypants
 
     @app.route("/")
     def list_documents():

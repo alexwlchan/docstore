@@ -32,6 +32,7 @@ setuptools.setup(
         "Flask>=1.1.2",
         "Pillow>=7.2.0",
         "scikit-learn>=0.23.2",
+        "smartypants>=2.0.1",
         "Unidecode>=1.1.1",
         "wcag_contrast_ratio>=0.9",
     ],
