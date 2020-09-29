@@ -97,16 +97,16 @@ def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
     return max(hsv_candidates, key=lambda rgb_col: hsv_candidates[rgb_col][2])
 
 
-def choose_tint_color(*, root, document, background_color):
+def choose_tint_color(*, paths, background_color):
     try:
         background_color = {"black": (0, 0, 0), "white": (1, 1, 1)}[background_color]
-    except KeyError:
+    except KeyError:  # pragma: no cover
         raise ValueError(f"Unrecognised background color: {background_color!r}")
 
     colors = []
 
-    for f in document.files:
-        colors.extend(get_colors_from(os.path.join(root, f.path)))
+    for p in paths:
+        colors.extend(get_colors_from(p))
 
     if not colors:
         return ''
@@ -135,7 +135,9 @@ def get_tint_colors(root):
 
 def store_tint_color(root, *, document):
     tint_colors = get_tint_colors(root)
-    tint_colors[document.id] = choose_tint_color(root=root, document=document, background_color='white')
+
+    paths = [os.path.join(root, f.path) for f in document.files]
+    tint_colors[document.id] = choose_tint_color(paths=paths, background_color='white')
 
     with open(os.path.join(root, 'palette.json'), 'w') as outfile:
         outfile.write(json.dumps(tint_colors, indent=2, sort_keys=True))

@@ -1,4 +1,7 @@
-from docstore.tint_colors import choose_tint_color, get_colors_from
+import pytest
+
+from docstore.models import Document, File
+from docstore.tint_colors import choose_tint_color_from_dominant_colors, choose_tint_color, get_colors_from
 
 
 def test_get_colors_from_small_image():
@@ -30,6 +33,17 @@ def test_get_colors_from_animated_gif():
     assert result[0:7500] != result[7500 : 7500 * 2]
 
 
-# def test_choose_tint_color():
-#     result = choose_tint_color(path='tests/files/cluster.png', background_color='white')
-#     print(result)
+def test_choose_tint_color():
+    tint_color = choose_tint_color(paths=['tests/files/Newtons_cradle.gif'], background_color='white')
+    assert all(0.4 <= c <= 0.5 for c in tint_color), tint_color
+
+
+@pytest.mark.parametrize('dominant_color, background_color, expected_tint', [
+    ((1, 1, 1), (1, 1, 1), (0, 0, 0)),
+    ((0.9, 0.9, 0.9), (1, 1, 1), (0, 0, 0)),
+    ((0, 0, 0), (0, 0, 0), (1, 1, 1)),
+])
+def test_selects_black_or_white_if_unsufficient_contrast(dominant_color, background_color, expected_tint):
+    assert choose_tint_color_from_dominant_colors(
+        dominant_colors=[dominant_color], background_color=background_color
+    ) == expected_tint
