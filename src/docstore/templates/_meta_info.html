@@ -23,32 +23,38 @@
     {% endif %}
   {% endif %}
 
-  {% if request_tags or tag_tally %}
+  {% if (include_tags and tag_tally) or request_tags %}
   <hr/>
   {% endif %}
 
-  {% if tag_tally|length > 15 %}
-    <details id="tagList"><summary>tag list</summary></details>
+  {% if include_tags and tag_tally %}
+    {% if tag_tally|length > 15 %}
+      <details id="tagList"><summary>tag list</summary></details>
 
-    <details id="tagCloud"><summary>tag cloud</summary>
-  {% endif %}
-  <div id="tag_cloud">
-    {% for t, count in tag_tally.items()|sort() %}
-      {% if t in request_tags %}
-      {{ t }}
-      {% else %}
-      <a class="tag" href="{{ query_string|add_tag(t) }}" rel="{{ count }}">{{ t }}</a>
-      {% endif %}
-    {% endfor %}
-  </div>
+      <details id="tagCloud"><summary>tag cloud</summary>
+    {% endif %}
 
-  {% if tag_tally|length > 15 %}
-    </details>
+    {% set tag_cloud = TagCloud(tag_tally) %}
+
+    <div id="tag_cloud">
+      {% for t, count in tag_tally.items()|sort() %}
+        {% if t in request_tags %}
+        <span style="{{ tag_cloud.get_style(count) }}">{{ t }}</span>
+        {% else %}
+        <a class="tag" href="{{ query_string|add_tag(t) }}" style="{{ tag_cloud.get_style(count) }}">{{ t }}</a>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if tag_tally|length > 15 %}
+      </details>
+    {% endif %}
+
+    {% if request_tags %}
+    <hr/>
+    {% endif %}
   {% endif %}
 
-  {% if tag_tally and request_tags %}
-  <hr/>
-  {% endif %}
   {% if request_tags %}
     filtering to tag{% if request_tags|length > 1 %}s{% endif %}
     {% for t in request_tags %}

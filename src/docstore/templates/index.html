@@ -1,4 +1,5 @@
 <link rel="shortcut icon" href="{{ url_for('static', filename='stacks.ico') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
 
 <title>
   {% if request_tags %}
@@ -6,8 +7,6 @@
   {% endif %}
   docstore{% if title %}/{{ title }}{% endif %}
 </title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
 
 <main>
   {% set page_size = 100 %}
@@ -19,6 +18,7 @@
     {% set page_end = documents|length %}
   {% endif %}
 
+  {% set include_tags = True %}
   {% include "_meta_info.html" %}
 
   <script>
@@ -127,19 +127,7 @@
   </table>
 
   {% if page_end - page_start > 10 %}
-  {% include "_meta_info.html" %}
+    {% set include_tags = False %}
+    {% include "_meta_info.html" %}
   {% endif %}
 </main>
-
-<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
-<script src="{{ url_for('static', filename='jquery.tagcloud.js') }}"></script>
-<script>
-  $.fn.tagcloud.defaults = {
-    size: { start: 10, end: 24, unit: 'pt' },
-    color: { start: '#aaa', end: '#666' },
-  };
-
-  $(function() {
-    $('#tag_cloud .tag').tagcloud();
-  })
-</script>

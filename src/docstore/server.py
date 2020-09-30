@@ -9,6 +9,7 @@ import smartypants
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from docstore.documents import read_documents
+from docstore.tag_cloud import TagCloud
 from docstore.text_utils import pretty_date
 from docstore.tint_colors import get_tint_colors
 
@@ -51,6 +52,7 @@ def create_app(title, root):
             title=title,
             page=page,
             colors=colors,
+            TagCloud=TagCloud,
         )
 
         return html
