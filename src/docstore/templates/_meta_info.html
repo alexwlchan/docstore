@@ -11,10 +11,10 @@
 {% endif %}
 
 <div class="meta_info">
-  {% if documents|length == 0 %}
-    No documents found!
+  docstore{% if title %}/{{ title }}{% endif %}: {% if documents|length == 0 %}
+    no documents found!
   {% else %}
-    Showing document{% if page_start != page_end %}s{% endif %} {{ page_start }}{% if page_start != page_end %}&ndash;{{ page_end }}{% endif %} of {{ documents|length }}.
+    showing document{% if page_start != page_end %}s{% endif %} {{ page_start }}{% if page_start != page_end %}&ndash;{{ page_end }}{% endif %} of {{ documents|length }}.
 
     {% if (prev_url != "#") or (next_url != "#") %}
       <a {% if prev_url == "#" %}class="disabled"{% endif %} href="{{ prev_url }}">« prev</a>
@@ -28,7 +28,7 @@
   {% endif %}
 
   {% if tag_tally|length > 15 %}
-    <details><summary>Tag cloud</summary>
+    <details><summary>tag cloud</summary>
   {% endif %}
   <div id="tag_cloud">
     {% for t, count in tag_tally.items()|sort() %}
@@ -49,7 +49,7 @@
   <hr/>
   {% endif %}
   {% if request_tags %}
-    Filtering to tag{% if request_tags|length > 1 %}s{% endif %}
+    filtering to tag{% if request_tags|length > 1 %}s{% endif %}
     {% for t in request_tags %}
       <span class="tag"><strong>{{ t }}</strong> <a href="{{ query_string|remove_tag(t) }}" class="remove_tag">[x]</a></span>
     {% endfor %}

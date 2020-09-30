@@ -13,7 +13,7 @@ from docstore.text_utils import pretty_date
 from docstore.tint_colors import get_tint_colors
 
 
-def create_app(root):
+def create_app(title, root):
     app = Flask(__name__)
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
@@ -48,6 +48,7 @@ def create_app(root):
             request_tags=request_tags,
             query_string=tuple(parse_qsl(urlparse(request.url).query)),
             tag_tally=tag_tally,
+            title=title,
             page=page,
             colors=colors,
         )
@@ -103,13 +104,13 @@ def create_app(root):
     return app
 
 
-def run_profiler(*, root, host, port):  # pragma: no cover
-    app = create_app(root)
+def run_profiler(*, root, title, host, port):  # pragma: no cover
+    app = create_app(root=root, title=title)
     app.config["PROFILE"] = True
     app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
     app.run(host=host, port=port, debug=True)
 
 
-def run_server(*, root, host, port, debug):  # pragma: no cover
-    app = create_app(root)
+def run_server(*, root, title, host, port, debug):  # pragma: no cover
+    app = create_app(root=root, title=title)
     app.run(host=host, port=port, debug=debug)

@@ -8,6 +8,7 @@ from urllib.request import urlretrieve
 import click
 
 from docstore.documents import (
+    delete_document,
     pairwise_merge_documents,
     read_documents,
     store_new_document,
@@ -48,13 +49,14 @@ def main():
     "--host", default="127.0.0.1", help="The interface to bind to.", show_default=True
 )
 @click.option("--port", default=3391, help="The port to bind to.", show_default=True)
+@click.option("--title", default="", help="The title of the app.")
 @click.option("--debug", default=False, is_flag=True, help="Run in debug mode.")
 @click.option("--profile", default=False, is_flag=True, help="Run a profiler.")
-def serve(host, port, debug, root, profile):  # pragma: no cover
+def serve(host, port, title, debug, root, profile):  # pragma: no cover
     if profile:
-        run_profiler(root=root, host=host, port=port)
+        run_profiler(root=root, title=title, host=host, port=port)
     else:
-        run_server(root=root, host=host, port=port, debug=debug)
+        run_server(root=root, title=title, host=host, port=port, debug=debug)
 
 
 def _add_document(root, path, title, tags, source_url):
@@ -151,6 +153,21 @@ def migrate(root, v1_path):  # pragma: no cover
                 date_created=datetime.datetime.fromisoformat(doc["date_created"]),
             )
             print(doc.get("filename", os.path.basename(doc["file_identifier"])))
+
+
+@main.command(help="Delete one or more documents")
+@click.option(
+    "--root",
+    default=".",
+    help="The root of the docstore database.",
+    type=click.Path(),
+    show_default=True,
+)
+@click.argument("doc_ids", nargs=-1)
+def delete(root, doc_ids):
+    for d_id in doc_ids:
+        delete_document(root=root, doc_id=d_id)
+        print(d_id)
 
 
 @main.command(help="Merge the files on two documents")

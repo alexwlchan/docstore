@@ -2,9 +2,9 @@
 
 <title>
   {% if request_tags %}
-    Tagged with {% for t in request_tags %}{{ t }}{% if not loop.last %}, {% endif %}{% endfor %} —
+    tagged with {% for t in request_tags %}{{ t }}{% if not loop.last %}, {% endif %}{% endfor %} —
   {% endif %}
-  docstore
+  docstore{% if title %}/{{ title }}{% endif %}
 </title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
