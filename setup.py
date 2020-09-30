@@ -7,6 +7,13 @@ def local_file(name):
     return os.path.relpath(os.path.join(os.path.dirname(__file__), name))
 
 
+def static_files(dirname):
+    return [
+        os.path.join(dirname, filename)
+        for filename in os.listdir(local_file(f"src/docstore/{dirname}"))
+    ]
+
+
 SOURCE = local_file("src")
 
 setuptools.setup(
@@ -16,12 +23,7 @@ setuptools.setup(
     author_email="alex@alexwlchan.net",
     packages=setuptools.find_packages(SOURCE),
     package_data={
-        "docstore": [
-            "static/jquery.tagcloud.js",
-            "static/natural_paper.png",
-            "templates/_meta_info.html",
-            "templates/index.html",
-        ]
+        "docstore": static_files("static") + static_files("templates")
     },
     package_dir={"": SOURCE},
     url="https://github.com/alexwlchan/docstore",

@@ -1,0 +1,111 @@
+body {
+  background: url('/static/natural_paper.png');
+  font: 14pt Helvetica;
+  line-height: 1.45em;
+}
+
+td {
+  line-height: 1.45em;
+  font-size: 10pt;
+}
+
+main {
+  max-width: 900px;
+  margin-left:  auto;
+  margin-right: auto;
+}
+
+.thumbnail {
+  width: 200px;
+  padding-right: 15px;
+}
+
+.thumbnail img {
+  width: 200px;
+}
+
+h2 {
+  margin-bottom: 0.5em;
+  line-height: 1.25em;
+}
+
+table {
+  width: 100%;
+}
+
+hr {
+  margin-left:  1em;
+  margin-right: 1em;
+  border: none;
+  height: 0.5px;
+  background: rgba(128, 128, 128, 0.5);
+}
+
+.thumbnail a {
+  display: block;
+}
+
+.thumbnail a:hover {
+  background: #606060;
+}
+
+.thumbnail a img:hover {
+  opacity: 0.8;
+  border: 1px solid #808080;
+  margin: -1px;
+}
+
+a {
+  color: #606060;
+}
+
+a:hover {
+  background: rgba(128, 128, 128, 0.3);
+}
+
+a.remove_tag {
+  color: #d01c11;
+  text-decoration: none;
+}
+
+a.remove_tag:hover {
+  background: rgba(208, 28, 17, 0.3);
+}
+
+.meta_info {
+  background: rgba(128, 128, 128, 0.15);
+  border: 3px solid #606060;
+  padding: 12px 15px;
+  margin: 1em -15px;
+  border-radius: 8px;
+  font-size: 13pt;
+}
+
+#tag_cloud {
+  text-align: justify;
+}
+
+.meta_info hr {
+  height: 1px;
+}
+
+#tag_cloud .tag {
+  display: inline-block;
+}
+
+a.disabled {
+   pointer-events: none;
+   cursor: default;
+   text-decoration: none;
+   color: black;
+}
+
+.doc_id {
+  font-weight: normal;
+  display: none;
+  color: #999;
+}
+
+h2:hover .doc_id {
+  display: inline-block;
+}
