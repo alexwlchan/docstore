@@ -28,7 +28,9 @@
   {% endif %}
 
   {% if tag_tally|length > 15 %}
-    <details><summary>tag cloud</summary>
+    <details id="tagList"><summary>tag list</summary></details>
+
+    <details id="tagCloud"><summary>tag cloud</summary>
   {% endif %}
   <div id="tag_cloud">
     {% for t, count in tag_tally.items()|sort() %}
@@ -43,7 +45,6 @@
   {% if tag_tally|length > 15 %}
     </details>
   {% endif %}
-
 
   {% if tag_tally and request_tags %}
   <hr/>

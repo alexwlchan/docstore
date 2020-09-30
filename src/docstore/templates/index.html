@@ -21,6 +21,27 @@
 
   {% include "_meta_info.html" %}
 
+  <script>
+    function rememberDetailsExpansionState(id) {
+      var details = document.getElementById(id);
+
+      details.addEventListener("toggle", event => {
+        if (details.open) {
+          localStorage.setItem("expandDetails_" + id, true);
+        } else {
+          localStorage.removeItem("expandDetails_" + id);
+        }
+      });
+
+      if (localStorage.getItem("expandDetails_" + id)) {
+        details.open = true;
+      }
+    }
+
+    rememberDetailsExpansionState("tagList");
+    rememberDetailsExpansionState("tagCloud");
+  </script>
+
   <table>
     {% for doc in documents[page_start - 1:page_end] %}
       <tr class="doc" id="doc_{{ doc.id }}">
