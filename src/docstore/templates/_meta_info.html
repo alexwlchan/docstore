@@ -29,7 +29,9 @@
 
   {% if include_tags and tag_tally %}
     {% if tag_tally|length > 15 %}
-      <details id="tagList"><summary>tag list</summary></details>
+      <details id="tagList"><summary>tag list</summary>
+        {% include "_tag_list.html" %}
+      </details>
 
       <details id="tagCloud"><summary>tag cloud</summary>
     {% endif %}

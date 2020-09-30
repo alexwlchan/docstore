@@ -1,0 +1,16 @@
+{% for entry in tag_tally|render_tag_list %}
+  {% if entry['type'] == 'html_literal' %}
+    {{ entry['value'] | safe }}
+  {% elif entry['type'] == 'tag_link' %}
+    {% set t = entry['name'] %}
+    {% if t in request_tags %}
+      {{ entry['display_name'] }}
+    {% else %}
+      <a href="{{ query_string|add_tag(t) }}">{{ entry['display_name'] }}</a>
+    {% endif %} ({{ entry['count'] }})
+  {% elif entry['type'] == 'tag_text' %}
+    {{ entry['display_name'] }}
+  {% else %}
+    {{ entry }}
+  {% endif %}
+{% endfor %}

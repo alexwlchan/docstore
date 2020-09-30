@@ -10,6 +10,7 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from docstore.documents import read_documents
 from docstore.tag_cloud import TagCloud
+from docstore.tag_list import render_tag_list
 from docstore.text_utils import pretty_date
 from docstore.tint_colors import get_tint_colors
 
@@ -22,6 +23,7 @@ def create_app(title, root):
     app.jinja_env.filters["pretty_date"] = lambda d: pretty_date(
         d, now=datetime.datetime.now()
     )
+    app.jinja_env.filters["render_tag_list"] = render_tag_list
     app.jinja_env.filters["smartypants"] = smartypants.smartypants
 
     @app.route("/")
