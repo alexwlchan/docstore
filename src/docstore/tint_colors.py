@@ -64,7 +64,6 @@ def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
 
     # The minimum contrast ratio for text and background to meet WCAG AA
     # is 4.5:1, so discard any dominant colours with a lower contrast.
-    # print({col: contrast.rgb(col, background_color) for col in dominant_colors})
     sufficient_contrast_colors = [
         col for col in dominant_colors if contrast.rgb(col, background_color) >= 4.5
     ]
@@ -91,8 +90,6 @@ def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
         tuple(rgb_col): colorsys.rgb_to_hsv(*rgb_col)
         for rgb_col in sufficient_contrast_colors
     }
-
-    # print(hsv_candidates)
 
     return max(hsv_candidates, key=lambda rgb_col: hsv_candidates[rgb_col][2])
 
