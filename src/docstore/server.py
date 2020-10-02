@@ -71,13 +71,17 @@ def create_app(title, root):
             os.path.abspath(os.path.join(root, "files", shard)), filename=filename
         )
 
-    @app.template_filter("attrib_tags")
-    def attrib_tags(document):
+    @app.template_filter("by_tags")
+    def by_tags(document):
         return [t for t in document.tags if t.startswith("by:")]
+
+    @app.template_filter("from_tags")
+    def from_tags(document):
+        return [t for t in document.tags if t.startswith("from:")]
 
     @app.template_filter("display_tags")
     def display_tags(document):
-        return sorted(t for t in document.tags if not t.startswith("by:"))
+        return sorted(t for t in document.tags if not t.startswith(("by:", "from:")))
 
     @app.template_filter("add_tag")
     @functools.lru_cache()
