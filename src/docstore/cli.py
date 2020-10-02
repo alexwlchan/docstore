@@ -8,21 +8,6 @@ from urllib.request import urlretrieve
 import click
 
 
-def _download_file(url):  # pragma: no cover
-    tmp_path, headers = urlretrieve(url)
-
-    try:
-        _, params = cgi.parse_header(headers["Content-Disposition"])
-        filename = params["filename"]
-    except KeyError:
-        filename = os.path.basename(urlparse(url).path)
-
-    out_path = os.path.join(os.path.dirname(tmp_path), filename)
-    os.rename(tmp_path, out_path)
-
-    return out_path
-
-
 @click.group()
 def main():
     pass
