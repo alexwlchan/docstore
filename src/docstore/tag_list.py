@@ -15,7 +15,7 @@ https://github.com/dreamwidth/dw-free/blob/6ec1e146d3c464e506a77913f0abf0d51a944
 
 def render_tag_list(tag_tally):
     if not tag_tally:
-        return ""
+        return []
 
     tag_result = [
         (name.split(":"), count)

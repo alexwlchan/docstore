@@ -10,7 +10,7 @@ from docstore.server import create_app
 
 @pytest.fixture
 def client(root):
-    app = create_app(root)
+    app = create_app(root=root, title="My test instance")
     app.config["TESTING"] = True
 
     with app.test_client() as client:
@@ -20,7 +20,7 @@ def client(root):
 def test_empty_response(client):
     resp = client.get("/")
     assert resp.status_code == 200
-    assert b"No documents found!" in resp.data
+    assert b"no documents found!" in resp.data
 
 
 def test_shows_documents(tmpdir, root, client):
@@ -79,3 +79,21 @@ def test_paginates_document(root, client):
     assert b"Document 100" not in resp_page_2.data
     assert b"Document 99" in resp_page_2.data
     assert b"Document 0" in resp_page_2.data
+
+
+def test_documents_with_lots_of_tags(root, client):
+    documents = [Document(title=f"Document {i}", tags=[f"tag{i}"]) for i in range(200)]
+
+    documents.extend([
+        Document(title="Another document", tags=["nest0:tag1"]),
+        Document(title="Another document", tags=["nest0:tag1:tagA"]),
+        Document(title="Another document", tags=["nest0:tag1:tagB"]),
+        Document(title="Another document", tags=["nest1:tag1"]),
+    ])
+
+    write_documents(root=root, documents=documents)
+
+    resp = client.get("/")
+    assert resp.status_code == 200
+
+    assert b'<details id="tagList">' in resp.data

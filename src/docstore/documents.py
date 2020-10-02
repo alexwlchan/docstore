@@ -142,7 +142,7 @@ def pairwise_merge_documents(root, *, doc1, doc2, new_title, new_tags):
 
 def delete_document(root, *, doc_id):
     documents = read_documents(root)
-    doc = next(d for d in documents if d.id == doc_id)
+    doc = [d for d in documents if d.id == doc_id][0]
 
     delete_dir = os.path.join(root, 'deleted', doc.id)
     os.makedirs(delete_dir, exist_ok=True)

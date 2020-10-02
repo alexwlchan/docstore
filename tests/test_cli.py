@@ -1,10 +1,12 @@
+import datetime
+import os
 import shutil
 
 from click.testing import CliRunner
 import pytest
 
 from docstore.cli import main
-from docstore.documents import read_documents, write_documents
+from docstore.documents import read_documents, store_new_document, write_documents
 from docstore.models import Document
 from test_models import is_recent
 
@@ -157,3 +159,34 @@ class TestMerge:
         assert result.exit_code == 0, result.output
 
         assert read_documents(root) == documents
+
+
+def test_deleting_document_through_cli(tmpdir, root, runner):
+    root = tmpdir / "root"
+    shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "cluster.png")
+
+    doc1 = store_new_document(
+        root=root,
+        path=tmpdir / "cluster.png",
+        title="A document about to be deleted",
+        tags=[],
+        source_url="htttps://example.org/cluster.png",
+        date_saved=datetime.datetime.now()
+    )
+    doc2 = Document(title="Doc1", date_saved=datetime.datetime(2010, 1, 1))
+    doc3 = Document(title="Doc2", date_saved=datetime.datetime(2002, 2, 2))
+
+    write_documents(root=root, documents=[doc1, doc2, doc3])
+
+    assert read_documents(root) == [doc1, doc2, doc3]
+
+    result = runner.invoke(
+        main, ["delete", "--root", root, doc1.id, doc2.id]
+    )
+    assert result.exit_code == 0, result.output
+
+    assert read_documents(root) == [doc3]
+
+    for deleted_doc in [doc1, doc2]:
+        deleted_json_path = root / "deleted" / deleted_doc.id / "document.json"
+        assert os.path.exists(deleted_json_path)

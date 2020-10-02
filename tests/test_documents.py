@@ -1,8 +1,10 @@
 import datetime
+import json
 import os
 import shutil
 
 from docstore.documents import (
+    delete_document,
     pairwise_merge_documents,
     read_documents,
     sha256,
@@ -161,3 +163,33 @@ def test_store_new_document(tmpdir):
 
     assert len(os.listdir(root / "files" / "m")) == 2
     assert len(os.listdir(root / "thumbnails" / "m")) == 2
+
+
+def test_deleting_document(tmpdir, root):
+    root = tmpdir / "root"
+    shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "cluster.png")
+
+    doc1 = store_new_document(
+        root=root,
+        path=tmpdir / "cluster.png",
+        title="A document about to be deleted",
+        tags=[],
+        source_url="htttps://example.org/cluster.png",
+        date_saved=datetime.datetime.now()
+    )
+    doc2 = Document(title="Doc1", date_saved=datetime.datetime(2010, 1, 1))
+    doc3 = Document(title="Doc2", date_saved=datetime.datetime(2002, 2, 2))
+
+    write_documents(root=root, documents=[doc1, doc2, doc3])
+
+    assert read_documents(root) == [doc1, doc2, doc3]
+
+    delete_document(root, doc_id=doc1.id)
+
+    assert read_documents(root) == [doc2, doc3]
+
+    deleted_json_path = root / "deleted" / doc1.id / "document.json"
+    assert os.path.exists(deleted_json_path)
+    assert json.load(open(deleted_json_path))["id"] == doc1.id
+    assert not os.path.exists(root / "files" / "c" / "cluster.png")
+    assert os.path.exists(root / "deleted" / doc1.id / "cluster.png")
