@@ -7,15 +7,6 @@ from urllib.request import urlretrieve
 
 import click
 
-from docstore.documents import (
-    delete_document,
-    pairwise_merge_documents,
-    read_documents,
-    store_new_document,
-)
-from docstore.merging import get_title_candidates, get_union_of_tags
-from docstore.server import run_profiler, run_server
-
 
 def _download_file(url):  # pragma: no cover
     tmp_path, headers = urlretrieve(url)
@@ -53,6 +44,8 @@ def main():
 @click.option("--debug", default=False, is_flag=True, help="Run in debug mode.")
 @click.option("--profile", default=False, is_flag=True, help="Run a profiler.")
 def serve(host, port, title, debug, root, profile):  # pragma: no cover
+    from docstore.server import run_profiler, run_server
+
     if profile:
         run_profiler(root=root, title=title, host=host, port=port)
     else:
@@ -65,6 +58,7 @@ def _add_document(root, path, title, tags, source_url):
 
     title = title or ""
 
+    from docstore.documents import store_new_document
     document = store_new_document(
         root=root,
         path=path,
@@ -144,6 +138,8 @@ def migrate(root, v1_path):  # pragma: no cover
 
         if os.path.exists(stored_file_path):
             os.rename(stored_file_path, filename_path)
+
+            from docstore.documents import store_new_document
             store_new_document(
                 root=root,
                 path=filename_path,
@@ -165,6 +161,8 @@ def migrate(root, v1_path):  # pragma: no cover
 )
 @click.argument("doc_ids", nargs=-1)
 def delete(root, doc_ids):
+    from docstore.documents import delete_document
+
     for d_id in doc_ids:
         delete_document(root=root, doc_id=d_id)
         print(d_id)
@@ -184,7 +182,9 @@ def merge(root, doc_ids, yes):
     if len(doc_ids) == 1:
         return
 
+    from docstore.documents import read_documents
     documents = {d.id: d for d in read_documents(root)}
+
     documents_to_merge = [documents[d_id] for d_id in doc_ids]
 
     for doc in documents_to_merge:
@@ -196,6 +196,7 @@ def merge(root, doc_ids, yes):
         click.confirm(f"Merge these {len(doc_ids)} documents?", abort=True)
 
     # What should the title of the merged document be?
+    from docstore.merging import get_title_candidates
     title_candidates = get_title_candidates(documents_to_merge)
 
     if len(title_candidates) == 1:
@@ -210,6 +211,7 @@ def merge(root, doc_ids, yes):
             new_title = click.edit("\n".join(title_candidates)).strip()
 
     # What should the tags on the merged document be?
+    from docstore.merging import get_union_of_tags
     all_tags = get_union_of_tags(documents_to_merge)
 
     print("")
@@ -223,6 +225,8 @@ def merge(root, doc_ids, yes):
             new_tags = all_tags
         else:  # pragma: no cover
             new_tags = click.edit("\n".join(all_tags)).strip().splitlines()
+
+    from docstore.documents import pairwise_merge_documents
 
     doc1 = documents[doc_ids[0]]
     for doc2_id in doc_ids[1:]:
