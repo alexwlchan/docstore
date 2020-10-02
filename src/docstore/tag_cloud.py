@@ -24,6 +24,9 @@ class TagCloud:
         weighting = tag_count - self.lowest_weight
         font_size = self.font_size_start + weighting * self.font_incr
         color = int(self.greyscale_start + weighting * self.greyscale_incr)
-        return 'font-size: %fpt; color: rgb(%d, %d, %d)' % (
-            font_size, color, color, color
+        return "font-size: %fpt; color: rgb(%d, %d, %d)" % (
+            font_size,
+            color,
+            color,
+            color,
         )

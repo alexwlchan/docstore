@@ -84,12 +84,14 @@ def test_paginates_document(root, client):
 def test_documents_with_lots_of_tags(root, client):
     documents = [Document(title=f"Document {i}", tags=[f"tag{i}"]) for i in range(200)]
 
-    documents.extend([
-        Document(title="Another document", tags=["nest0:tag1"]),
-        Document(title="Another document", tags=["nest0:tag1:tagA"]),
-        Document(title="Another document", tags=["nest0:tag1:tagB"]),
-        Document(title="Another document", tags=["nest1:tag1"]),
-    ])
+    documents.extend(
+        [
+            Document(title="Another document", tags=["nest0:tag1"]),
+            Document(title="Another document", tags=["nest0:tag1:tagA"]),
+            Document(title="Another document", tags=["nest0:tag1:tagB"]),
+            Document(title="Another document", tags=["nest1:tag1"]),
+        ]
+    )
 
     write_documents(root=root, documents=documents)
 

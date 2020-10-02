@@ -59,6 +59,7 @@ def _add_document(root, path, title, tags, source_url):
     title = title or ""
 
     from docstore.documents import store_new_document
+
     document = store_new_document(
         root=root,
         path=path,
@@ -104,7 +105,9 @@ def add(root, path, title, tags, source_url):
 @click.option("--tags", help="The tags to apply to the file.")
 @click.option("--source_url", help="Where was this file downloaded from?.")
 def add_from_url(root, url, title, tags, source_url):  # pragma: no cover
-    path = _download_file(url)
+    from docstore.downloads import download_file
+
+    path = download_file(url)
 
     return _add_document(
         root=root, path=path, title=title, tags=tags, source_url=source_url
@@ -140,6 +143,7 @@ def migrate(root, v1_path):  # pragma: no cover
             os.rename(stored_file_path, filename_path)
 
             from docstore.documents import store_new_document
+
             store_new_document(
                 root=root,
                 path=filename_path,
@@ -183,6 +187,7 @@ def merge(root, doc_ids, yes):
         return
 
     from docstore.documents import read_documents
+
     documents = {d.id: d for d in read_documents(root)}
 
     documents_to_merge = [documents[d_id] for d_id in doc_ids]
@@ -197,6 +202,7 @@ def merge(root, doc_ids, yes):
 
     # What should the title of the merged document be?
     from docstore.merging import get_title_candidates
+
     title_candidates = get_title_candidates(documents_to_merge)
 
     if len(title_candidates) == 1:
@@ -212,6 +218,7 @@ def merge(root, doc_ids, yes):
 
     # What should the tags on the merged document be?
     from docstore.merging import get_union_of_tags
+
     all_tags = get_union_of_tags(documents_to_merge)
 
     print("")

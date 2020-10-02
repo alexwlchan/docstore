@@ -17,10 +17,7 @@ def render_tag_list(tag_tally):
     if not tag_tally:
         return []
 
-    tag_result = [
-        (name.split(":"), count)
-        for name, count in sorted(tag_tally.items())
-    ]
+    tag_result = [(name.split(":"), count) for name, count in sorted(tag_tally.items())]
 
     prev_tags = []
     tag_list_pos = 0
@@ -39,12 +36,14 @@ def render_tag_list(tag_tally):
             # If we're on a tag's last tier and this tag isn't already selected,
             # we need to return a link to the tag, otherwise plain text is returned.
             if len(tags) == pos + 1:
-                tier_elements = [{
-                    "type": "tag_link",
-                    "name": name,
-                    "count": count,
-                    "display_name": tier.lstrip("_"),
-                }]
+                tier_elements = [
+                    {
+                        "type": "tag_link",
+                        "name": name,
+                        "count": count,
+                        "display_name": tier.lstrip("_"),
+                    }
+                ]
             else:
                 tier_elements = [{"type": "tag_text", "display_name": tier}]
 
@@ -63,10 +62,12 @@ def render_tag_list(tag_tally):
                     i = levels_to_close
                     for html in prev_tags:
                         if i > pos + 1:
-                            result.append({
-                                "type": "html_literal",
-                                "value": "</li></ul>",
-                            })
+                            result.append(
+                                {
+                                    "type": "html_literal",
+                                    "value": "</li></ul>",
+                                }
+                            )
                             levels_to_close -= 1
                         i -= 1
 

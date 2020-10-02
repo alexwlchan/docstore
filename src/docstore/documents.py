@@ -6,7 +6,14 @@ import shutil
 
 import cattr
 
-from docstore.models import DocstoreEncoder, Document, File, Thumbnail, from_json, to_json
+from docstore.models import (
+    DocstoreEncoder,
+    Document,
+    File,
+    Thumbnail,
+    from_json,
+    to_json,
+)
 from docstore.text_utils import slugify
 from docstore.thumbnails import create_thumbnail
 from docstore.tint_colors import store_tint_color
@@ -144,23 +151,22 @@ def delete_document(root, *, doc_id):
     documents = read_documents(root)
     doc = [d for d in documents if d.id == doc_id][0]
 
-    delete_dir = os.path.join(root, 'deleted', doc.id)
+    delete_dir = os.path.join(root, "deleted", doc.id)
     os.makedirs(delete_dir, exist_ok=True)
 
     for f in doc.files:
         os.rename(
             os.path.join(root, f.path),
-            os.path.join(delete_dir, os.path.basename(f.path))
+            os.path.join(delete_dir, os.path.basename(f.path)),
         )
         os.unlink(os.path.join(root, f.thumbnail.path))
 
-    with open(os.path.join(delete_dir, 'document.json'), 'w') as outfile:
-        outfile.write(json.dumps(
-            cattr.unstructure(doc),
-            indent=2,
-            sort_keys=True,
-            cls=DocstoreEncoder
-        ))
+    with open(os.path.join(delete_dir, "document.json"), "w") as outfile:
+        outfile.write(
+            json.dumps(
+                cattr.unstructure(doc), indent=2, sort_keys=True, cls=DocstoreEncoder
+            )
+        )
 
     documents = [d for d in documents if d.id != doc_id]
     write_documents(root=root, documents=documents)

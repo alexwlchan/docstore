@@ -15,7 +15,7 @@ def _is_animated_gif(path):
         # Not an image
         return False
     else:
-        return getattr(im, 'is_animated', False)
+        return getattr(im, "is_animated", False)
 
 
 def create_thumbnail(path, *, max_size=400):

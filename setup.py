@@ -22,9 +22,7 @@ setuptools.setup(
     author="Alex Chan",
     author_email="alex@alexwlchan.net",
     packages=setuptools.find_packages(SOURCE),
-    package_data={
-        "docstore": static_files("static") + static_files("templates")
-    },
+    package_data={"docstore": static_files("static") + static_files("templates")},
     package_dir={"": SOURCE},
     url="https://github.com/alexwlchan/docstore",
     install_requires=[

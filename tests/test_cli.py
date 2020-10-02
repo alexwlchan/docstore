@@ -171,7 +171,7 @@ def test_deleting_document_through_cli(tmpdir, root, runner):
         title="A document about to be deleted",
         tags=[],
         source_url="htttps://example.org/cluster.png",
-        date_saved=datetime.datetime.now()
+        date_saved=datetime.datetime.now(),
     )
     doc2 = Document(title="Doc1", date_saved=datetime.datetime(2010, 1, 1))
     doc3 = Document(title="Doc2", date_saved=datetime.datetime(2002, 2, 2))
@@ -180,9 +180,7 @@ def test_deleting_document_through_cli(tmpdir, root, runner):
 
     assert read_documents(root) == [doc1, doc2, doc3]
 
-    result = runner.invoke(
-        main, ["delete", "--root", root, doc1.id, doc2.id]
-    )
+    result = runner.invoke(main, ["delete", "--root", root, doc1.id, doc2.id])
     assert result.exit_code == 0, result.output
 
     assert read_documents(root) == [doc3]

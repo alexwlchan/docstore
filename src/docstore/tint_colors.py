@@ -32,7 +32,7 @@ def get_colors_from(path):
     """
     im = Image.open(str(path))
 
-    if getattr(im, 'is_animated', False):
+    if getattr(im, "is_animated", False):
         result = []
 
         frame_count = im.n_frames
@@ -109,14 +109,17 @@ def choose_tint_color(*, paths, background_color):
         colors.extend(get_colors_from(p))
 
     if not colors:
-        return ''
+        return ""
 
     # Normalise to [0, 1]
     colors = [(r / 255, g / 255, b / 255) for (r, g, b) in colors]
 
     pixel_tally = collections.Counter(colors)
     most_common, most_common_count = pixel_tally.most_common(1)[0]
-    if most_common_count >= len(colors) * 0.15 and contrast.rgb(most_common, background_color) >= 4.5:
+    if (
+        most_common_count >= len(colors) * 0.15
+        and contrast.rgb(most_common, background_color) >= 4.5
+    ):
         return most_common
 
     dominant_colors = KMeans(n_clusters=12).fit(colors).cluster_centers_
@@ -128,7 +131,7 @@ def choose_tint_color(*, paths, background_color):
 
 def get_tint_colors(root):
     try:
-        return json.load(open(os.path.join(root, 'palette.json')))
+        return json.load(open(os.path.join(root, "palette.json")))
     except FileNotFoundError:
         return {}
 
@@ -137,7 +140,7 @@ def store_tint_color(root, *, document):
     tint_colors = get_tint_colors(root)
 
     paths = [os.path.join(root, f.path) for f in document.files]
-    tint_colors[document.id] = choose_tint_color(paths=paths, background_color='white')
+    tint_colors[document.id] = choose_tint_color(paths=paths, background_color="white")
 
-    with open(os.path.join(root, 'palette.json'), 'w') as outfile:
+    with open(os.path.join(root, "palette.json"), "w") as outfile:
         outfile.write(json.dumps(tint_colors, indent=2, sort_keys=True))
