@@ -13,7 +13,7 @@ class TagCloud:
         self.font_incr = (self.font_size_end - self.font_size_start) / self.range
 
         self.greyscale_start = 170
-        self.greyscale_end = 102
+        self.greyscale_end = 70
         self.greyscale_incr = (self.greyscale_end - self.greyscale_start) / self.range
 
     @functools.lru_cache()
