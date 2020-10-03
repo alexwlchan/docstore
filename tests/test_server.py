@@ -113,31 +113,31 @@ def tidy(html_str):
         {
             "tags": ["by:John Smith"],
             "expected_title": "{title}, by John Smith ({doc_id})",
-            "urls": ["/", "/?tag=by%3aJohn%20Smith"],
+            "urls": ["/", "/?tag=by%3AJohn+Smith"],
         },
         {
             "tags": ["by:John Smith", "by:Jane Doe"],
             "expected_title": "{title}, by John Smith, Jane Doe ({doc_id})",
             "urls": [
                 "/",
-                "/?tag=by%3aJohn%20Smith",
-                "/?tag=by%3aJane%20Doe",
-                "/?tag=by%3aJane%20Doe&tag=by%3aJohn%20Smith",
+                "/?tag=by%3AJohn+Smith",
+                "/?tag=by%3AJane+Doe",
+                "/?tag=by%3AJane+Doe&tag=by%3AJohn+Smith",
             ],
         },
         {
             "tags": ["from:ACME Corp"],
             "expected_title": "{title}, from ACME Corp ({doc_id})",
-            "urls": ["/", "/?tag=from%3aACME%20Corp"],
+            "urls": ["/", "/?tag=from%3AACME+Corp"],
         },
         {
             "tags": ["from:ACME Corp", "from:Widget Inc"],
             "expected_title": "{title}, from ACME Corp, Widget Inc ({doc_id})",
             "urls": [
                 "/",
-                "/?tag=from%3aACME%20Corp",
-                "/?tag=from%3aWidget%20Inc",
-                "/?tag=from%3aACME%20Corp&tag=from%3aWidget%20Inc",
+                "/?tag=from%3AACME+Corp",
+                "/?tag=from%3AWidget+Inc",
+                "/?tag=from%3AACME+Corp&tag=from%3AWidget+Inc",
             ],
         },
         {
@@ -145,9 +145,9 @@ def tidy(html_str):
             "expected_title": "{title}, by John Smith, from ACME Corp ({doc_id})",
             "urls": [
                 "/",
-                "/?tag=by%3aJohn%20Smith",
-                "/?tag=from%3aACME%20Corp",
-                "/?tag=by%3aJohn%20Smith&tag=from%3aACME%20Corp",
+                "/?tag=by%3AJohn+Smith",
+                "/?tag=from%3AACME+Corp",
+                "/?tag=by%3AJohn+Smith&tag=from%3AACME+Corp",
             ],
         },
     ],
