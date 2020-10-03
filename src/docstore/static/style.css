@@ -18,12 +18,11 @@ main {
 }
 
 .thumbnail {
-  width: 200px;
   padding-right: 15px;
 }
 
 .thumbnail img {
-  width: 200px;
+  width: 100%;
 }
 
 h2 {

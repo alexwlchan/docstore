@@ -23,8 +23,11 @@ def tags_without_prefix(document, prefix):
     return [t for t in document.tags if not t.startswith(prefix)]
 
 
-def create_app(title, root):
+def create_app(title, root, thumbnail_width):
     app = Flask(__name__)
+
+    app.config["THUMBNAIL_WIDTH"] = 200
+
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
 
@@ -111,13 +114,13 @@ def create_app(title, root):
     return app
 
 
-def run_profiler(*, root, title, host, port):  # pragma: no cover
-    app = create_app(root=root, title=title)
+def run_profiler(*, host, port, **kwargs):  # pragma: no cover
+    app = create_app(**kwargs)
     app.config["PROFILE"] = True
     app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
     app.run(host=host, port=port, debug=True)
 
 
-def run_server(*, root, title, host, port, debug):  # pragma: no cover
-    app = create_app(root=root, title=title)
+def run_server(*, host, port, debug, **kwargs):  # pragma: no cover
+    app = create_app(**kwargs)
     app.run(host=host, port=port, debug=debug)

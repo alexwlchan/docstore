@@ -12,7 +12,7 @@ from docstore.server import create_app
 
 @pytest.fixture
 def client(root):
-    app = create_app(root=root, title="My test instance")
+    app = create_app(root=root, title="My test instance", thumbnail_width=200)
     app.config["TESTING"] = True
 
     with app.test_client() as client:
@@ -172,3 +172,18 @@ def test_shows_attribution_tags(root, client, test_case):
 
         tags_list = soup.find("div", attrs={"class": "tags"})
         assert tidy(tags_list.text) == "tagged with: tag1 tag2"
+
+
+def test_sets_thumbnail_width(client):
+    """
+    If the user sets a custom thumbnail width, the appropriate CSS style is
+    added to the rendered page.
+    """
+    print(dir(client))
+    client.application.config["THUMBNAIL_WIDTH"] = 100
+
+    resp = client.get("/")
+
+    soup = bs4.BeautifulSoup(resp.data, "html.parser")
+    style_tag = soup.find("style")
+    assert tidy(style_tag.string) == ".thumbnail { width: 100px; }"

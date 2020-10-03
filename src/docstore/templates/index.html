@@ -1,12 +1,6 @@
-<link rel="shortcut icon" href="{{ url_for('static', filename='stacks.ico') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
-
-<title>
-  {% if request_tags %}
-    tagged with {% for t in request_tags %}{{ t }}{% if not loop.last %}, {% endif %}{% endfor %} —
-  {% endif %}
-  docstore{% if title %}/{{ title }}{% endif %}
-</title>
+<head>
+  {% include "_head.html" %}
+</head>
 
 <main>
   {% set page_size = 100 %}

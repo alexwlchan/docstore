@@ -24,16 +24,19 @@ def main(ctx, root):
 )
 @click.option("--port", default=3391, help="The port to bind to.", show_default=True)
 @click.option("--title", default="", help="The title of the app.")
+@click.option(
+    "--thumbnail_width", default=200, help="Thumbnail width (px).", show_default=True
+)
 @click.option("--debug", default=False, is_flag=True, help="Run in debug mode.")
 @click.option("--profile", default=False, is_flag=True, help="Run a profiler.")
 @click.pass_obj
-def serve(root, host, port, title, debug, profile):  # pragma: no cover
+def serve(root, debug, profile, **kwargs):  # pragma: no cover
     from docstore.server import run_profiler, run_server
 
     if profile:
-        run_profiler(root=root, title=title, host=host, port=port)
+        run_profiler(root=root, **kwargs)
     else:
-        run_server(root=root, title=title, host=host, port=port, debug=debug)
+        run_server(root=root, debug=debug, **kwargs)
 
 
 def _add_document(root, path, title, tags, source_url):
