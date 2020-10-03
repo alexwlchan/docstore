@@ -11,21 +11,27 @@ from docstore.models import Document
 from test_models import is_recent
 
 
+class DocstoreRunner(CliRunner):
+    def __init__(self, root):
+        self.root = str(root)
+        super().__init__()
+
+    def invoke(self, cmd):
+        return super().invoke(main, ["--root", self.root] + cmd)
+
+
 @pytest.fixture
-def runner():
-    return CliRunner()
+def runner(root):
+    return DocstoreRunner(root)
 
 
 class TestAdd:
     def test_stores_new_document(self, tmpdir, root, runner):
         shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "My Cluster.png")
         result = runner.invoke(
-            main,
             [
                 "add",
                 str(tmpdir / "My Cluster.png"),
-                "--root",
-                str(root),
                 "--title",
                 "My first document",
                 "--tags",
@@ -66,12 +72,9 @@ class TestAdd:
     def test_adds_tags_to_document(self, tmpdir, root, runner, tag_arg, expected_tags):
         shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "My Cluster.png")
         result = runner.invoke(
-            main,
             [
                 "add",
                 str(tmpdir / "My Cluster.png"),
-                "--root",
-                str(root),
                 "--title",
                 "My second document",
                 "--tags",
@@ -96,12 +99,9 @@ class TestAdd:
     ):
         shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "My Cluster.png")
         result = runner.invoke(
-            main,
             [
                 "add",
                 str(tmpdir / "My Cluster.png"),
-                "--root",
-                str(root),
                 "--title",
                 "My stored document",
                 "--tags",
@@ -126,9 +126,7 @@ class TestMerge:
 
         write_documents(root=root, documents=documents)
 
-        result = runner.invoke(
-            main, ["merge", "--yes", "--root", root] + [doc.id for doc in documents]
-        )
+        result = runner.invoke(["merge", "--yes"] + [doc.id for doc in documents])
         assert result.exit_code == 0, result.output
 
         assert "Using common title: My Document\n" in result.output
@@ -148,9 +146,7 @@ class TestMerge:
 
         write_documents(root=root, documents=documents)
 
-        result = runner.invoke(
-            main, ["merge", "--yes", "--root", root] + [doc.id for doc in documents]
-        )
+        result = runner.invoke(["merge", "--yes"] + [doc.id for doc in documents])
         assert result.exit_code == 0, result.output
 
         assert "Guessed title: My Document\n" in result.output
@@ -167,9 +163,7 @@ class TestMerge:
         documents = [Document(title="My Document")]
         write_documents(root=root, documents=documents)
 
-        result = runner.invoke(
-            main, ["merge", "--yes", "--root", root, documents[0].id]
-        )
+        result = runner.invoke(["merge", "--yes", documents[0].id])
         assert result.exit_code == 0, result.output
 
         assert read_documents(root) == documents
@@ -194,7 +188,7 @@ def test_deleting_document_through_cli(tmpdir, root, runner):
 
     assert read_documents(root) == [doc1, doc2, doc3]
 
-    result = runner.invoke(main, ["delete", "--root", root, doc1.id, doc2.id])
+    result = runner.invoke(["delete", doc1.id, doc2.id])
     assert result.exit_code == 0, result.output
 
     assert read_documents(root) == [doc3]

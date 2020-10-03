@@ -6,11 +6,6 @@ import click
 
 
 @click.group()
-def main():
-    pass
-
-
-@main.command(help="Run a docstore API server")
 @click.option(
     "--root",
     default=".",
@@ -18,6 +13,12 @@ def main():
     type=click.Path(),
     show_default=True,
 )
+@click.pass_context
+def main(ctx, root):
+    ctx.obj = root
+
+
+@main.command(help="Run a docstore API server")
 @click.option(
     "--host", default="127.0.0.1", help="The interface to bind to.", show_default=True
 )
@@ -25,7 +26,8 @@ def main():
 @click.option("--title", default="", help="The title of the app.")
 @click.option("--debug", default=False, is_flag=True, help="Run in debug mode.")
 @click.option("--profile", default=False, is_flag=True, help="Run a profiler.")
-def serve(host, port, title, debug, root, profile):  # pragma: no cover
+@click.pass_obj
+def serve(root, host, port, title, debug, profile):  # pragma: no cover
     from docstore.server import run_profiler, run_server
 
     if profile:
@@ -55,13 +57,6 @@ def _add_document(root, path, title, tags, source_url):
 
 
 @main.command(help="Store a file in docstore")
-@click.option(
-    "--root",
-    default=".",
-    help="The root of the docstore database.",
-    type=click.Path(),
-    show_default=True,
-)
 @click.argument("path", nargs=1, type=click.Path(), required=True)
 @click.option(
     "--title",
@@ -76,6 +71,7 @@ def _add_document(root, path, title, tags, source_url):
     prompt="How should the file be tagged?",
 )
 @click.option("--source_url", help="Where was this file downloaded from?.")
+@click.pass_obj
 def add(root, path, title, tags, source_url):
     return _add_document(
         root=root, path=path, title=title, tags=tags, source_url=source_url
@@ -84,18 +80,12 @@ def add(root, path, title, tags, source_url):
 
 @main.command(help="Store a file on the web in docstore")
 @click.option(
-    "--root",
-    default=".",
-    help="The root of the docstore database.",
-    type=click.Path(),
-    show_default=True,
-)
-@click.option(
     "--url", help="URL of the file to store.", type=click.Path(), required=True
 )
 @click.option("--title", help="The title of the file.")
 @click.option("--tags", help="The tags to apply to the file.")
 @click.option("--source_url", help="Where was this file downloaded from?.")
+@click.pass_obj
 def add_from_url(root, url, title, tags, source_url):  # pragma: no cover
     from docstore.downloads import download_file
 
@@ -108,18 +98,12 @@ def add_from_url(root, url, title, tags, source_url):  # pragma: no cover
 
 @main.command(help="Migrate a V1 docstore")
 @click.option(
-    "--root",
-    default=".",
-    help="The root of the docstore database.",
-    type=click.Path(),
-    show_default=True,
-)
-@click.option(
     "--v1_path",
     help="Path to the root of the V1 instance.",
     type=click.Path(),
     required=True,
 )
+@click.pass_obj
 def migrate(root, v1_path):  # pragma: no cover
     documents = json.load(open(os.path.join(v1_path, "documents.json")))
 
@@ -148,14 +132,8 @@ def migrate(root, v1_path):  # pragma: no cover
 
 
 @main.command(help="Delete one or more documents")
-@click.option(
-    "--root",
-    default=".",
-    help="The root of the docstore database.",
-    type=click.Path(),
-    show_default=True,
-)
 @click.argument("doc_ids", nargs=-1)
+@click.pass_obj
 def delete(root, doc_ids):
     from docstore.documents import delete_document
 
@@ -165,15 +143,9 @@ def delete(root, doc_ids):
 
 
 @main.command(help="Merge the files on two documents")
-@click.option(
-    "--root",
-    default=".",
-    help="The root of the docstore database.",
-    type=click.Path(),
-    show_default=True,
-)
 @click.argument("doc_ids", nargs=-1)
 @click.option("--yes", is_flag=True, help="Skip confirmation prompts.")
+@click.pass_obj
 def merge(root, doc_ids, yes):
     if len(doc_ids) == 1:
         return
