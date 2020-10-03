@@ -26,7 +26,7 @@ def tags_without_prefix(document, prefix):
 def create_app(title, root, thumbnail_width):
     app = Flask(__name__)
 
-    app.config["THUMBNAIL_WIDTH"] = 200
+    app.config["THUMBNAIL_WIDTH"] = thumbnail_width
 
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
