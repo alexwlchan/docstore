@@ -20,7 +20,7 @@ class TestAdd:
     def test_stores_new_document(self, tmpdir, root, runner):
         shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "My Cluster.png")
         result = runner.invoke(
-            main, ["add", "--root", str(root), "--path", str(tmpdir / "My Cluster.png")]
+            main, ["add", str(tmpdir / "My Cluster.png"), "--root", str(root)]
         )
 
         assert result.exit_code == 0, result.output
@@ -59,10 +59,9 @@ class TestAdd:
             main,
             [
                 "add",
+                str(tmpdir / "My Cluster.png"),
                 "--root",
                 str(root),
-                "--path",
-                str(tmpdir / "My Cluster.png"),
                 "--tags",
                 tag_arg,
             ],
@@ -88,10 +87,9 @@ class TestAdd:
             main,
             [
                 "add",
+                str(tmpdir / "My Cluster.png"),
                 "--root",
                 str(root),
-                "--path",
-                str(tmpdir / "My Cluster.png"),
                 "--source_url",
                 source_url_arg,
             ],

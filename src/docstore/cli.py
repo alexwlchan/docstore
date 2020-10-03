@@ -62,7 +62,7 @@ def _add_document(root, path, title, tags, source_url):
     type=click.Path(),
     show_default=True,
 )
-@click.option("--path", help="The file to store.", type=click.Path(), required=True)
+@click.argument("path", nargs=1, type=click.Path(), required=True)
 @click.option("--title", help="The title of the file.")
 @click.option("--tags", help="The tags to apply to the file.")
 @click.option("--source_url", help="Where was this file downloaded from?.")
