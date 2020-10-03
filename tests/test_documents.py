@@ -14,16 +14,6 @@ from docstore.documents import (
 from docstore.models import Document, File, Thumbnail
 
 
-def create_file(filename):
-    return File(
-        filename=filename,
-        path=f"files/{filename}",
-        size=1,
-        checksum="md5:123",
-        thumbnail=Thumbnail(f"thumbnails/{filename}.png"),
-    )
-
-
 def test_sha256():
     assert (
         sha256("tests/files/cluster.png")
@@ -45,18 +35,26 @@ def test_can_write_and_read_documents(tmpdir):
         assert read_documents(tmpdir) == documents
 
 
-def test_can_merge_documents(root):
-    os.makedirs(root / "files")
-    shutil.copyfile(src="tests/files/cluster.png", dst=root / "files" / "cluster1.png")
-    shutil.copyfile(src="tests/files/cluster.png", dst=root / "files" / "cluster2.png")
+def test_can_merge_documents(tmpdir, root):
+    shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "cluster1.png")
+    shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "cluster2.png")
 
-    f1 = create_file("cluster1.png")
-    f2 = create_file("cluster2.png")
-
-    doc1 = Document(title="My first document", files=[f1], tags=["tag1"])
-    doc2 = Document(title="My second document", files=[f2], tags=["tag2"])
-
-    write_documents(root=root, documents=[doc1, doc2])
+    doc1 = store_new_document(
+        root=root,
+        path=tmpdir / "cluster1.png",
+        title="My first document",
+        tags=["tag1"],
+        source_url="htttps://example.org/cluster1.png",
+        date_saved=datetime.datetime.now(),
+    )
+    doc2 = store_new_document(
+        root=root,
+        path=tmpdir / "cluster2.png",
+        title="My second document",
+        tags=["tag2"],
+        source_url="htttps://example.org/cluster2.png",
+        date_saved=datetime.datetime.now(),
+    )
 
     pairwise_merge_documents(
         root=root,
@@ -72,7 +70,7 @@ def test_can_merge_documents(root):
         Document(
             id=doc1.id,
             date_saved=doc1.date_saved,
-            files=[f1, f2],
+            files=doc1.files + doc2.files,
             title="My merged document",
             tags=["tag1", "tag2", "new_merged_tag"],
         )

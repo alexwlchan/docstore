@@ -1,9 +1,14 @@
+import datetime
+import shutil
+
 import pytest
 
+from docstore.documents import store_new_document
 from docstore.tint_colors import (
     choose_tint_color_from_dominant_colors,
     choose_tint_color,
     get_colors_from,
+    store_tint_color,
 )
 
 
@@ -33,7 +38,7 @@ def test_get_colors_from_animated_gif():
     # 480x360 image => 100x75 thumbnail
     # 36 frames, of which 18 are sampled
     assert len(result) == 100 * 75 * 18
-    assert result[0:7500] != result[7500:7500 * 2]
+    assert result[0:7500] != result[7500 : 7500 * 2]
 
 
 def test_choose_tint_color():
@@ -60,3 +65,18 @@ def test_selects_black_or_white_if_unsufficient_contrast(
         )
         == expected_tint
     )
+
+
+def test_uses_thumbnail_if_cannot_use_file(root, tmpdir):
+    shutil.copyfile(src="tests/files/snakes.pdf", dst=tmpdir / "snakes.pdf")
+
+    document = store_new_document(
+        root=root,
+        path=tmpdir / "snakes.pdf",
+        title="Some snakes",
+        tags=[],
+        source_url="htttps://example.org/snakes.pdf",
+        date_saved=datetime.datetime.now(),
+    )
+
+    store_tint_color(root, document=document)

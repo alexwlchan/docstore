@@ -135,7 +135,7 @@ def get_tint_colors(root):
 def store_tint_color(root, *, document):
     tint_colors = get_tint_colors(root)
 
-    paths = [os.path.join(root, f.path) for f in document.files]
+    paths = [os.path.join(root, f.thumbnail.path) for f in document.files]
     tint_colors[document.id] = choose_tint_color(paths=paths, background_color="white")
 
     with open(os.path.join(root, "tint_colors.json"), "w") as outfile:
