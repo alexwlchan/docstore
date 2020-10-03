@@ -20,7 +20,17 @@ class TestAdd:
     def test_stores_new_document(self, tmpdir, root, runner):
         shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "My Cluster.png")
         result = runner.invoke(
-            main, ["add", str(tmpdir / "My Cluster.png"), "--root", str(root)]
+            main,
+            [
+                "add",
+                str(tmpdir / "My Cluster.png"),
+                "--root",
+                str(root),
+                "--title",
+                "My first document",
+                "--tags",
+                "tag1, tag2, tag3",
+            ],
         )
 
         assert result.exit_code == 0, result.output
@@ -31,8 +41,8 @@ class TestAdd:
 
         assert len(documents) == 1
         assert documents[0].id == doc_id
-        assert documents[0].title == ""
-        assert documents[0].tags == []
+        assert documents[0].title == "My first document"
+        assert documents[0].tags == ["tag1", "tag2", "tag3"]
         assert is_recent(documents[0].date_saved)
 
         assert len(documents[0].files) == 1
@@ -62,6 +72,8 @@ class TestAdd:
                 str(tmpdir / "My Cluster.png"),
                 "--root",
                 str(root),
+                "--title",
+                "My second document",
                 "--tags",
                 tag_arg,
             ],
@@ -90,6 +102,10 @@ class TestAdd:
                 str(tmpdir / "My Cluster.png"),
                 "--root",
                 str(root),
+                "--title",
+                "My stored document",
+                "--tags",
+                "tag1, tag2, tag3",
                 "--source_url",
                 source_url_arg,
             ],
