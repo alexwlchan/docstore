@@ -78,46 +78,30 @@
           {%- endfor %}
         </td>
         <td>
-          {% if doc.title or doc|by_tags or doc|from_tags %}
+          {% if doc.title or doc|tags_with_prefix(("by:", "from:")) %}
             <h2 class="title">
               {{ doc.title | smartypants | safe }}
-              {%- if doc|by_tags -%}
-                , by
-                {% for t in doc|by_tags %}
-                  {%- if t in request_tags %}
-                  {{ t[3:] }}
-                  {% else %}
-                  <a href="{{ query_string|add_tag(t) }}">{{ t[3:] }}</a>
-                  {%- endif %}
-                  {%- if not loop.last -%}, {% endif %}
-                {%- endfor -%}
-              {% endif %}
 
-              {%- if doc|from_tags -%}
-                , from
-                {% for t in doc|from_tags %}
-                  {%- if t in request_tags %}
-                  {{ t[5:] }}
-                  {% else %}
-                  <a href="{{ query_string|add_tag(t) }}">{{ t[5:] }}</a>
-                  {%- endif %}
-                  {%- if not loop.last -%}, {% endif %}
-                {%- endfor -%}
-              {% endif %}
+              {%- set prefix = "by" -%}
+              {% include "_title_attribution.html" %}
+
+              {%- set prefix = "from" -%}
+              {% include "_title_attribution.html" %}
+
               <span class="doc_id">({{ doc.id }})</span>
             </h2>
           {% endif %}
 
           date saved: {{ doc.date_saved | pretty_date }}
-          {% if (doc.files and doc.files[0].source_url) or doc|display_tags %}<br/>{% endif %}
+          {% if (doc.files and doc.files[0].source_url) or doc|tags_without_prefix(("by:", "from:")) %}<br/>{% endif %}
 
           {% if doc.files and doc.files[0].source_url %}
             source: <a href="{{ doc.files[0].source_url }}">{{ doc.files[0].source_url|hostname }}</a></br>
           {% endif %}
 
-          {% if doc|display_tags %}
+          {% if doc|tags_without_prefix(("by:", "from:")) %}
             <div class="tags">
-            tagged with: {% for t in doc|display_tags %}
+            tagged with: {% for t in doc|tags_without_prefix(("by:", "from:")) %}
               <span class="tag">
                 {% if t in request_tags %}
                 {{ t }}

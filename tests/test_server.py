@@ -1,6 +1,8 @@
 import datetime
+import re
 import shutil
 
+import bs4
 import pytest
 
 from docstore.documents import store_new_document, write_documents
@@ -99,3 +101,74 @@ def test_documents_with_lots_of_tags(root, client):
     assert resp.status_code == 200
 
     assert b'<details id="tagList">' in resp.data
+
+
+def tidy(html_str):
+    return re.sub(r"\s+", " ", html_str.strip())
+
+
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        {
+            "tags": ["by:John Smith"],
+            "expected_title": "{title}, by John Smith ({doc_id})",
+            "urls": ["/", "/?tag=by%3aJohn%20Smith"],
+        },
+        {
+            "tags": ["by:John Smith", "by:Jane Doe"],
+            "expected_title": "{title}, by John Smith, Jane Doe ({doc_id})",
+            "urls": [
+                "/",
+                "/?tag=by%3aJohn%20Smith",
+                "/?tag=by%3aJane%20Doe",
+                "/?tag=by%3aJane%20Doe&tag=by%3aJohn%20Smith",
+            ],
+        },
+        {
+            "tags": ["from:ACME Corp"],
+            "expected_title": "{title}, from ACME Corp ({doc_id})",
+            "urls": ["/", "/?tag=from%3aACME%20Corp"],
+        },
+        {
+            "tags": ["from:ACME Corp", "from:Widget Inc"],
+            "expected_title": "{title}, from ACME Corp, Widget Inc ({doc_id})",
+            "urls": [
+                "/",
+                "/?tag=from%3aACME%20Corp",
+                "/?tag=from%3aWidget%20Inc",
+                "/?tag=from%3aACME%20Corp&tag=from%3aWidget%20Inc",
+            ],
+        },
+        {
+            "tags": ["by:John Smith", "from:ACME Corp"],
+            "expected_title": "{title}, by John Smith, from ACME Corp ({doc_id})",
+            "urls": [
+                "/",
+                "/?tag=by%3aJohn%20Smith",
+                "/?tag=from%3aACME%20Corp",
+                "/?tag=by%3aJohn%20Smith&tag=from%3aACME%20Corp",
+            ],
+        },
+    ],
+)
+def test_shows_attribution_tags(root, client, test_case):
+    doc_tags = test_case["tags"] + ["tag1", "tag2"]
+
+    doc = Document(title="My document", tags=doc_tags)
+    write_documents(root=root, documents=[doc])
+
+    for url in test_case["urls"]:
+        print(url)
+        resp = client.get(url)
+        assert resp.status_code == 200
+
+        soup = bs4.BeautifulSoup(resp.data, "html.parser")
+
+        h2_title = soup.find("h2", attrs={"class": "title"})
+        assert tidy(h2_title.text) == test_case["expected_title"].format(
+            title=doc.title, doc_id=doc.id
+        )
+
+        tags_list = soup.find("div", attrs={"class": "tags"})
+        assert tidy(tags_list.text) == "tagged with: tag1 tag2"

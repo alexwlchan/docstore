@@ -15,6 +15,14 @@ from docstore.text_utils import pretty_date
 from docstore.tint_colors import get_tint_colors
 
 
+def tags_with_prefix(document, prefix):
+    return [t for t in document.tags if t.startswith(prefix)]
+
+
+def tags_without_prefix(document, prefix):
+    return [t for t in document.tags if not t.startswith(prefix)]
+
+
 def create_app(title, root):
     app = Flask(__name__)
     app.jinja_env.trim_blocks = True
@@ -25,6 +33,9 @@ def create_app(title, root):
     )
     app.jinja_env.filters["render_tag_list"] = render_tag_list
     app.jinja_env.filters["smartypants"] = smartypants.smartypants
+
+    app.jinja_env.filters["tags_with_prefix"] = tags_with_prefix
+    app.jinja_env.filters["tags_without_prefix"] = tags_without_prefix
 
     @app.route("/")
     def list_documents():
@@ -70,18 +81,6 @@ def create_app(title, root):
         return send_from_directory(
             os.path.abspath(os.path.join(root, "files", shard)), filename=filename
         )
-
-    @app.template_filter("by_tags")
-    def by_tags(document):
-        return [t for t in document.tags if t.startswith("by:")]
-
-    @app.template_filter("from_tags")
-    def from_tags(document):
-        return [t for t in document.tags if t.startswith("from:")]
-
-    @app.template_filter("display_tags")
-    def display_tags(document):
-        return sorted(t for t in document.tags if not t.startswith(("by:", "from:")))
 
     @app.template_filter("add_tag")
     @functools.lru_cache()

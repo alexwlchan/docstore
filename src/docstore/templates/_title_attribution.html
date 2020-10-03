@@ -1,0 +1,9 @@
+{%- if doc|tags_with_prefix(prefix + ":") -%}
+  , {{ prefix }}
+  {% for t in doc|tags_with_prefix(prefix + ":") -%}
+    {%- if t in request_tags %}<a href="{{ query_string|add_tag(t) }}">{% endif -%}
+    {{ t | replace(prefix + ":", "") }}
+    {%- if t in request_tags -%}</a>{% endif %}
+    {%- if not loop.last -%}, {% endif -%}
+  {%- endfor -%}
+{% endif %}
