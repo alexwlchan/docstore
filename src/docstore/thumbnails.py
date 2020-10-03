@@ -1,5 +1,7 @@
 import os
+import shutil
 import subprocess
+import sys
 import tempfile
 
 from PIL import Image, UnidentifiedImageError
@@ -16,6 +18,33 @@ def _is_animated_gif(path):
         return False
     else:
         return getattr(im, "is_animated", False)
+
+
+def _create_thumbnail_from_quick_look(*, path, max_size, out_dir):
+    subprocess.check_call(
+        ["qlmanage", "-t", path, "-s", f"{max_size}x{max_size}", "-o", out_dir],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
+
+    try:
+        result = os.path.join(out_dir, os.listdir(out_dir)[0])
+    except IndexError:
+        print(f"Quick Look could not create a thumbnail for {path}", file=sys.stderr)
+        result = os.path.join(out_dir, "generic_document.png")
+        shutil.copyfile(
+            src=os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "static/generic_document.png",
+            ),
+            dst=result,
+        )
+
+    if result.endswith(".png.png"):
+        os.rename(result, result.replace(".png.png", ".png"))
+        result = result.replace(".png.png", ".png")
+
+    return result
 
 
 def create_thumbnail(path, *, max_size=400):
@@ -57,15 +86,6 @@ def create_thumbnail(path, *, max_size=400):
 
         return out_path
     else:
-        subprocess.check_call(
-            ["qlmanage", "-t", path, "-s", f"{max_size}x{max_size}", "-o", out_dir],
-            stdout=subprocess.DEVNULL,
+        return _create_thumbnail_from_quick_look(
+            path=path, max_size=max_size, out_dir=out_dir
         )
-        result = os.path.join(out_dir, os.listdir(out_dir)[0])
-
-        # Don't double up the .png extension on PNG images
-        if result.endswith(".png.png"):
-            os.rename(result, result.replace(".png.png", ".png"))
-            result = result.replace(".png.png", ".png")
-
-        return result

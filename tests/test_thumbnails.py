@@ -36,3 +36,12 @@ def test_creates_thumbnail_of_pdf():
 
     im = Image.open(path)
     assert im.size == (247, 350)
+
+
+def test_creates_thumbnail_if_no_quicklook_plugin_available(tmpdir):
+    path = str(tmpdir / "sqlite.db")
+
+    with open(path, "wb") as outfile:
+        outfile.write(b"SQLite format 3\x00")
+
+    path = create_thumbnail(path)
