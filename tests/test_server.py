@@ -179,7 +179,6 @@ def test_sets_thumbnail_width(client):
     If the user sets a custom thumbnail width, the appropriate CSS style is
     added to the rendered page.
     """
-    print(dir(client))
     client.application.config["THUMBNAIL_WIDTH"] = 100
 
     resp = client.get("/")
