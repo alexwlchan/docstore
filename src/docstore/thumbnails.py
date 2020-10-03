@@ -24,7 +24,7 @@ def _create_thumbnail_from_quick_look(*, path, max_size, out_dir):
     subprocess.check_call(
         ["qlmanage", "-t", path, "-s", f"{max_size}x{max_size}", "-o", out_dir],
         stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
+        stderr=subprocess.DEVNULL,
     )
 
     try:
