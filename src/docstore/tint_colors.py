@@ -127,7 +127,7 @@ def choose_tint_color(*, paths, background_color):
 
 def get_tint_colors(root):
     try:
-        return json.load(open(os.path.join(root, "palette.json")))
+        return json.load(open(os.path.join(root, "tint_colors.json")))
     except FileNotFoundError:
         return {}
 
@@ -138,5 +138,5 @@ def store_tint_color(root, *, document):
     paths = [os.path.join(root, f.path) for f in document.files]
     tint_colors[document.id] = choose_tint_color(paths=paths, background_color="white")
 
-    with open(os.path.join(root, "palette.json"), "w") as outfile:
+    with open(os.path.join(root, "tint_colors.json"), "w") as outfile:
         outfile.write(json.dumps(tint_colors, indent=2, sort_keys=True))
