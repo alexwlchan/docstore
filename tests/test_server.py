@@ -174,6 +174,29 @@ def test_shows_attribution_tags(root, client, test_case):
         assert tidy(tags_list.text) == "tagged with: tag1 tag2"
 
 
+def test_links_attribution_tags(root, client):
+    doc = Document(title="My document", tags=["by:John Smith"])
+    write_documents(root=root, documents=[doc])
+
+    # If the tag is not selected, the attribution tag in the title is a link
+    # that filters to the selected tag.
+    resp = client.get("/")
+    assert resp.status_code == 200
+
+    soup = bs4.BeautifulSoup(resp.data, "html.parser")
+    h2_title = soup.find("h2", attrs={"class": "title"})
+    assert h2_title.find("a", attrs={"href": "?tag=by%3AJohn+Smith"}) is not None
+
+    # If the tag is selected, the attribution tag in the title is regular text,
+    # not a link.
+    resp = client.get("/?tag=by%3aJohn+Smith")
+    assert resp.status_code == 200
+
+    soup = bs4.BeautifulSoup(resp.data, "html.parser")
+    h2_title = soup.find("h2", attrs={"class": "title"})
+    assert h2_title.find("a") is None
+
+
 def test_sets_thumbnail_width(client):
     """
     If the user sets a custom thumbnail width, the appropriate CSS style is
