@@ -1,9 +1,6 @@
-import cgi
 import datetime
 import json
 import os
-from urllib.parse import urlparse
-from urllib.request import urlretrieve
 
 import click
 

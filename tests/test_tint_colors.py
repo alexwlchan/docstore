@@ -1,6 +1,5 @@
 import pytest
 
-from docstore.models import Document, File
 from docstore.tint_colors import (
     choose_tint_color_from_dominant_colors,
     choose_tint_color,
@@ -34,7 +33,7 @@ def test_get_colors_from_animated_gif():
     # 480x360 image => 100x75 thumbnail
     # 36 frames, of which 18 are sampled
     assert len(result) == 100 * 75 * 18
-    assert result[0:7500] != result[7500 : 7500 * 2]
+    assert result[0:7500] != result[7500:7500 * 2]
 
 
 def test_choose_tint_color():

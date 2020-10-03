@@ -17,8 +17,6 @@ def render_tag_list(tag_tally):
     if not tag_tally:
         return []
 
-    tag_result = [(name.split(":"), count) for name, count in sorted(tag_tally.items())]
-
     prev_tags = []
     tag_list_pos = 0
     tier_elements = []

@@ -1,7 +1,5 @@
 import functools
 
-import attr
-
 
 class TagCloud:
     def __init__(self, tag_tally):

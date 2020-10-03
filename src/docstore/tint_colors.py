@@ -40,7 +40,7 @@ def get_colors_from(path):
         # Don't get all the frames from an animated GIF; if it has hundreds of
         # frames this massively increases computation required for little gain.
         # Take a sample and work from that.
-        for frame in range(0, im.n_frames, int(math.ceil(im.n_frames / 25))):
+        for frame in range(0, frame_count, int(math.ceil(frame_count / 25))):
             im.seek(frame)
             result.extend(_get_colors_from_im(im))
         return result
@@ -85,7 +85,6 @@ def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
     # Of the colors with sufficient contrast, pick the one with the
     # highest saturation.  This is meant to optimise for colors that are
     # more colourful/interesting than simple greys and browns.
-    hsv_background = colorsys.rgb_to_hsv(*background_color)
     hsv_candidates = {
         tuple(rgb_col): colorsys.rgb_to_hsv(*rgb_col)
         for rgb_col in sufficient_contrast_colors
