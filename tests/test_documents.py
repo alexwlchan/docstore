@@ -116,6 +116,8 @@ def test_store_new_document(tmpdir):
         date_saved=now,
     )
 
+    assert not os.path.exists(tmpdir / "My Cluster.png")
+
     assert isinstance(new_document, Document)
     assert new_document.title == "My cluster title"
     assert new_document.date_saved == now

@@ -87,7 +87,7 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
             root, "files", slug[0], slugify(name) + "_" + secrets.token_hex(2) + ext
         )
 
-    shutil.move(path, out_path)
+    shutil.copyfile(path, out_path)
 
     thumbnail_path = create_thumbnail(out_path)
     thumbnail_name = os.path.basename(thumbnail_path)
@@ -116,6 +116,10 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
     documents.append(new_document)
 
     write_documents(root=root, documents=documents)
+
+    # Don't delete the original file until it's been successfully recorded
+    # and a thumbnail created.
+    os.unlink(path)
 
     store_tint_color(root=root, document=new_document)
 
