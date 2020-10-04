@@ -20,6 +20,38 @@ def _is_animated_gif(path):
         return getattr(im, "is_animated", False)
 
 
+def _create_gif_thumbnail_from_ffmpeg(*, path, max_size, out_dir):
+    im = Image.open(path)
+
+    if im.width > im.height and im.width >= max_size:
+        width, height = (max_size, int(im.height * max_size / im.width))
+    else:
+        width, height = (int(im.width * max_size / im.height), max_size)
+
+    # The yuv420p encoder requires even values
+    width, height = (int(width / 2) * 2, int(height / 2) * 2)
+
+    out_path = os.path.join(out_dir, os.path.basename(path) + ".mp4")
+
+    subprocess.check_call(
+        [
+            "ffmpeg",
+            "-i",
+            path,
+            "-movflags",
+            "faststart",
+            "-pix_fmt",
+            "yuv420p",
+            "-vf",
+            f"scale={width}:{height}",
+            out_path,
+        ],
+        stdout=subprocess.DEVNULL,
+    )
+
+    return out_path
+
+
 def _create_thumbnail_from_quick_look(*, path, max_size, out_dir):
     subprocess.check_call(
         ["qlmanage", "-t", path, "-s", f"{max_size}x{max_size}", "-o", out_dir],
@@ -53,39 +85,9 @@ def create_thumbnail(path, *, max_size=400):
 
     Returns the path to the new file.
     """
-    out_dir = tempfile.mkdtemp()
+    kwargs = {"path": path, "max_size": max_size, "out_dir": tempfile.mkdtemp()}
 
     if _is_animated_gif(path):
-        im = Image.open(path)
-
-        if im.width > im.height and im.width >= max_size:
-            width, height = (max_size, int(im.height * max_size / im.width))
-        else:
-            width, height = (int(im.width * max_size / im.height), max_size)
-
-        # The yuv420p encoder requires even values
-        width, height = (int(width / 2) * 2, int(height / 2) * 2)
-
-        out_path = os.path.join(out_dir, os.path.basename(path) + ".mp4")
-
-        subprocess.check_call(
-            [
-                "ffmpeg",
-                "-i",
-                path,
-                "-movflags",
-                "faststart",
-                "-pix_fmt",
-                "yuv420p",
-                "-vf",
-                f"scale={width}:{height}",
-                out_path,
-            ],
-            stdout=subprocess.DEVNULL,
-        )
-
-        return out_path
+        return _create_gif_thumbnail_from_ffmpeg(**kwargs)
     else:
-        return _create_thumbnail_from_quick_look(
-            path=path, max_size=max_size, out_dir=out_dir
-        )
+        return _create_thumbnail_from_quick_look(**kwargs)
