@@ -1,4 +1,5 @@
 import datetime
+import os
 import shutil
 
 import pytest
@@ -67,15 +68,18 @@ def test_selects_black_or_white_if_unsufficient_contrast(
     )
 
 
-def test_uses_thumbnail_if_cannot_use_file(root, tmpdir):
-    shutil.copyfile(src="tests/files/snakes.pdf", dst=tmpdir / "snakes.pdf")
+@pytest.mark.parametrize("filename", ["snakes.pdf", "Rotating_earth_(large).gif"])
+def test_uses_thumbnail_if_cannot_use_file(root, tmpdir, filename):
+    shutil.copyfile(
+        src=os.path.join("tests/files", filename), dst=os.path.join(tmpdir, filename)
+    )
 
     document = store_new_document(
         root=root,
-        path=tmpdir / "snakes.pdf",
+        path=tmpdir / filename,
         title="Some snakes",
         tags=[],
-        source_url="htttps://example.org/snakes.pdf",
+        source_url=f"htttps://example.org/{filename}",
         date_saved=datetime.datetime.now(),
     )
 

@@ -4,7 +4,7 @@ import json
 import math
 import os
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from sklearn.cluster import KMeans
 import wcag_contrast_ratio as contrast
 
@@ -135,7 +135,19 @@ def get_tint_colors(root):
 def store_tint_color(root, *, document):
     tint_colors = get_tint_colors(root)
 
-    paths = [os.path.join(root, f.thumbnail.path) for f in document.files]
+    paths = []
+
+    # In general, we use the thumbnail to choose the tint color.  The thumbnail
+    # is what the tint color will usually appear next to.  However, thumbnails
+    # for animated GIFs are MP4 videos rather than images, so we need to go to
+    # the original image to get the tint color.
+    for f in document.files:
+        try:
+            Image.open(os.path.join(root, f.thumbnail.path))
+            paths.append(os.path.join(root, f.thumbnail.path))
+        except UnidentifiedImageError:
+            paths.append(os.path.join(root, f.path))
+
     tint_colors[document.id] = choose_tint_color(paths=paths, background_color="white")
 
     with open(os.path.join(root, "tint_colors.json"), "w") as outfile:
