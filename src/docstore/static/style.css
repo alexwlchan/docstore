@@ -2,6 +2,17 @@ body {
   background: url('/static/natural_paper.png');
   font: 14pt Helvetica;
   line-height: 1.45em;
+  margin: 0;
+  padding: 0;
+}
+
+aside {
+  background: url('/static/specktre.png');
+  background-size: auto 100%;
+  padding: 6px 0px 2px 0px;
+  border-bottom: 2px solid #aaa;
+  font: 20pt "Nanum Brush Script";
+  font-weight: bold;
 }
 
 td {
@@ -9,7 +20,7 @@ td {
   font-size: 10pt;
 }
 
-main {
+main, #aside_inner {
   max-width: 940px;
   margin-left:  auto;
   margin-right: auto;
@@ -74,12 +85,16 @@ a.remove_tag:hover {
 }
 
 .meta_info {
-  background: rgba(128, 128, 128, 0.1);
-  border: 2px solid rgba(128, 128, 128, 0.5);
+  background: white;
+  border: 2px solid #aaa;
   padding: 12px 15px;
   margin: 1em -14px;
   border-radius: 8px;
   font-size: 13pt;
+}
+
+.meta_info ul {
+  line-height: 1.4em;
 }
 
 #tag_cloud {

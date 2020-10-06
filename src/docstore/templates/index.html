@@ -2,6 +2,12 @@
   {% include "_head.html" %}
 </head>
 
+<aside>
+  <div id="aside_inner">
+    docstore{% if title %}/{{ title }}{% endif %}
+  </div>
+</aside>
+
 <main>
   {% set page_size = 100 %}
 

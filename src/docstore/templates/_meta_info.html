@@ -11,7 +11,7 @@
 {% endif %}
 
 <div class="meta_info">
-  docstore{% if title %}/{{ title }}{% endif %}: {% if documents|length == 0 %}
+  {% if documents|length == 0 %}
     no documents found!
   {% else %}
     showing document{% if page_start != page_end %}s{% endif %} {{ page_start }}{% if page_start != page_end %}&ndash;{{ page_end }}{% endif %} of {{ documents|length }}.
