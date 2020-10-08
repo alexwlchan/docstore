@@ -13,6 +13,7 @@ aside {
   border-bottom: 2px solid #aaa;
   font: 20pt "Nanum Brush Script";
   font-weight: bold;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3)
 }
 
 td {
@@ -91,6 +92,7 @@ a.remove_tag:hover {
   margin: 1em -14px;
   border-radius: 8px;
   font-size: 13pt;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
 }
 
 .meta_info ul {
