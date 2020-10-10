@@ -209,3 +209,15 @@ def test_sets_thumbnail_width(client):
     soup = bs4.BeautifulSoup(resp.data, "html.parser")
     style_tag = soup.find("style")
     assert tidy(style_tag.string) == ".thumbnail { width: 100px; }"
+
+
+def test_tags_are_sorted_alphabetically(root, client):
+    doc = Document(title="My document", tags=["bulgaria", "austria", "croatia"])
+    write_documents(root=root, documents=[doc])
+
+    resp = client.get("/")
+
+    soup = bs4.BeautifulSoup(resp.data, "html.parser")
+    tags_div = soup.find("div", attrs={"class": "tags"})
+
+    assert tidy(tags_div.text) == "tagged with: austria bulgaria croatia"

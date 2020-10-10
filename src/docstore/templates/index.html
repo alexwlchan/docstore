@@ -105,7 +105,7 @@
 
           {% if doc|tags_without_prefix(("by:", "from:")) %}
             <div class="tags">
-            tagged with: {% for t in doc|tags_without_prefix(("by:", "from:")) %}
+            tagged with: {% for t in doc|tags_without_prefix(("by:", "from:"))|sort %}
               <span class="tag">
                 {% if t in request_tags %}
                 {{ t }}
