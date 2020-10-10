@@ -121,6 +121,17 @@ The rest of this README describes some of the motivation and design.
     These normalised filenames aren't exposed through the web app – if I'm downloading a file, docstore sets a [`Content-Disposition` header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition) that tells my browser to download it with the original filename.
 
 
+## Technology
+
+*   docstore is written in **Python**.
+    The web app uses [**Flask**](https://pypi.org/project/Flask/), and the CLI uses [**Click**](https://pypi.org/project/click/).
+*   I use [**attrs**](https://pypi.org/project/attrs/) for the internal models, and [**cattrs**](https://pypi.org/project/cattrs/) to serialise my internal models to JSON.
+*   I use [macOS **Quick Look**](https://en.wikipedia.org/wiki/Quick_Look) and [**ffmpeg**](https://ffmpeg.org) to create thumbnails, and a [*k*-means clustering algorithm](https://alexwlchan.net/2019/08/finding-tint-colours-with-k-means/) to get the tint colour to go with the thumbnails.
+*   The filename normalisation is based on the blog post ["ASCIIfying" by Dr. Drang](http://www.leancrew.com/all-this/2014/10/asciifying/)
+*   The code for displaying tags in a list is based on [templates from Dreamwidth](https://github.com/dreamwidth/dw-free/blob/6ec1e146d3c464e506a77913f0abf0d51a944f95/styles/core2.s2#L4126-L4220)
+*   The code for displaying a tag cloud is based on [jquery.tagcloud.js by addywaddy](https://github.com/addywaddy/jquery.tagcloud.js/)
+
+
 ## License
 
 MIT.
