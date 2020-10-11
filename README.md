@@ -117,6 +117,9 @@ The rest of this README describes some of the motivation and design.
         e.g. if I store two documents called `statement.pdf`, one will be stored as `statement.pdf` and the other as `statement_f97b.pdf`.
 
     This normalisation means I don't have to worry about whether my filesystem can cope with weird characters, or if I'm storing two different files with the same name.
+    
+    The thumbnails for each file use a similar filename, so it's easy to find the thumbnail that corresponds to a file (and vice versa).
+    For example, if a document is stored as `p60-certificate.pdf`, the thumbnail is stored as `p60-certificate.pdf.png`.
 
     These normalised filenames aren't exposed through the web app – if I'm downloading a file, docstore sets a [`Content-Disposition` header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition) that tells my browser to download it with the original filename.
 
