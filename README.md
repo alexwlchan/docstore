@@ -6,7 +6,7 @@ It uses [keyword tagging](https://en.wikipedia.org/wiki/Tag_(metadata)) to categ
 It has two parts:
 
 *   A CLI tool that lets me store new documents
-*   A web app that lets me browse the documents it's already stored
+*   A web app that lets me browse the documents I've already stored
 
 Here's a screenshot of the web app:
 
