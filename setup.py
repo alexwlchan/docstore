@@ -14,6 +14,10 @@ def static_files(dirname):
     ]
 
 
+with open(local_file("requirements.txt")) as f:
+    INSTALL_REQUIRES = list(f)
+
+
 SOURCE = local_file("src")
 
 setuptools.setup(
@@ -25,17 +29,7 @@ setuptools.setup(
     package_data={"docstore": static_files("static") + static_files("templates")},
     package_dir={"": SOURCE},
     url="https://github.com/alexwlchan/docstore",
-    install_requires=[
-        "attrs>=20.2.0",
-        "cattrs>=1.0.0",
-        "click>=7.1.2",
-        "Flask>=1.1.2",
-        "Pillow>=7.2.0",
-        "scikit-learn>=0.23.2",
-        "smartypants>=2.0.1",
-        "Unidecode>=1.1.1",
-        "wcag_contrast_ratio>=0.9",
-    ],
+    install_requires=INSTALL_REQUIRES,
     python_requires=">=3.8",
     entry_points={
         "console_scripts": [
