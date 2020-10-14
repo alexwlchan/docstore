@@ -2,7 +2,7 @@
   {% if request_tags %}
     tagged with {% for t in request_tags %}{{ t }}{% if not loop.last %}, {% endif %}{% endfor %} —
   {% endif %}
-  docstore{% if title %}/{{ title }}{% endif %}
+  docstore{% if title %}/{{ title | smartypants | safe }}{% endif %}
 </title>
 
 <link rel="shortcut icon" href="{{ url_for('static', filename='stacks.ico') }}">

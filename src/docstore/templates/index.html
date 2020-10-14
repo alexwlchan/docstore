@@ -4,7 +4,7 @@
 
 <aside>
   <div id="aside_inner">
-    docstore{% if title %}/{{ title }}{% endif %}
+    docstore{% if title %}/{{ title | smartypants | safe }}{% endif %}
   </div>
 </aside>
 
@@ -65,6 +65,7 @@
           #doc_{{ doc.id }} .thumbnail a img:hover {
             opacity: 0.7;
             border: 1px solid rgb({{ red }}, {{ green }}, {{ blue }});
+/*            margin: -0.5px;*/
           }
 
           #doc_{{ doc.id }} .thumbnail img {

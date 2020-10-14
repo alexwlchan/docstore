@@ -221,3 +221,20 @@ def test_tags_are_sorted_alphabetically(root, client):
     tags_div = soup.find("div", attrs={"class": "tags"})
 
     assert tidy(tags_div.text) == "tagged with: austria bulgaria croatia"
+
+
+def test_gets_curly_quotes(root, client):
+    app = create_app(root=root, title="Isn't this a good title?", thumbnail_width=200)
+    app.config["TESTING"] = True
+
+    with app.test_client() as client:
+        resp = client.get("/")
+
+    soup = bs4.BeautifulSoup(resp.data, "html.parser")
+
+    assert soup.find("title").text.strip() == "docstore/Isn’t this a good title?"
+
+    assert (
+        soup.find("div", attrs={"id": "aside_inner"}).text.strip()
+        == "docstore/Isn’t this a good title?"
+    )
