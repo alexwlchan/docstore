@@ -127,7 +127,7 @@ def migrate(root, v1_path):  # pragma: no cover
                 root=root,
                 path=filename_path,
                 title=doc.get("title", ""),
-                tags=doc["tags"],
+                tags=doc.get("tags", []),
                 source_url=doc.get("user_data", {}).get("source_url", ""),
                 date_saved=datetime.datetime.fromisoformat(doc["date_created"]),
             )
