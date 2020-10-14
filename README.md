@@ -53,9 +53,14 @@ The rest of this README describes some of the motivation and design.
 *   **A document can have multiple files.**
 
     This wasn't part of my original design, but I added it when I rewrote docstore in autumn 2020.
-    This means that I can group files together -- for example, if I have two scans of the same original document.
+    This means that I can group files so they show up together.
+    Examples of when I use this:
+    
+    -   I have two scans of the same piece of paper
+    -   I have a scanned copy of a letter, and an electronic copy I was sent separately
+    -   I have multiple versions of a contract at different stages of signing
 
-    Here's an example of how a document is described in the JSON:
+    Here's how a document is described in the JSON:
 
     ```json
     {
@@ -72,13 +77,24 @@ The rest of this README describes some of the motivation and design.
           "thumbnail": {
             "path": "thumbnails/E/Eldritchbot.pdf.png"
           }
+        },
+        {
+          "checksum": "sha256:ebee96fbb3725e3c708388e6b3f446b933967849980aabb61c51a146942dc7f4",
+          "date_saved": "2020-10-03T16:32:08.471833",
+          "filename": "Eldritchbot.epub",
+          "id": "00faef01-d3b4-4ff3-a226-770f652849e6",
+          "path": "files/e/eldritchbot.epub",
+          "size": 2215466,
+          "source_url": "https://www.patreon.com/posts/visit-from-40137342",
+          "thumbnail": {
+            "path": "thumbnails/E/Eldritchbot.epub.png"
+          }
         }
       ],
       "id": "9dd532c7-edf9-428a-9637-df9bb6030378",
       "tags": [
         "smolrobots",
         "sci-fi",
-        "format:pdf",
         "by:Thomas Heasman-Hunt"
       ],
       "title": "A Visit from Eldritchbot"
