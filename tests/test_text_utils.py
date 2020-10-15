@@ -44,6 +44,7 @@ def test_slugify(u, expected_slug):
         (datetime(2001, 1, 1, 1, 1, 1), datetime(2001, 1, 2, 1, 1, 1), "yesterday"),
         (datetime(2001, 1, 1, 1, 1, 1), datetime(2001, 1, 6, 1, 1, 1), "5 days ago"),
         (datetime(2001, 1, 1, 1, 1, 1), datetime(2001, 1, 12, 1, 1, 1), "1 Jan 2001"),
+        (datetime(2001, 1, 1, 13, 0, 0), datetime(2001, 1, 3, 12, 0, 0), "2 days ago"),
     ],
 )
 def test_pretty_date(d, now, expected_str):

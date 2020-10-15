@@ -43,7 +43,8 @@ def pretty_date(d, now):
         return "earlier today"
     elif d.date() == now.date() - datetime.timedelta(days=1):
         return "yesterday"
-    elif delta.days < 7:
-        return f"{delta.days} days ago"
     else:
+        for days in range(2, 8):
+            if d.date() == now.date() - datetime.timedelta(days=days):
+                return f"{days} days ago"
         return d.strftime("%-d %b %Y")
