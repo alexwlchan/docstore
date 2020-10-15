@@ -97,7 +97,7 @@
             </h2>
           {% endif %}
 
-          date saved: {{ doc.date_saved | pretty_date }}
+          <span title="{{ doc.date_saved.strftime('%d %B %Y') }}">date saved: {{ doc.date_saved | pretty_date }}</span>
           {% if (doc.files and doc.files[0].source_url) or doc|tags_without_prefix(("by:", "from:")) %}<br/>{% endif %}
 
           {% if doc.files and doc.files[0].source_url %}
