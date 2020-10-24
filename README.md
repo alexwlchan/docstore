@@ -8,13 +8,21 @@ It has two parts:
 *   A CLI tool that lets me store new documents
 *   A web app that lets me browse the documents I've already stored
 
+Here's an example of how I'd use the CLI tool to save a file:
+
+```
+docstore add '~/Desktop/Contract of Employment.pdf' \
+  --source_url='https://email.example.com/message/1234' \
+  --title='2020-10: Contract of employment for MI13' \
+  --tags='employer:mi13, contract:employment'
+```
+
 Here's a screenshot of the web app:
 
 ![A screenshot of docstore](docstore.png)
 
 I don't expect that anybody else will want to use docstore directly, but the ideas might be useful.
 The rest of this README describes some of the motivation and design.
-
 
 
 ## Why I wrote it
