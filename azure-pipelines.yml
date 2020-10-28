@@ -9,6 +9,6 @@ pool:
 
 steps:
 - script: |
-    pip3 install --user tox
+    pip3 install tox
     tox
   displayName: "Running tests"
