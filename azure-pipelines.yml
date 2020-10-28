@@ -1,0 +1,14 @@
+trigger:
+- "v2"
+
+pr:
+- "v2"
+
+pool:
+  vmImage: "macOS-latest"
+
+steps:
+- script: |
+    pip3 install --user tox
+    tox
+  displayName: "Running tests"
