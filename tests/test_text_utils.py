@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from docstore.text_utils import common_prefix, pretty_date, slugify
+from docstore.text_utils import common_prefix, hostname, pretty_date, slugify
 
 
 @pytest.mark.parametrize(
@@ -49,3 +49,17 @@ def test_slugify(u, expected_slug):
 )
 def test_pretty_date(d, now, expected_str):
     assert pretty_date(d=d, now=now) == expected_str
+
+
+@pytest.mark.parametrize(
+    "url, expected_hostname",
+    [
+        ("https://example.org/path/to/file.pdf", "example.org"),
+        # This really appeared in the source_url of a docstore instance migrated
+        # from v1, and caused a 500 error in the app.  It's weird, but shouldn't cause
+        # the app to crash.
+        ("magic", "magic"),
+    ],
+)
+def test_hostname(url, expected_hostname):
+    assert hostname(url) == expected_hostname

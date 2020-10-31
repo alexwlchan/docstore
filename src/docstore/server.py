@@ -11,7 +11,7 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 from docstore.documents import read_documents
 from docstore.tag_cloud import TagCloud
 from docstore.tag_list import render_tag_list
-from docstore.text_utils import pretty_date
+from docstore.text_utils import hostname, pretty_date
 from docstore.tint_colors import get_tint_colors
 
 
@@ -31,6 +31,7 @@ def create_app(title, root, thumbnail_width):
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
 
+    app.jinja_env.filters["hostname"] = hostname
     app.jinja_env.filters["pretty_date"] = lambda d: pretty_date(
         d, now=datetime.datetime.now()
     )
@@ -106,10 +107,6 @@ def create_app(title, root, thumbnail_width):
             return "?" + urlencode(pageless_qs)
         else:
             return "?" + urlencode(pageless_qs + [("page", page)])
-
-    @app.template_filter("hostname")
-    def hostname(url):
-        return url.split("/")[2]
 
     return app
 

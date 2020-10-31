@@ -1,6 +1,7 @@
 import datetime
 import os
 import re
+import sys
 
 from unidecode import unidecode
 
@@ -48,3 +49,14 @@ def pretty_date(d, now):
             if d.date() == now.date() - datetime.timedelta(days=days):
                 return f"{days} days ago"
         return d.strftime("%-d %b %Y")
+
+
+def hostname(url):
+    """
+    Returns a guess for the hostname of a URL to display in the <a> tag.
+    """
+    try:
+        return url.split("/")[2]
+    except IndexError:
+        print(f"Unable to detect hostname of URL: {url}", file=sys.stderr)
+        return url
