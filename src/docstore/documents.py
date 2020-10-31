@@ -150,6 +150,8 @@ def pairwise_merge_documents(root, *, doc1, doc2, new_title, new_tags):
 
     store_tint_color(root=root, document=stored_doc1)
 
+    return stored_doc1
+
 
 def delete_document(root, *, doc_id):
     documents = read_documents(root)

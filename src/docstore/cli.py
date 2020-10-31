@@ -205,6 +205,6 @@ def merge(root, doc_ids, yes):
     doc1 = documents[doc_ids[0]]
     for doc2_id in doc_ids[1:]:
         doc2 = documents[doc2_id]
-        pairwise_merge_documents(
+        doc1 = pairwise_merge_documents(
             root=root, doc1=doc1, doc2=doc2, new_title=new_title, new_tags=new_tags
         )

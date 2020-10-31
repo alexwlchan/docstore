@@ -7,7 +7,7 @@ import pytest
 
 from docstore.cli import main
 from docstore.documents import read_documents, store_new_document, write_documents
-from docstore.models import Document
+from docstore.models import Document, File, Thumbnail
 from test_models import is_recent
 
 
@@ -118,10 +118,11 @@ class TestAdd:
 
 
 class TestMerge:
-    def test_merges_two_documents_with_identical_metadata(self, root, runner):
+    @pytest.mark.parametrize("doc_count", [1, 2, 3, 4])
+    def test_merges_documents_with_identical_metadata(self, root, runner, doc_count):
         documents = [
             Document(title="My Document", tags=["tag1", "tag2", "tag3"])
-            for _ in range(3)
+            for _ in range(doc_count)
         ]
 
         write_documents(root=root, documents=documents)
@@ -129,8 +130,9 @@ class TestMerge:
         result = runner.invoke(["merge", "--yes"] + [doc.id for doc in documents])
         assert result.exit_code == 0, result.output
 
-        assert "Using common title: My Document\n" in result.output
-        assert "Using common tags: tag1, tag2, tag3\n" in result.output
+        if doc_count > 1:
+            assert "Using common title: My Document\n" in result.output
+            assert "Using common tags: tag1, tag2, tag3\n" in result.output
 
         stored_documents = read_documents(root)
 
@@ -159,14 +161,35 @@ class TestMerge:
         assert stored_documents[0].title == "My Document"
         assert stored_documents[0].tags == ["tag0", "tag1", "tag2"]
 
-    def test_merging_one_document_is_noop(self, root, runner):
-        documents = [Document(title="My Document")]
+    @pytest.mark.parametrize("doc_count", [1, 2, 3, 4])
+    def test_merging_combines_files(self, root, runner, doc_count):
+        shutil.copyfile(src="tests/files/cluster.png", dst=root / "cluster.png")
+        documents = [
+            Document(
+                title="My Document",
+                tags=["tag"],
+                files=[
+                    File(
+                        filename=f"cluster{i}.png",
+                        path="cluster.png",
+                        size=100,
+                        checksum="sha256:123",
+                        thumbnail=Thumbnail(path="cluster.png"),
+                    )
+                ],
+            )
+            for i in range(doc_count)
+        ]
+
         write_documents(root=root, documents=documents)
 
-        result = runner.invoke(["merge", "--yes", documents[0].id])
+        result = runner.invoke(["merge", "--yes"] + [doc.id for doc in documents])
         assert result.exit_code == 0, result.output
 
-        assert read_documents(root) == documents
+        stored_documents = read_documents(root)
+
+        assert len(stored_documents) == 1
+        assert len(stored_documents[0].files) == doc_count
 
 
 def test_deleting_document_through_cli(tmpdir, root, runner):
