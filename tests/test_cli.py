@@ -201,7 +201,7 @@ def test_deleting_document_through_cli(tmpdir, root, runner):
         path=tmpdir / "cluster.png",
         title="A document about to be deleted",
         tags=[],
-        source_url="htttps://example.org/cluster.png",
+        source_url="https://example.org/cluster.png",
         date_saved=datetime.datetime.now(),
     )
     doc2 = Document(title="Doc1", date_saved=datetime.datetime(2010, 1, 1))
