@@ -6,6 +6,11 @@ import uuid
 import attr
 import cattr
 
+from docstore.git import current_commit
+
+
+DB_SCHEMA = "v2.1.0"
+
 
 def _convert_to_datetime(d):
     if isinstance(d, datetime.datetime):
@@ -74,6 +79,9 @@ class DocstoreEncoder(json.JSONEncoder):
 
 
 def to_json(documents):
+    """
+    Returns a JSON string containing all the documents.
+    """
     if not isinstance(documents, list) or not all(
         isinstance(d, Document) for d in documents
     ):
@@ -84,9 +92,20 @@ def to_json(documents):
     documents = sorted(documents, key=lambda d: d.date_saved, reverse=True)
 
     return json.dumps(
-        cattr.unstructure(documents), indent=2, sort_keys=True, cls=DocstoreEncoder
+        {
+            "docstore": {"db_schema": DB_SCHEMA, "commit": current_commit()},
+            "documents": cattr.unstructure(documents),
+        },
+        indent=2,
+        sort_keys=True,
+        cls=DocstoreEncoder,
     )
 
 
 def from_json(json_string):
-    return cattr.structure(json.loads(json_string), List[Document])
+    """
+    Parses a JSON string containing all the documents.
+    """
+    parsed_structure = json.loads(json_string)
+    assert parsed_structure["docstore"]["db_schema"] == DB_SCHEMA
+    return cattr.structure(parsed_structure["documents"], List[Document])
