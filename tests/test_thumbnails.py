@@ -1,7 +1,7 @@
 from PIL import Image
 import pytest
 
-from docstore.thumbnails import create_thumbnail
+from docstore.thumbnails import create_thumbnail, get_dimensions
 
 
 @pytest.mark.parametrize(
@@ -45,3 +45,17 @@ def test_creates_thumbnail_if_no_quicklook_plugin_available(tmpdir):
         outfile.write(b"SQLite format 3\x00")
 
     path = create_thumbnail(path)
+
+
+def test_gets_dimensions_of_an_image():
+    dimensions = get_dimensions("tests/files/cluster.png")
+    assert dimensions.width == 500
+    assert dimensions.height == 325
+
+
+def test_gets_dimensions_of_a_video():
+    thumbnail_path = create_thumbnail("tests/files/Newtons_cradle.gif")
+
+    dimensions = get_dimensions(thumbnail_path)
+    assert dimensions.width == 400
+    assert dimensions.height == 300

@@ -11,7 +11,7 @@ from docstore.documents import (
     store_new_document,
     write_documents,
 )
-from docstore.models import Document, File, Thumbnail
+from docstore.models import Dimensions, Document, File, Thumbnail
 
 
 def test_sha256():
@@ -136,7 +136,9 @@ def test_store_new_document(tmpdir):
     assert new_file.source_url == "https://example.org/cluster.png"
     assert new_file.date_saved == now
 
-    assert new_file.thumbnail == Thumbnail("thumbnails/m/my-cluster.png")
+    assert new_file.thumbnail == Thumbnail(
+        path="thumbnails/m/my-cluster.png", dimensions=Dimensions(400, 260)
+    )
     assert os.path.exists(root / new_file.thumbnail.path)
 
     assert read_documents(root) == [new_document]

@@ -15,7 +15,7 @@ from docstore.models import (
     to_json,
 )
 from docstore.text_utils import slugify
-from docstore.thumbnails import create_thumbnail
+from docstore.thumbnails import create_thumbnail, get_dimensions
 from docstore.tint_colors import store_tint_color
 
 
@@ -106,7 +106,10 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
                 size=os.stat(out_path).st_size,
                 checksum=sha256(out_path),
                 source_url=source_url,
-                thumbnail=Thumbnail(os.path.relpath(thumb_out_path, root)),
+                thumbnail=Thumbnail(
+                    path=os.path.relpath(thumb_out_path, root),
+                    dimensions=get_dimensions(thumb_out_path),
+                ),
                 date_saved=date_saved,
             )
         ],

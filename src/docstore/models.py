@@ -21,13 +21,27 @@ def _convert_to_thumbnail(t):
         return Thumbnail(**t)
 
 
+def _convert_to_dimensions(d):
+    if isinstance(d, Dimensions):
+        return d
+    else:
+        return Dimensions(**d)
+
+
 def _convert_to_file(f_list):
     return [f if isinstance(f, File) else File(**f) for f in f_list]
 
 
 @attr.s
+class Dimensions:
+    width = attr.ib(type=int)
+    height = attr.ib(type=int)
+
+
+@attr.s
 class Thumbnail:
     path = attr.ib(type=str)
+    dimensions = attr.ib(type=Dimensions, converter=_convert_to_dimensions)
 
 
 @attr.s

@@ -6,6 +6,8 @@ import tempfile
 
 from PIL import Image, UnidentifiedImageError
 
+from docstore.models import Dimensions
+
 
 def _is_animated_gif(path):
     """
@@ -91,3 +93,32 @@ def create_thumbnail(path, *, max_size=400):
         return _create_gif_thumbnail_from_ffmpeg(**kwargs)
     else:
         return _create_thumbnail_from_quick_look(**kwargs)
+
+
+def get_dimensions(path):
+    """
+    Returns the (width, height) of a given path.
+    """
+    if path.endswith(".png"):  # image thumbnail
+        im = Image.open(path)
+        return Dimensions(width=im.width, height=im.height)
+
+    elif path.endswith(".mp4"):  # video thumbnail
+        # See https://stackoverflow.com/a/29585066/1558022
+        output = subprocess.check_output(
+            [
+                "ffprobe",
+                "-v",
+                "error",
+                "-show_entries",
+                "stream=width,height",
+                "-of",
+                "csv=p=0:s=x",
+                os.path.abspath(path),
+            ]
+        )
+        width, height = output.strip().split(b"x")
+        return Dimensions(width=int(width), height=int(height))
+
+    else:  # pragma: no cover
+        raise ValueError(f"Unrecognised thumbnail type: {path}")

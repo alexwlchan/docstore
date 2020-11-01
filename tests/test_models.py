@@ -3,7 +3,7 @@ import uuid
 
 import pytest
 
-from docstore.models import Document, File, Thumbnail, from_json, to_json
+from docstore.models import Dimensions, Document, File, Thumbnail, from_json, to_json
 
 
 def is_recent(ds):
@@ -27,7 +27,9 @@ def test_file_defaults():
         path="files/c/cats.jpg",
         size=100,
         checksum="sha256:123",
-        thumbnail=Thumbnail(path="thumbnails/c/cats.jpg"),
+        thumbnail=Thumbnail(
+            path="thumbnails/c/cats.jpg", dimensions=Dimensions(400, 300)
+        ),
     )
     uuid.UUID(f.id)
     assert is_recent(f.date_saved)
@@ -39,7 +41,9 @@ def test_can_serialise_document_to_json():
         path="files/c/cats.jpg",
         size=100,
         checksum="sha256:123",
-        thumbnail=Thumbnail(path="thumbnails/c/cats.jpg"),
+        thumbnail=Thumbnail(
+            path="thumbnails/c/cats.jpg", dimensions=Dimensions(400, 300)
+        ),
     )
 
     documents = [Document(title="Another test document", files=[f])]

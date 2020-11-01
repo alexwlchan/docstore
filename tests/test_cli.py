@@ -7,7 +7,7 @@ import pytest
 
 from docstore.cli import main
 from docstore.documents import read_documents, store_new_document, write_documents
-from docstore.models import Document, File, Thumbnail
+from docstore.models import Dimensions, Document, File, Thumbnail
 from test_models import is_recent
 
 
@@ -174,7 +174,9 @@ class TestMerge:
                         path="cluster.png",
                         size=100,
                         checksum="sha256:123",
-                        thumbnail=Thumbnail(path="cluster.png"),
+                        thumbnail=Thumbnail(
+                            path="cluster.png", dimensions=Dimensions(400, 300)
+                        ),
                     )
                 ],
             )
