@@ -15,6 +15,7 @@ import shutil
 import sys
 
 import cattr
+import tqdm
 
 from docstore.git import current_commit
 from docstore.thumbnails import get_dimensions
@@ -54,11 +55,11 @@ if __name__ == "__main__":
     }
 
     # Backfill the thumbnail dimensions
-    for doc in documents:
+    for doc in tqdm.tqdm(documents):
         for f in doc["files"]:
             dimensions = get_dimensions(os.path.join(root, f["thumbnail"]["path"]))
             f["thumbnail"]["dimensions"] = cattr.unstructure(dimensions)
 
     # Write the new database
     with open(documents_path, "w") as outfile:
-        outfile.write(json.dumps(new_structure))
+        outfile.write(json.dumps(new_structure, indent=2, sort_keys=True))
