@@ -93,7 +93,11 @@ def to_json(documents):
 
     return json.dumps(
         {
-            "docstore": {"db_schema": DB_SCHEMA, "commit": current_commit()},
+            "docstore": {
+                "db_schema": DB_SCHEMA,
+                "commit": current_commit(),
+                "last_modified": datetime.datetime.now().isoformat(),
+            },
             "documents": cattr.unstructure(documents),
         },
         indent=2,
