@@ -19,6 +19,13 @@ from docstore.thumbnails import create_thumbnail, get_dimensions
 from docstore.tint_colors import store_tint_color
 
 
+def db_path(root):
+    """
+    Returns the path to the database.
+    """
+    return os.path.join(root, "documents.json")
+
+
 _cached_documents = {
     "last_modified": None,
     "contents": None,
@@ -29,39 +36,36 @@ def read_documents(root):
     """
     Get a list of all the documents.
     """
-    db_path = os.path.join(root, "documents.json")
-
     # JSON parsing is somewhat expensive.  By caching the result rather than
     # going to disk each time, we see a ~10x speedup in returning responses
     # from the server.
     try:
         if (
             _cached_documents["last_modified"] is not None
-            and os.stat(db_path).st_mtime <= _cached_documents["last_modified"]
+            and os.stat(db_path(root)).st_mtime <= _cached_documents["last_modified"]
         ):
             return _cached_documents["contents"]
     except FileNotFoundError:
         pass
 
     try:
-        with open(db_path) as infile:
+        with open(db_path(root)) as infile:
             result = from_json(infile.read())
     except FileNotFoundError:
         return []
 
-    _cached_documents["last_modified"] = os.stat(db_path).st_mtime
+    _cached_documents["last_modified"] = os.stat(db_path(root)).st_mtime
     _cached_documents["contents"] = result
 
     return result
 
 
 def write_documents(*, root, documents):
-    db_path = os.path.join(root, "documents.json")
     json_string = to_json(documents)
 
     os.makedirs(root, exist_ok=True)
 
-    with open(db_path, "w") as out_file:
+    with open(db_path(root), "w") as out_file:
         out_file.write(json_string)
 
 

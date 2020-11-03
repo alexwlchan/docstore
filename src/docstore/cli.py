@@ -1,6 +1,8 @@
 import datetime
+import functools
 import json
 import os
+import sys
 
 import click
 
@@ -16,6 +18,37 @@ import click
 @click.pass_context
 def main(ctx, root):
     ctx.obj = root
+
+
+def _require_existing_instance(inner):
+    """
+    When you call ``docstore add``, most of the time you want to be adding
+    documents to an existing instance, not creating a new instance.
+
+    It's easy to get the directory wrong, so this decorator will check you
+    really wanted to create a new instance vs. adding to an old one.
+    """
+
+    @functools.wraps(inner)
+    def wrapper(*args, **kwargs):
+        from docstore.documents import db_path
+
+        root = click.get_current_context().obj
+
+        if (
+            root == "."
+            and not os.path.exists(db_path("."))
+            and not any(ag == "--root" or ag.startswith("--root=") for ag in sys.argv)
+        ):  # pragma: no cover
+            click.echo(
+                f"There is no existing docstore instance at {os.path.abspath('.')}",
+                err=True,
+            )
+            click.confirm("Do you want to create a new instance?", abort=True, err=True)
+
+        return inner(*args, **kwargs)
+
+    return wrapper
 
 
 @main.command(help="Run a docstore API server")
@@ -75,6 +108,7 @@ def _add_document(root, path, title, tags, source_url):
 )
 @click.option("--source_url", help="Where was this file downloaded from?.")
 @click.pass_obj
+@_require_existing_instance
 def add(root, path, title, tags, source_url):
     return _add_document(
         root=root, path=path, title=title, tags=tags, source_url=source_url
@@ -89,6 +123,7 @@ def add(root, path, title, tags, source_url):
 @click.option("--tags", help="The tags to apply to the file.")
 @click.option("--source_url", help="Where was this file downloaded from?.")
 @click.pass_obj
+@_require_existing_instance
 def add_from_url(root, url, title, tags, source_url):  # pragma: no cover
     from docstore.downloads import download_file
 
