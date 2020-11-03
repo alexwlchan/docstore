@@ -44,6 +44,13 @@ The rest of this README describes some of the motivation and design.
 
 ## Design principles
 
+*   **My files and metadata should be portable.**
+    All the data for a collection of files stored with docstore is kept in a single directory.
+    That directory can be copied or synced to another machine, and I can start working with them immediately -- no config or setup required.
+    
+    This is important for day-to-day utility, and for disaster recovery.
+    If something happens to my main computer, I want to be able to get to my documents again (including the keyword tags for organisation) as quickly as possible.
+
 *   **Use JSON as a database.**
     All the metadata about my documents is kept in a single JSON file.
     JSON is a simple, popular format with several advantages for me:
