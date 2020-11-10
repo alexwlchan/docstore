@@ -196,7 +196,6 @@ class TestMerge:
 
 
 def test_deleting_document_through_cli(tmpdir, root, runner):
-    root = tmpdir / "root"
     shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "cluster.png")
 
     doc1 = store_new_document(
