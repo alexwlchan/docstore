@@ -1,6 +1,7 @@
 import datetime
 import os
 import shutil
+import uuid
 
 from click.testing import CliRunner
 import pytest
@@ -221,3 +222,10 @@ def test_deleting_document_through_cli(tmpdir, root, runner):
     for deleted_doc in [doc1, doc2]:
         deleted_json_path = root / "deleted" / deleted_doc.id / "document.json"
         assert os.path.exists(deleted_json_path)
+
+
+def test_deleting_in_empty_instance_is_error(root, runner):
+    result = runner.invoke(["delete", str(uuid.uuid4())])
+
+    assert result.exit_code == 1, result.output
+    assert result.output.strip() == f"There is no docstore instance at {root}!"

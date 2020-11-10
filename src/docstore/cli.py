@@ -173,7 +173,10 @@ def migrate(root, v1_path):  # pragma: no cover
 @click.argument("doc_ids", nargs=-1)
 @click.pass_obj
 def delete(root, doc_ids):
-    from docstore.documents import delete_document
+    from docstore.documents import db_path, delete_document
+
+    if not os.path.exists(db_path(root)):
+        sys.exit(f"There is no docstore instance at {root}!")
 
     for d_id in doc_ids:
         delete_document(root=root, doc_id=d_id)
