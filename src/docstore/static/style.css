@@ -54,10 +54,6 @@ hr {
   background: rgba(128, 128, 128, 0.5);
 }
 
-.thumbnail a {
-  display: block;
-}
-
 .thumbnail a:hover {
   background: #606060;
 }
