@@ -34,15 +34,15 @@ if __name__ == "__main__":
     documents_path = os.path.join(root, "documents.json")
     backup_path = os.path.join(root, f"documents.{OLD_DB_SCHEMA}.json.bak")
 
-    # assert not os.path.exists(backup_path)
-    shutil.copyfile(documents_path, backup_path)
-
     documents = json.load(open(documents_path))
 
     if not isinstance(documents, list):
         raise IncorrectSchemaError(
             f"The docstore instance at {root} doesn't look like {OLD_DB_SCHEMA}"
         )
+
+    assert not os.path.exists(backup_path)
+    shutil.copyfile(documents_path, backup_path)
 
     # Create the new top-level structure
     new_structure = {
