@@ -16,7 +16,7 @@ from docstore.models import (
 )
 from docstore.text_utils import slugify
 from docstore.thumbnails import create_thumbnail, get_dimensions
-from docstore.tint_colors import store_tint_color
+from docstore.tint_colors import choose_tint_color
 
 
 def db_path(root):
@@ -99,6 +99,12 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
     os.makedirs(os.path.dirname(thumb_out_path), exist_ok=True)
     shutil.move(thumbnail_path, thumb_out_path)
 
+    tint_color = choose_tint_color(thumbnail_path=thumb_out_path, file_path=out_path)
+
+    hex_tint_color = "#%02x%02x%02x" % tuple(
+        int(component * 255) for component in tint_color
+    )
+
     new_document = Document(
         title=title,
         date_saved=date_saved,
@@ -113,6 +119,7 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
                 thumbnail=Thumbnail(
                     path=os.path.relpath(thumb_out_path, root),
                     dimensions=get_dimensions(thumb_out_path),
+                    tint_color=hex_tint_color,
                 ),
                 date_saved=date_saved,
             )
@@ -127,8 +134,6 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
     # Don't delete the original file until it's been successfully recorded
     # and a thumbnail created.
     os.unlink(path)
-
-    store_tint_color(root=root, document=new_document)
 
     return new_document
 
@@ -154,8 +159,6 @@ def pairwise_merge_documents(root, *, doc1, doc2, new_title, new_tags):
     stored_doc1.title = new_title
     stored_doc1.files.extend(doc2.files)
     write_documents(root=root, documents=documents)
-
-    store_tint_color(root=root, document=stored_doc1)
 
     return stored_doc1
 

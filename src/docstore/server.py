@@ -12,7 +12,6 @@ from docstore.documents import read_documents
 from docstore.tag_cloud import TagCloud
 from docstore.tag_list import render_tag_list
 from docstore.text_utils import hostname, pretty_date
-from docstore.tint_colors import get_tint_colors
 
 
 def tags_with_prefix(document, prefix):
@@ -58,8 +57,6 @@ def create_app(title, root, thumbnail_width):
         except KeyError:
             page = 1
 
-        colors = get_tint_colors(root)
-
         html = render_template(
             "index.html",
             documents=sorted(documents, key=lambda d: d.date_saved, reverse=True),
@@ -68,7 +65,6 @@ def create_app(title, root, thumbnail_width):
             tag_tally=tag_tally,
             title=title,
             page=page,
-            colors=colors,
             TagCloud=TagCloud,
         )
 

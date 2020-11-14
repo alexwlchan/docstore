@@ -137,7 +137,9 @@ def test_store_new_document(tmpdir):
     assert new_file.date_saved == now
 
     assert new_file.thumbnail == Thumbnail(
-        path="thumbnails/m/my-cluster.png", dimensions=Dimensions(400, 260)
+        path="thumbnails/m/my-cluster.png",
+        dimensions=Dimensions(400, 260),
+        tint_color="#000000",
     )
     assert os.path.exists(root / new_file.thumbnail.path)
 

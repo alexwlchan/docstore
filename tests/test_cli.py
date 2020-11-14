@@ -176,7 +176,9 @@ class TestMerge:
                         size=100,
                         checksum="sha256:123",
                         thumbnail=Thumbnail(
-                            path="cluster.png", dimensions=Dimensions(400, 300)
+                            path="cluster.png",
+                            dimensions=Dimensions(400, 300),
+                            tint_color="#000000",
                         ),
                     )
                 ],

@@ -1,15 +1,10 @@
-import datetime
-import os
-import shutil
-
 import pytest
 
-from docstore.documents import store_new_document
+from docstore.thumbnails import create_thumbnail
 from docstore.tint_colors import (
     choose_tint_color_from_dominant_colors,
     choose_tint_color,
     get_colors_from,
-    store_tint_color,
 )
 
 
@@ -43,8 +38,10 @@ def test_get_colors_from_animated_gif():
 
 
 def test_choose_tint_color():
+    thumbnail_path = create_thumbnail("tests/files/Newtons_cradle.gif")
+
     tint_color = choose_tint_color(
-        paths=["tests/files/Newtons_cradle.gif"], background_color="white"
+        thumbnail_path=thumbnail_path, file_path="tests/files/Newtons_cradle.gif"
     )
     assert all(0.4 <= c <= 0.5 for c in tint_color), tint_color
 
@@ -66,21 +63,3 @@ def test_selects_black_or_white_if_unsufficient_contrast(
         )
         == expected_tint
     )
-
-
-@pytest.mark.parametrize("filename", ["snakes.pdf", "Rotating_earth_(large).gif"])
-def test_uses_thumbnail_if_cannot_use_file(root, tmpdir, filename):
-    shutil.copyfile(
-        src=os.path.join("tests/files", filename), dst=os.path.join(tmpdir, filename)
-    )
-
-    document = store_new_document(
-        root=root,
-        path=tmpdir / filename,
-        title="Some snakes",
-        tags=[],
-        source_url=f"htttps://example.org/{filename}",
-        date_saved=datetime.datetime.now(),
-    )
-
-    store_tint_color(root, document=document)

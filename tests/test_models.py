@@ -28,7 +28,9 @@ def test_file_defaults():
         size=100,
         checksum="sha256:123",
         thumbnail=Thumbnail(
-            path="thumbnails/c/cats.jpg", dimensions=Dimensions(400, 300)
+            path="thumbnails/c/cats.jpg",
+            dimensions=Dimensions(400, 300),
+            tint_color="#ffffff",
         ),
     )
     uuid.UUID(f.id)
@@ -42,7 +44,9 @@ def test_can_serialise_document_to_json():
         size=100,
         checksum="sha256:123",
         thumbnail=Thumbnail(
-            path="thumbnails/c/cats.jpg", dimensions=Dimensions(400, 300)
+            path="thumbnails/c/cats.jpg",
+            dimensions=Dimensions(400, 300),
+            tint_color="#ffffff",
         ),
     )
 

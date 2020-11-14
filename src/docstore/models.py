@@ -9,7 +9,7 @@ import cattr
 from docstore.git import current_commit
 
 
-DB_SCHEMA = "v2.1.0"
+DB_SCHEMA = "v2.2.0"
 
 
 def _convert_to_datetime(d):
@@ -47,6 +47,7 @@ class Dimensions:
 class Thumbnail:
     path = attr.ib(type=str)
     dimensions = attr.ib(type=Dimensions, converter=_convert_to_dimensions)
+    tint_color = attr.ib(type=str)
 
 
 @attr.s

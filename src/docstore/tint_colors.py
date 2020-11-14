@@ -1,6 +1,5 @@
 import collections
 import colorsys
-import json
 import math
 import os
 
@@ -93,19 +92,16 @@ def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
     return max(hsv_candidates, key=lambda rgb_col: hsv_candidates[rgb_col][2])
 
 
-def choose_tint_color(*, paths, background_color):
+def choose_tint_color_for_file(path, *, background_color="white"):
+    """
+    Returns the tint colour for a file.
+    """
     try:
         background_color = {"black": (0, 0, 0), "white": (1, 1, 1)}[background_color]
     except KeyError:  # pragma: no cover
         raise ValueError(f"Unrecognised background color: {background_color!r}")
 
-    colors = []
-
-    for p in paths:
-        colors.extend(get_colors_from(p))
-
-    if not colors:
-        return ""
+    colors = get_colors_from(path)
 
     # Normalise to [0, 1]
     colors = [(r / 255, g / 255, b / 255) for (r, g, b) in colors]
@@ -125,30 +121,13 @@ def choose_tint_color(*, paths, background_color):
     )
 
 
-def get_tint_colors(root):
-    try:
-        return json.load(open(os.path.join(root, "tint_colors.json")))
-    except FileNotFoundError:
-        return {}
-
-
-def store_tint_color(root, *, document):
-    tint_colors = get_tint_colors(root)
-
-    paths = []
-
+def choose_tint_color(*, thumbnail_path, file_path, **kwargs):
     # In general, we use the thumbnail to choose the tint color.  The thumbnail
     # is what the tint color will usually appear next to.  However, thumbnails
     # for animated GIFs are MP4 videos rather than images, so we need to go to
     # the original image to get the tint color.
-    for f in document.files:
-        try:
-            Image.open(os.path.join(root, f.thumbnail.path))
-            paths.append(os.path.join(root, f.thumbnail.path))
-        except UnidentifiedImageError:
-            paths.append(os.path.join(root, f.path))
-
-    tint_colors[document.id] = choose_tint_color(paths=paths, background_color="white")
-
-    with open(os.path.join(root, "tint_colors.json"), "w") as outfile:
-        outfile.write(json.dumps(tint_colors, indent=2, sort_keys=True))
+    try:
+        Image.open(os.path.join(thumbnail_path))
+        return choose_tint_color_for_file(thumbnail_path, **kwargs)
+    except UnidentifiedImageError:
+        return choose_tint_color_for_file(file_path, **kwargs)
