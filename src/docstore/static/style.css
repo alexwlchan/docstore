@@ -46,9 +46,12 @@ table {
   width: 100%;
 }
 
-hr {
+table hr {
   margin-left:  1em;
   margin-right: 1em;
+}
+
+hr {
   border: none;
   height: 1px;
   background: rgba(128, 128, 128, 0.5);
@@ -116,4 +119,9 @@ a.disabled {
 
 h2:hover .doc_id {
   display: inline-block;
+}
+
+.sortBy {
+  float: right;
+  margin-bottom: 0;
 }

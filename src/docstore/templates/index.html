@@ -19,7 +19,9 @@
   {% endif %}
 
   {% set include_tags = True %}
-  {% include "_meta_info.html" %}
+  {% with placement="top" %}
+    {% include "_meta_info.html" %}
+  {% endwith %}
 
   <script>
     function rememberDetailsExpansionState(id) {
@@ -150,6 +152,8 @@
 
   {% if page_end - page_start > 10 %}
     {% set include_tags = False %}
-    {% include "_meta_info.html" %}
+    {% with placement="bottom" %}
+      {% include "_meta_info.html" %}
+    {% endwith %}
   {% endif %}
 </main>

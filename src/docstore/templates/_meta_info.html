@@ -21,6 +21,33 @@
       •
       <a {% if next_url == "#" %}class="disabled"{% endif %} href="{{ next_url }}">next »</a>
     {% endif %}
+
+    <form id="sortBy_{{ placement }}" class="sortBy">
+      <label for="sortBy">sort by:</label>
+      <select name="sortBy">
+        {% for name, label in [
+          ("dateNewestFirst", "date (newest first)"),
+          ("dateOldestFirst", "date (oldest first)"),
+          ("titleAtoZ", "title (A to Z)"),
+          ("titleZtoA", "title (Z to A)"),
+        ] %}
+          <option name="{{ name }}" {% if sort_by == name %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </form>
+
+    <script>
+      var sortBy = document.getElementById("sortBy_{{ placement }}");
+      sortBy.addEventListener("input", function(event) {
+        var sortByValue = document.getElementById("sortBy_{{ placement }}").children[1].value;
+        if ("{{ request.url | url_without_sortby }}".indexOf("?") === -1) {
+          var newUrl = "{{ request.url | url_without_sortby }}?sortBy=" + sortByValue;
+        } else {
+          var newUrl = "{{ request.url | url_without_sortby }}&sortBy=" + sortByValue;
+        }
+        document.location.href = newUrl;
+      })
+    </script>
   {% endif %}
 
   {% if (include_tags and tag_tally) or request_tags %}

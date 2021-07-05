@@ -5,6 +5,7 @@ import os
 from urllib.parse import parse_qsl, urlparse, urlencode
 
 from flask import Flask, render_template, request, send_from_directory
+import hyperlink
 import smartypants
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
@@ -22,6 +23,11 @@ def tags_without_prefix(document, prefix):
     return [t for t in document.tags if not t.startswith(prefix)]
 
 
+def url_without_sortby(u):
+    url = hyperlink.URL.from_text(u)
+    return str(url.remove("sortBy"))
+
+
 def create_app(title, root, thumbnail_width):
     app = Flask(__name__)
 
@@ -36,6 +42,7 @@ def create_app(title, root, thumbnail_width):
     )
     app.jinja_env.filters["render_tag_list"] = render_tag_list
     app.jinja_env.filters["smartypants"] = smartypants.smartypants
+    app.jinja_env.filters["url_without_sortby"] = url_without_sortby
 
     app.jinja_env.filters["tags_with_prefix"] = tags_with_prefix
     app.jinja_env.filters["tags_without_prefix"] = tags_without_prefix
@@ -57,14 +64,29 @@ def create_app(title, root, thumbnail_width):
         except KeyError:
             page = 1
 
+        sort_by = request.args.get("sortBy", "dateNewestFirst")
+
+        if sort_by.startswith("date"):
+            sort_key = lambda d: d.date_saved
+        elif sort_by.startswith("title"):
+            sort_key = lambda d: d.title.lower()
+        else:
+            raise ValueError(f"Unrecognised sortBy query parameter: {sort_by}")
+
+        if sort_by in {"dateNewestFirst", "titleZtoA"}:
+            sort_reverse = True
+        else:
+            sort_reverse = False
+
         html = render_template(
             "index.html",
-            documents=sorted(documents, key=lambda d: d.date_saved, reverse=True),
+            documents=sorted(documents, key=sort_key, reverse=sort_reverse),
             request_tags=request_tags,
             query_string=tuple(parse_qsl(urlparse(request.url).query)),
             tag_tally=tag_tally,
             title=title,
             page=page,
+            sort_by=sort_by,
             TagCloud=TagCloud,
         )
 
