@@ -31,7 +31,7 @@
           ("titleAtoZ", "title (A to Z)"),
           ("titleZtoA", "title (Z to A)"),
         ] %}
-          <option name="{{ name }}" {% if sort_by == name %}selected{% endif %}>{{ label }}</option>
+          <option name="{{ name }}" {% if sort_by == label %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
     </form>
@@ -41,9 +41,9 @@
       sortBy.addEventListener("input", function(event) {
         var sortByValue = document.getElementById("sortBy_{{ placement }}").children[1].value;
         if ("{{ request.url | url_without_sortby }}".indexOf("?") === -1) {
-          var newUrl = "{{ request.url | url_without_sortby }}?sortBy=" + sortByValue;
+          var newUrl = "{{ request.url | url_without_sortby | safe }}?sortBy=" + sortByValue;
         } else {
-          var newUrl = "{{ request.url | url_without_sortby }}&sortBy=" + sortByValue;
+          var newUrl = "{{ request.url | url_without_sortby | safe }}&sortBy=" + sortByValue;
         }
         document.location.href = newUrl;
       })
