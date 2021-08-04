@@ -73,7 +73,7 @@ def create_app(title, root, thumbnail_width):
         else:
             raise ValueError(f"Unrecognised sortBy query parameter: {sort_by}")
 
-        if sort_by in {"dateNewestFirst", "titleZtoA"}:
+        if sort_by in {"dateNewestFirst", "title (Z to A)"}:
             sort_reverse = True
         else:
             sort_reverse = False
