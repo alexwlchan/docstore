@@ -246,3 +246,37 @@ def merge(root, doc_ids, yes):
         doc1 = pairwise_merge_documents(
             root=root, doc1=doc1, doc2=doc2, new_title=new_title, new_tags=new_tags
         )
+
+
+def find_similar_pairs(tags, *, required_similarity=80):
+    """
+    Find pairs of similar-looking tags in the collection ``tags``.
+
+    Increase ``required_similarity`` for stricter matching (=> less results).
+    """
+    import itertools
+
+    from rapidfuzz import fuzz
+
+    for t1, t2 in itertools.combinations(sorted(tags), 2):
+        if fuzz.ratio(t1, t2) > required_similarity:
+            yield (t1, t2)
+
+
+@main.command(help="Show tags that might be similar")
+@click.pass_obj
+def show_similar_tags(root):
+    import collections
+    from docstore.documents import read_documents
+
+    documents = read_documents(root)
+    tags = collections.Counter()
+
+    for doc in documents:
+        for t in doc.tags:
+            tags[t] += 1
+
+    for t1, t2 in find_similar_pairs(set(tags)):
+        print("%3d %s" % (tags[t1], t1))
+        print("%3d %s" % (tags[t2], t2))
+        print("")
