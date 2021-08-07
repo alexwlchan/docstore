@@ -32,7 +32,7 @@ numpy==1.19.3
     # via
     #   scikit-learn
     #   scipy
-pillow==8.0.1
+pillow==8.2.0
     # via -r requirements.in
 rapidfuzz==1.4.1
     # via -r requirements.in
