@@ -63,8 +63,9 @@ def _create_thumbnail_from_quick_look(*, path, max_size, out_dir):
             timeout=5
         )
     except subprocess.TimeoutExpired:
-        # Something went wrong with the Quick Look process so we can't
-        # create a thumbnail, oh well.
+        # It's possible for somethign to go wrong with the Quick Look
+        # process where it just hangs and doesn't create a thumbnail.
+        # If so, just continue without creating the thumbnail.
         pass
 
     try:
