@@ -1,11 +1,11 @@
 import hashlib
 import json
 import os
-import secrets
 import shutil
 
 import cattr
 
+from docstore.file_normalisation import normalised_filename_copy
 from docstore.models import (
     DocstoreEncoder,
     Document,
@@ -80,18 +80,14 @@ def sha256(path):
 
 def store_new_document(*, root, path, title, tags, source_url, date_saved):
     filename = os.path.basename(path)
-    name, ext = os.path.splitext(filename)
-    slug = slugify(name) + ext
 
-    out_path = os.path.join(root, "files", slug[0], slug)
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    # Files are sharded by the first letter of their filename,
+    # e.g. "aardvark.png" is saved in "a/aardvark.png"
+    shard = slugify(filename)[0].lower()
 
-    while os.path.exists(out_path):
-        out_path = os.path.join(
-            root, "files", slug[0], slugify(name) + "_" + secrets.token_hex(2) + ext
-        )
+    dst = os.path.join(root, "files", shard, filename)
 
-    shutil.copyfile(path, out_path)
+    out_path = normalised_filename_copy(src=path, dst=dst)
 
     thumbnail_path = create_thumbnail(out_path)
     thumbnail_name = os.path.basename(thumbnail_path)
