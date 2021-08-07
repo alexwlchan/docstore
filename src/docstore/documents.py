@@ -182,3 +182,16 @@ def delete_document(root, *, doc_id):
 
     documents = [d for d in documents if d.id != doc_id]
     write_documents(root=root, documents=documents)
+
+
+def find_original_filename(root, *, path):
+    """
+    Returns the name of the original file stored in this path.
+    """
+    documents = read_documents(root)
+    for d in documents:
+        for f in d.files:
+            if f.path == os.path.relpath(path, root):
+                return f.filename
+
+    raise ValueError(f"Couldn't find file stored with path {path}")

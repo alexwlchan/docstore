@@ -2,14 +2,22 @@ import collections
 import datetime
 import functools
 import os
+import urllib.parse
 from urllib.parse import parse_qsl, urlparse, urlencode
 
-from flask import Flask, render_template, request, send_from_directory
+from flask import (
+    Flask,
+    make_response,
+    render_template,
+    request,
+    send_file,
+    send_from_directory,
+)
 import hyperlink
 import smartypants
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
-from docstore.documents import read_documents
+from docstore.documents import find_original_filename, read_documents
 from docstore.tag_cloud import TagCloud
 from docstore.tag_list import render_tag_list
 from docstore.text_utils import hostname, pretty_date
@@ -26,6 +34,27 @@ def tags_without_prefix(document, prefix):
 def url_without_sortby(u):
     url = hyperlink.URL.from_text(u)
     return str(url.remove("sortBy"))
+
+
+def serve_file(*, root, shard, filename):
+    """
+    Serves a file which has been saved in docstore.
+
+    This adds the Content-Disposition header to the response, so files
+    are downloaded with the original filename they were uploaded as,
+    rather than the normalised filename.
+
+    """
+    path = os.path.abspath(os.path.join(root, "files", shard, filename))
+    response = make_response(send_file(path))
+
+    original_filename = find_original_filename(root, path=path)
+
+    # See https://stackoverflow.com/a/49481671/1558022 for UTF-8 encoding
+    encoded_filename = urllib.parse.quote(original_filename, encoding="utf-8")
+    response.headers["Content-Disposition"] = f"filename*=utf-8''{encoded_filename}"
+
+    return response
 
 
 def create_app(title, root, thumbnail_width):
@@ -64,7 +93,7 @@ def create_app(title, root, thumbnail_width):
         except KeyError:
             page = 1
 
-        sort_by = request.args.get("sortBy", "dateNewestFirst")
+        sort_by = request.args.get("sortBy", "date (newest first)")
 
         if sort_by.startswith("date"):
             sort_key = lambda d: d.date_saved
@@ -73,7 +102,7 @@ def create_app(title, root, thumbnail_width):
         else:
             raise ValueError(f"Unrecognised sortBy query parameter: {sort_by}")
 
-        if sort_by in {"dateNewestFirst", "title (Z to A)"}:
+        if sort_by in {"date (newest first)", "title (Z to A)"}:
             sort_reverse = True
         else:
             sort_reverse = False
@@ -98,11 +127,12 @@ def create_app(title, root, thumbnail_width):
             os.path.abspath(os.path.join(root, "thumbnails", shard)), filename=filename
         )
 
-    @app.route("/files/<shard>/<filename>")
-    def files(shard, filename):
-        return send_from_directory(
-            os.path.abspath(os.path.join(root, "files", shard)), filename=filename
-        )
+    app.add_url_rule(
+        rule="/files/<shard>/<filename>",
+        view_func=lambda shard, filename: serve_file(
+            root=root, shard=shard, filename=filename
+        ),
+    )
 
     @app.template_filter("add_tag")
     @functools.lru_cache()
