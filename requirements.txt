@@ -16,6 +16,10 @@ click==7.1.2
     #   flask
 flask==1.1.2
     # via -r requirements.in
+hyperlink==21.0.0
+    # via -r requirements.in
+idna==3.2
+    # via hyperlink
 itsdangerous==1.1.0
     # via flask
 jinja2==2.11.2
