@@ -13,16 +13,43 @@ Here's an example of how I'd use the CLI tool to save a file:
 ```
 docstore add '~/Desktop/Contract of Employment.pdf' \
   --source_url='https://email.example.com/message/1234' \
-  --title='2020-10: Contract of employment for MI13' \
-  --tags='employer:mi13, contract:employment'
+  --title='2020-10: Contract of employment for ACME' \
+  --tags='employer:acme-corp, contract:employment'
 ```
 
 Here's a screenshot of the web app:
 
 ![A screenshot of docstore](docstore.png)
 
-I don't expect that anybody else will want to use docstore directly, but the ideas might be useful.
-The rest of this README describes some of the motivation and design.
+The web app allows me to filter by one or more tags, or to sort by title/date, to help me find the document I'm looking for.
+
+
+
+## Usage
+
+Clone this repo and install the package locally:
+
+```console
+$ git clone https://github.com/alexwlchan/docstore.git
+$ cd docstore
+$ pip3 install -e .
+```
+
+You can add files using `docstore add` and run the web app with `docstore serve`.
+
+Note that docstore is only intended for me to use -- it solves a specific problem that I have, and is designed to solve my exact needs.
+
+You're welcome to use it, but I'm unlikely to provide support or add features for other people.
+
+
+
+## How it works: design and implementation notes
+
+I learnt a lot of stuff writing docstore, and the source code is public so other people can read it and see how it works.
+
+Because source code is a terrible medium for communicating ideas, I have some documents that explain the key ideas:
+
+-    [Storing the files](docs/storing-the-files.md) – where files are stored, what name they're stored under, ensuring I don't save two files with the same name
 
 
 ## Why I wrote it
@@ -47,7 +74,7 @@ The rest of this README describes some of the motivation and design.
 *   **My files and metadata should be portable.**
     All the data for a collection of files stored with docstore is kept in a single directory.
     That directory can be copied or synced to another machine, and I can start working with them immediately -- no config or setup required.
-    
+
     This is important for day-to-day utility, and for disaster recovery.
     If something happens to my main computer, I want to be able to get to my documents again (including the keyword tags for organisation) as quickly as possible.
 
@@ -70,7 +97,7 @@ The rest of this README describes some of the motivation and design.
     This wasn't part of my original design, but I added it when I rewrote docstore in autumn 2020.
     This means that I can group files so they show up together.
     Examples of when I use this:
-    
+
     -   I have two scans of the same piece of paper
     -   I have a scanned copy of a letter, and an electronic copy I was sent separately
     -   I have multiple versions of a contract at different stages of signing
