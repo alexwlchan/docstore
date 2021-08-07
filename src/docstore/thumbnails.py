@@ -55,11 +55,17 @@ def _create_gif_thumbnail_from_ffmpeg(*, path, max_size, out_dir):
 
 
 def _create_thumbnail_from_quick_look(*, path, max_size, out_dir):
-    subprocess.check_call(
-        ["qlmanage", "-t", path, "-s", f"{max_size}x{max_size}", "-o", out_dir],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+    try:
+        subprocess.check_call(
+            ["qlmanage", "-t", path, "-s", f"{max_size}x{max_size}", "-o", out_dir],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=5
+        )
+    except subprocess.TimeoutExpired:
+        # Something went wrong with the Quick Look process so we can't
+        # create a thumbnail, oh well.
+        pass
 
     try:
         result = os.path.join(out_dir, os.listdir(out_dir)[0])
