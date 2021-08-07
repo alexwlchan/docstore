@@ -1,5 +1,5 @@
 attrs>=20.2.0
-cattrs>=1.0.0
+cattrs>=1.1.1
 click>=7.1.2
 Flask>=1.1.2
 Pillow>=8.0.1
