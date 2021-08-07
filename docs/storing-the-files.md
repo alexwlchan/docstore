@@ -119,3 +119,30 @@ I use this to ensure I don't save two files with the same name – one will succ
 For the exact implementation, see [file_normalisation.py](https://github.com/alexwlchan/docstore/blob/main/src/docstore/file_normalisation.py).
 
 [python_rw]: https://docs.python.org/3/tutorial/inputoutput.html#tut-files
+
+
+
+## Downloading files with their original filename / the Content-Disposition header
+
+When I download a file from the web app, I want to download it with the original filename -- not the normalised version.
+
+For example, if I have an HTML link:
+
+```html
+<a href="/files/beijing.pdf">
+```
+
+then if I downloaded this link, my web browser would download a file named `beijing.pdf`.
+
+But you can use the [Content-Disposition header][cd_header] to suggest to a browser that it should download a file with a different name.
+In particular, if the server returns the header:
+
+```
+Content-Disposition: attachment; filename="北京.pdf"
+```
+
+then the browser will download the file as `北京.pdf`.
+
+For the exact implementation, see [`serve_file()` in `server.py`](https://github.com/alexwlchan/docstore/blob/7cb1cfd708c212af4dc0673dc8da372f7b8c79a4/src/docstore/server.py#L39-L57).
+
+[cd_header]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition
