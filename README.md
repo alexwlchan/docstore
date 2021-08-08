@@ -50,6 +50,8 @@ I learnt a lot of stuff writing docstore, and the source code is public so other
 Because source code is a terrible medium for communicating ideas, I have some documents that explain the key ideas:
 
 -    [Storing the files](docs/storing-the-files.md) – where files are stored, what name they're stored under, ensuring I don't save two files with the same name
+-    [Storing the metadata](docs/storing-the-metadata.md) – what metadata I store, how I model it, why I save it as JSON, how I serialise Python models to JSON and back
+
 
 
 ## Why I wrote it
