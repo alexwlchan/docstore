@@ -1,5 +1,12 @@
 # Storing the files
 
+Part of the point of docstore is to abstract away the management of individual files.
+I don't want to worry about managing individual files and folders – I want the tool to do that for me.
+
+This document explains a bit about how docstore manages my files.
+
+
+
 ## Where the files are stored
 
 I run docstore on my home computer, which shouldn't accessible from the Internet.
