@@ -53,7 +53,7 @@ Because reading source code is a pretty inefficient way to learn, I have some do
 
 -   [Storing the files](docs/storing-the-files.md) – where files are stored, what name they're stored under, ensuring I don't save two files with the same name
 -   [Storing the metadata](docs/storing-the-metadata.md) – what metadata I store, how I model it, why I save it as JSON, how I serialise Python models to JSON and back
--   [Previewing the files](docs/previewing-the-files.md) – how I create file previews with Quick Look and FFmpeg
+-   [Previewing the files](docs/previewing-the-files.md) – how I create file previews with Quick Look and FFmpeg, how I extract a tint colour from thumbnails from the web app
 
 [click]: https://palletsprojects.com/p/click/
 [flask]: https://palletsprojects.com/p/flask/

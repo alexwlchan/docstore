@@ -70,3 +70,19 @@ ffmpeg -i animated.gif \
 ```
 
 This is the same approach Twitter use for displaying GIFs.
+
+
+
+## Extracting tint colours with *k*-means colouring and Pillow
+
+In the web app, there are links to the right-hand side of each thumbnail: to filter to other files with the same tag, or to the URL where I downloaded each file.
+I want to use a colour from the thumbnail to tint these links, just because it looks pretty:
+
+![A series of four colourful book covers, with metadata links to their right in matching colours.](tint_colors.png)
+
+
+For this, I use a technique used [*k*-means colouring][kmeans].
+I've written a [separate blog post][blog] about exactly how this works.
+
+[kmeans]: https://en.wikipedia.org/wiki/K-means_clustering
+[blog]: https://alexwlchan.net/2019/08/finding-tint-colours-with-k-means/
