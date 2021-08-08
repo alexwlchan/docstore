@@ -47,10 +47,16 @@ You're welcome to use it, but I'm unlikely to provide support or add features fo
 
 I learnt a lot of stuff writing docstore, and the source code is public so other people can read it and see how it works.
 
-Because source code is a terrible medium for communicating ideas, I have some documents that explain the key ideas:
+Everything is written in Python, with [Click][click] and [Flask][flask] being the core of the CLI and and the web app.
 
--    [Storing the files](docs/storing-the-files.md) – where files are stored, what name they're stored under, ensuring I don't save two files with the same name
--    [Storing the metadata](docs/storing-the-metadata.md) – what metadata I store, how I model it, why I save it as JSON, how I serialise Python models to JSON and back
+Because reading source code is a pretty inefficient way to learn, I have some documents that explain the key ideas:
+
+-   [Storing the files](docs/storing-the-files.md) – where files are stored, what name they're stored under, ensuring I don't save two files with the same name
+-   [Storing the metadata](docs/storing-the-metadata.md) – what metadata I store, how I model it, why I save it as JSON, how I serialise Python models to JSON and back
+-   [Previewing the files](docs/previewing-the-files.md) – how I create file previews with Quick Look and FFmpeg
+
+[click]: https://palletsprojects.com/p/click/
+[flask]: https://palletsprojects.com/p/flask/
 
 
 
