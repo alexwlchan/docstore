@@ -4,49 +4,49 @@
 #
 #    pip-compile
 #
-attrs==20.2.0
+attrs==21.2.0
     # via
     #   -r requirements.in
     #   cattrs
-cattrs==1.7.1
+cattrs==1.8.0
     # via -r requirements.in
-click==7.1.2
+click==8.0.1
     # via
     #   -r requirements.in
     #   flask
-flask==1.1.2
+flask==2.0.1
     # via -r requirements.in
 hyperlink==21.0.0
     # via -r requirements.in
 idna==3.2
     # via hyperlink
-itsdangerous==1.1.0
+itsdangerous==2.0.1
     # via flask
-jinja2==2.11.2
+jinja2==3.0.1
     # via flask
-joblib==0.17.0
+joblib==1.0.1
     # via scikit-learn
-markupsafe==1.1.1
+markupsafe==2.0.1
     # via jinja2
-numpy==1.19.3
+numpy==1.21.2
     # via
     #   scikit-learn
     #   scipy
-pillow==8.0.1
+pillow==8.3.1
     # via -r requirements.in
-rapidfuzz==1.4.1
+rapidfuzz==1.5.0
     # via -r requirements.in
-scikit-learn==0.23.2
+scikit-learn==0.24.2
     # via -r requirements.in
-scipy==1.5.4
+scipy==1.7.1
     # via scikit-learn
 smartypants==2.0.1
     # via -r requirements.in
-threadpoolctl==2.1.0
+threadpoolctl==2.2.0
     # via scikit-learn
-unidecode==1.1.1
+unidecode==1.2.0
     # via -r requirements.in
 wcag-contrast-ratio==0.9
     # via -r requirements.in
-werkzeug==1.0.1
+werkzeug==2.0.1
     # via flask
