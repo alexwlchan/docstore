@@ -124,7 +124,7 @@ def create_app(title, root, thumbnail_width):
     @app.route("/thumbnails/<shard>/<filename>")
     def thumbnails(shard, filename):
         return send_from_directory(
-            os.path.abspath(os.path.join(root, "thumbnails", shard)), filename=filename
+            os.path.abspath(os.path.join(root, "thumbnails", shard)), filename
         )
 
     app.add_url_rule(
