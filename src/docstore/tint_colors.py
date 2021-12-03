@@ -2,49 +2,9 @@ import collections
 import colorsys
 import math
 import os
+import subprocess
 
-from PIL import Image, UnidentifiedImageError
-from sklearn.cluster import KMeans
 import wcag_contrast_ratio as contrast
-
-
-def _get_colors_from_im(im):
-    # Resizing means less pixels to handle, so the *k*-means clustering converges
-    # faster.  Small details are lost, but the main details will be preserved.
-    if im.size > (100, 100):
-        resize_ratio = min([100 / im.width, 100 / im.height])
-
-        new_width = int(im.width * resize_ratio)
-        new_height = int(im.height * resize_ratio)
-
-        im = im.resize((new_width, new_height))
-
-    # Ensure the image is RGB for consistency.
-    im = im.convert("RGB")
-
-    return list(im.getdata())
-
-
-def get_colors_from(path):
-    """
-    Returns a list of the colors in the image at ``path``.
-    """
-    im = Image.open(str(path))
-
-    if getattr(im, "is_animated", False):
-        result = []
-
-        frame_count = im.n_frames
-
-        # Don't get all the frames from an animated GIF; if it has hundreds of
-        # frames this massively increases computation required for little gain.
-        # Take a sample and work from that.
-        for frame in range(0, frame_count, int(math.ceil(frame_count / 25))):
-            im.seek(frame)
-            result.extend(_get_colors_from_im(im))
-        return result
-    else:
-        return _get_colors_from_im(im)
 
 
 def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
@@ -92,32 +52,32 @@ def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
     return max(hsv_candidates, key=lambda rgb_col: hsv_candidates[rgb_col][2])
 
 
-def choose_tint_color_for_file(path, *, background_color="white"):
+def from_hex(hs):
+    """
+    Returns an RGB tuple from a hex string, e.g. #ff0102 -> (255, 1, 2)
+    """
+    return int(hs[1:3], 16), int(hs[3:5], 16), int(hs[5:7], 16)
+
+
+def choose_tint_color_for_file(path):
     """
     Returns the tint colour for a file.
     """
-    try:
-        background_color = {"black": (0, 0, 0), "white": (1, 1, 1)}[background_color]
-    except KeyError:  # pragma: no cover
-        raise ValueError(f"Unrecognised background color: {background_color!r}")
+    background_color = (1, 1, 1)
 
-    colors = get_colors_from(path)
+    cmd = ["dominant_colours", "--no-palette", "--max-colours=12", path]
 
-    # Normalise to [0, 1]
-    colors = [(r / 255, g / 255, b / 255) for (r, g, b) in colors]
+    dominant_colors = [
+        from_hex(line)
+        for line in subprocess.check_output(cmd).splitlines()
+    ]
 
-    pixel_tally = collections.Counter(colors)
-    most_common, most_common_count = pixel_tally.most_common(1)[0]
-    if (
-        most_common_count >= len(colors) * 0.15
-        and contrast.rgb(most_common, background_color) >= 4.5
-    ):
-        return most_common
-
-    dominant_colors = KMeans(n_clusters=12).fit(colors).cluster_centers_
+    colors = [
+        (r / 255, g / 255, b / 255) for r, g, b in dominant_colors
+    ]
 
     return choose_tint_color_from_dominant_colors(
-        dominant_colors=dominant_colors, background_color=background_color
+        dominant_colors=colors, background_color=background_color
     )
 
 
@@ -126,8 +86,7 @@ def choose_tint_color(*, thumbnail_path, file_path, **kwargs):
     # is what the tint color will usually appear next to.  However, thumbnails
     # for animated GIFs are MP4 videos rather than images, so we need to go to
     # the original image to get the tint color.
-    try:
-        Image.open(os.path.join(thumbnail_path))
-        return choose_tint_color_for_file(thumbnail_path, **kwargs)
-    except UnidentifiedImageError:
+    if file_path.endswith((".jpg", ".jpeg", ".gif", ".png")):
         return choose_tint_color_for_file(file_path, **kwargs)
+    else:
+        return choose_tint_color_for_file(thumbnail_path, **kwargs)
