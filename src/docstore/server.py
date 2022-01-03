@@ -1,7 +1,9 @@
 import collections
 import datetime
 import functools
+import hashlib
 import os
+import secrets
 import urllib.parse
 from urllib.parse import parse_qsl, urlparse, urlencode
 
@@ -99,6 +101,16 @@ def create_app(title, root, thumbnail_width):
             sort_key = lambda d: d.date_saved
         elif sort_by.startswith("title"):
             sort_key = lambda d: d.title.lower()
+        elif sort_by == "random":
+            if page == 1:
+                app.config["_RANDOM_SEED"] = secrets.token_bytes()
+            seed = app.config["_RANDOM_SEED"]
+
+            def sort_key(d):
+                h = hashlib.md5()
+                h.update(d.id.encode("utf8"))
+                h.update(seed)
+                return h.hexdigest()
         else:
             raise ValueError(f"Unrecognised sortBy query parameter: {sort_by}")
 
