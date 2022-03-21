@@ -14,13 +14,6 @@ def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
 
     Both ``dominant_colors`` and ``background_color`` should be tuples in [0,1].
     """
-    # Clamp colours to the range 0.0 - 1.0; occasionally sklearn has spat out
-    # numbers outside this range.
-    dominant_colors = [
-        (min(max(col[0], 0), 1), min(max(col[1], 0), 1), min(max(col[2], 0), 1))
-        for col in dominant_colors
-    ]
-
     # The minimum contrast ratio for text and background to meet WCAG AA
     # is 4.5:1, so discard any dominant colours with a lower contrast.
     sufficient_contrast_colors = [
