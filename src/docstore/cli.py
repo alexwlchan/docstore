@@ -183,6 +183,28 @@ def delete(root, doc_ids):
         print(d_id)
 
 
+@main.command(help="Verify your stored files")
+@click.pass_obj
+def verify(root):
+    import collections
+    from docstore.documents import read_documents, sha256
+    import tqdm
+
+    errors = collections.defaultdict(list)
+
+    for doc in tqdm.tqdm(list(read_documents(root))):
+        for f in doc.files:
+            f_path = os.path.join(root, f.path)
+            if f.size != os.stat(f_path).st_size:
+                errors[f.id].append(f"Size mismatch\n  actual   = {os.stat(f_path).st_size}\n  expected = {f.size}")
+
+            if f.checksum != sha256(f_path):
+                errors[f.id].append(f"Checksum mismatch\n  actual   = {sha256(f_path)}\n  expected = {f.checksum}")
+
+    from pprint import pprint
+    pprint(errors)
+
+
 @main.command(help="Merge the files on two documents")
 @click.argument("doc_ids", nargs=-1)
 @click.option("--yes", is_flag=True, help="Skip confirmation prompts.")
