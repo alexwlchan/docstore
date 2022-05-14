@@ -259,6 +259,14 @@ def find_similar_pairs(tags, *, required_similarity=80):
     from rapidfuzz import fuzz
 
     for t1, t2 in itertools.combinations(sorted(tags), 2):
+        # utilities:gas, utilities:electricity
+        if os.path.commonprefix([t1, t2]).endswith(":"):
+            continue
+
+        # utilities, utilities:gas
+        if t1.startswith(f"{t2}:") or t2.startswith(f"{t1}:"):
+            continue
+
         if fuzz.ratio(t1, t2) > required_similarity:
             yield (t1, t2)
 
