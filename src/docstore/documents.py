@@ -215,6 +215,6 @@ def find_original_filename(root: pathlib.Path, *, path: str) -> str:
     for d in documents:
         for f in d.files:
             if f.path == os.path.relpath(path, root):
-                return typing.cast(str, f.filename)
+                return f.filename
 
     raise ValueError(f"Couldn't find file stored with path {path}")

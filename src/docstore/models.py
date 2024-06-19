@@ -1,6 +1,6 @@
 import datetime
 import json
-from typing import List
+import typing
 import uuid
 
 import attr
@@ -19,60 +19,64 @@ def _convert_to_datetime(d: datetime.datetime | str) -> datetime.datetime:
         return datetime.datetime.fromisoformat(d)
 
 
-def _convert_to_thumbnail(t):
+def _convert_to_thumbnail(t: typing.Any) -> "Thumbnail":
     if isinstance(t, Thumbnail):
         return t
     else:
         return Thumbnail(**t)
 
 
-def _convert_to_dimensions(d):
+def _convert_to_dimensions(d: typing.Any) -> "Dimensions":
     if isinstance(d, Dimensions):
         return d
     else:
         return Dimensions(**d)
 
 
-def _convert_to_file(f_list):
+def _convert_to_file(f_list: list[typing.Any]) -> "list[File]":
     return [f if isinstance(f, File) else File(**f) for f in f_list]
 
 
 @attr.s
 class Dimensions:
-    width = attr.ib(type=int)
-    height = attr.ib(type=int)
+    width: int = attr.ib(type=int)
+    height: int = attr.ib(type=int)
 
 
 @attr.s
 class Thumbnail:
-    path = attr.ib(type=str)
-    dimensions = attr.ib(type=Dimensions, converter=_convert_to_dimensions)
-    tint_color = attr.ib(type=str)
+    path: str = attr.ib(type=str)
+    dimensions: Dimensions = attr.ib(type=Dimensions, converter=_convert_to_dimensions)
+    tint_color: str = attr.ib(type=str)
 
 
 @attr.s
 class File:
-    filename = attr.ib(converter=str)
-    path = attr.ib(type=str)
-    size = attr.ib(type=int)
-    checksum = attr.ib(type=str)
-    thumbnail = attr.ib(type=Thumbnail, converter=_convert_to_thumbnail)
+    filename: str = attr.ib(converter=str)
+    path: str = attr.ib(type=str)
+    size: int = attr.ib(type=int)
+    checksum: str = attr.ib(type=str)
+    thumbnail: Thumbnail = attr.ib(type=Thumbnail, converter=_convert_to_thumbnail)
     source_url: str | None = attr.ib(type=str, default=None)
-    date_saved = attr.ib(factory=datetime.datetime.now, converter=_convert_to_datetime)
-    id = attr.ib(default=attr.Factory(lambda: str(uuid.uuid4())))
+    date_saved: datetime.datetime = attr.ib(
+        factory=datetime.datetime.now, converter=_convert_to_datetime
+    )
+    id: str = attr.ib(default=attr.Factory(lambda: str(uuid.uuid4())))
 
 
 @attr.s
 class Document:
-    title = attr.ib(type=str)
-    id = attr.ib(default=attr.Factory(lambda: str(uuid.uuid4())))
-    date_saved = attr.ib(factory=datetime.datetime.now, converter=_convert_to_datetime)
-    tags = attr.ib(factory=list)
-    files = attr.ib(factory=list, converter=_convert_to_file)
+    title: str = attr.ib(type=str)
+    id: str = attr.ib(default=attr.Factory(lambda: str(uuid.uuid4())))
+    date_saved: datetime.datetime = attr.ib(
+        factory=datetime.datetime.now, converter=_convert_to_datetime
+    )
+    tags: list[str] = attr.ib(factory=list)
+    files: list[File] = attr.ib(factory=list, converter=_convert_to_file)
 
 
 class DocstoreEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj: typing.Any) -> typing.Any:
         if isinstance(obj, datetime.datetime):
             return obj.isoformat()
         else:  # pragma: no cover
@@ -113,4 +117,4 @@ def from_json(json_string: str) -> list[Document]:
     """
     parsed_structure = json.loads(json_string)
     assert parsed_structure["docstore"]["db_schema"] == DB_SCHEMA
-    return cattr.structure(parsed_structure["documents"], List[Document])
+    return cattr.structure(parsed_structure["documents"], list[Document])
