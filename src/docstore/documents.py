@@ -4,6 +4,7 @@ import json
 import os
 import pathlib
 import shutil
+import typing
 
 import cattr
 
@@ -28,9 +29,14 @@ def db_path(root: pathlib.Path) -> pathlib.Path:
     return root / "documents.json"
 
 
-_cached_documents = {
-    "last_modified": None,
-    "contents": None,
+class CachedDocuments(typing.TypedDict):
+    last_modified: float
+    contents: list[Document]
+
+
+_cached_documents: CachedDocuments = {
+    "last_modified": -1,
+    "contents": [],
 }
 
 
@@ -97,7 +103,7 @@ def store_new_document(
 
     dst = os.path.join(root, "files", shard, filename)
 
-    out_path = normalised_filename_copy(src=path, dst=dst)
+    out_path = normalised_filename_copy(src=str(path), dst=dst)
 
     thumbnail_path = create_thumbnail(out_path)
     thumbnail_name = os.path.basename(thumbnail_path)
@@ -120,7 +126,7 @@ def store_new_document(
                 filename=filename,
                 path=os.path.relpath(out_path, root),
                 size=os.stat(out_path).st_size,
-                checksum=sha256(out_path),
+                checksum=sha256(pathlib.Path(out_path)),
                 source_url=source_url,
                 thumbnail=Thumbnail(
                     path=os.path.relpath(thumb_out_path, root),
@@ -209,6 +215,6 @@ def find_original_filename(root: pathlib.Path, *, path: str) -> str:
     for d in documents:
         for f in d.files:
             if f.path == os.path.relpath(path, root):
-                return f.filename
+                return typing.cast(str, f.filename)
 
     raise ValueError(f"Couldn't find file stored with path {path}")

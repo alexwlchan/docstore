@@ -57,7 +57,7 @@ class File:
     size = attr.ib(type=int)
     checksum = attr.ib(type=str)
     thumbnail = attr.ib(type=Thumbnail, converter=_convert_to_thumbnail)
-    source_url = attr.ib(type=str, default=None)
+    source_url: str | None = attr.ib(type=str, default=None)
     date_saved = attr.ib(factory=datetime.datetime.now, converter=_convert_to_datetime)
     id = attr.ib(default=attr.Factory(lambda: str(uuid.uuid4())))
 

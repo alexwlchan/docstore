@@ -5,7 +5,7 @@ import shutil
 from docstore.text_utils import slugify
 
 
-def normalised_filename_copy(*, src, dst):
+def normalised_filename_copy(*, src: str, dst: str) -> str:
     """
     Copies a file from ``src`` to ``dst``.
 
