@@ -1,11 +1,12 @@
 import cgi
+from email.message import Message
 import os
 import pathlib
 from urllib.request import urlretrieve
 from urllib.parse import urlparse
 
 
-def guess_filename(url: str, headers: dict[str, str]) -> str:
+def guess_filename(url: str, headers: Message) -> str:
     """
     Given a URL and the HTTP response headers, guess the final name of this file.
     """
