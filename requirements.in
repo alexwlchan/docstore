@@ -3,6 +3,7 @@ cattrs>=1.1.1
 click>=7.1.2
 hyperlink>=21.0.0
 Flask>=1.1.2
+Pillow
 rapidfuzz
 smartypants>=2.0.1
 Unidecode>=1.1.1

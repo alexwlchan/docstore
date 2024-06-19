@@ -66,6 +66,10 @@ mypy-extensions==1.0.0
     # via mypy
 packaging==24.1
     # via pytest
+pillow==10.3.0
+    # via
+    #   -r requirements.txt
+    #   docstore
 pluggy==1.5.0
     # via pytest
 pytest==8.2.2
