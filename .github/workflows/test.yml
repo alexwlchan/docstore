@@ -31,6 +31,7 @@ jobs:
     - name: Install dependencies
       run: |
         brew install ffmpeg
+        .github/install-github-bin alexwlchan/dominant_colours
         pip install -r dev_requirements.txt
 
     - name: Run linting
