@@ -88,7 +88,7 @@ def _create_thumbnail_from_quick_look(*, path, max_size, out_dir):
     return result
 
 
-def create_thumbnail(path, *, max_size=400):
+def create_thumbnail(path: str, *, max_size: int = 400) -> str:
     """
     Creates a thumbnail of the file at ``path``.
 
@@ -102,7 +102,7 @@ def create_thumbnail(path, *, max_size=400):
         return _create_thumbnail_from_quick_look(**kwargs)
 
 
-def get_dimensions(path):
+def get_dimensions(path: str) -> Dimensions:
     """
     Returns the (width, height) of a given path.
     """
