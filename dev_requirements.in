@@ -1,0 +1,8 @@
+-e file:.
+-r requirements.txt
+
+bs4
+pytest
+pytest-cov
+coverage
+mypy

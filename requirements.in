@@ -3,7 +3,7 @@ cattrs>=1.1.1
 click>=7.1.2
 hyperlink>=21.0.0
 Flask>=1.1.2
-rapidfuzz>=1.4.1,<2
+rapidfuzz
 smartypants>=2.0.1
 Unidecode>=1.1.1
 wcag_contrast_ratio>=0.9
