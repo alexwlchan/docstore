@@ -201,7 +201,7 @@ def delete_document(root: pathlib.Path, *, doc_id: str) -> None:
     write_documents(root=root, documents=documents)
 
 
-def find_original_filename(root, *, path):
+def find_original_filename(root: pathlib.Path, *, path: str) -> str:
     """
     Returns the name of the original file stored in this path.
     """
