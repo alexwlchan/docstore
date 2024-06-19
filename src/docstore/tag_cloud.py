@@ -2,7 +2,7 @@ import functools
 
 
 class TagCloud:
-    def __init__(self, tag_tally):
+    def __init__(self, tag_tally: dict[str, int]):
         self.tag_tally = tag_tally
         self.lowest_weight = min(tag_tally.values())
         self.highest_weight = max(tag_tally.values())
@@ -17,7 +17,7 @@ class TagCloud:
         self.greyscale_incr = (self.greyscale_end - self.greyscale_start) / self.range
 
     @functools.lru_cache()
-    def get_style(self, tag_count):
+    def get_style(self, tag_count: int) -> str:
         weighting = tag_count - self.lowest_weight
         font_size = self.font_size_start + weighting * self.font_incr
         color = int(self.greyscale_start + weighting * self.greyscale_incr)
