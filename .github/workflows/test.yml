@@ -11,7 +11,12 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # Note: this project uses some macOS-specific tools like `qlmanage`, so
+    # the tests need to run on macOS.
+    #
+    # This is different from my other Python projects, which usually run on
+    # `ubuntu-latest`.
+    runs-on: macos-latest
 
     steps:
     - uses: actions/checkout@v4
