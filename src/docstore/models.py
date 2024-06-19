@@ -39,25 +39,25 @@ def _convert_to_file(f_list: list[typing.Any]) -> "list[File]":
 
 @attr.s
 class Dimensions:
-    width: int = attr.ib(type=int)
-    height: int = attr.ib(type=int)
+    width: int = attr.ib()
+    height: int = attr.ib()
 
 
 @attr.s
 class Thumbnail:
-    path: str = attr.ib(type=str)
-    dimensions: Dimensions = attr.ib(type=Dimensions, converter=_convert_to_dimensions)
-    tint_color: str = attr.ib(type=str)
+    path: str = attr.ib()
+    dimensions: Dimensions = attr.ib(converter=_convert_to_dimensions)
+    tint_color: str = attr.ib()
 
 
 @attr.s
 class File:
     filename: str = attr.ib(converter=str)
-    path: str = attr.ib(type=str)
-    size: int = attr.ib(type=int)
-    checksum: str = attr.ib(type=str)
-    thumbnail: Thumbnail = attr.ib(type=Thumbnail, converter=_convert_to_thumbnail)
-    source_url: str | None = attr.ib(type=str, default=None)
+    path: str = attr.ib()
+    size: int = attr.ib()
+    checksum: str = attr.ib()
+    thumbnail: Thumbnail = attr.ib(converter=_convert_to_thumbnail)
+    source_url: str | None = attr.ib(default=None)
     date_saved: datetime.datetime = attr.ib(
         factory=datetime.datetime.now, converter=_convert_to_datetime
     )
@@ -66,7 +66,7 @@ class File:
 
 @attr.s
 class Document:
-    title: str = attr.ib(type=str)
+    title: str = attr.ib()
     id: str = attr.ib(default=attr.Factory(lambda: str(uuid.uuid4())))
     date_saved: datetime.datetime = attr.ib(
         factory=datetime.datetime.now, converter=_convert_to_datetime
