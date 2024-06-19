@@ -15,7 +15,7 @@ from docstore.text_utils import common_prefix, hostname, pretty_date, slugify
         (["My document - part ", "My document - part 2"], "My document"),
     ],
 )
-def test_common_prefix(values, expected_prefix):
+def test_common_prefix(values: list[str], expected_prefix: str) -> None:
     assert common_prefix(values) == expected_prefix
 
 
@@ -30,7 +30,7 @@ def test_common_prefix(values, expected_prefix):
         ("a  b", "a-b"),
     ],
 )
-def test_slugify(u, expected_slug):
+def test_slugify(u: str, expected_slug: str) -> None:
     assert slugify(u) == expected_slug
 
 
@@ -47,7 +47,7 @@ def test_slugify(u, expected_slug):
         (datetime(2001, 1, 1, 13, 0, 0), datetime(2001, 1, 3, 12, 0, 0), "2 days ago"),
     ],
 )
-def test_pretty_date(d, now, expected_str):
+def test_pretty_date(d: datetime, now: datetime, expected_str: str) -> None:
     assert pretty_date(d=d, now=now) == expected_str
 
 
@@ -61,5 +61,5 @@ def test_pretty_date(d, now, expected_str):
         ("magic", "magic"),
     ],
 )
-def test_hostname(url, expected_hostname):
+def test_hostname(url: str, expected_hostname: str) -> None:
     assert hostname(url) == expected_hostname

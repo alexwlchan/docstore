@@ -6,7 +6,7 @@ import sys
 from unidecode import unidecode
 
 
-def common_prefix(values):
+def common_prefix(values: list[str]) -> str:
     prefix = os.path.commonprefix(values).strip()
 
     prefix = prefix.strip("()").strip()
@@ -19,7 +19,7 @@ def common_prefix(values):
     return prefix
 
 
-def slugify(u):
+def slugify(u: str) -> str:
     """
     Convert Unicode string into blog slug.
 
@@ -34,7 +34,7 @@ def slugify(u):
     return a
 
 
-def pretty_date(d, now):
+def pretty_date(d: datetime.datetime, now: datetime.datetime) -> str:
     delta = now - d
     if delta.total_seconds() < 120:
         return "just now"
@@ -51,7 +51,7 @@ def pretty_date(d, now):
         return d.strftime("%-d %b %Y")
 
 
-def hostname(url):
+def hostname(url: str) -> str:
     """
     Returns a guess for the hostname of a URL to display in the <a> tag.
     """
