@@ -1,5 +1,5 @@
-from .documents import Document
-from docstore.text_utils import common_prefix
+from .models import Document
+from .text_utils import common_prefix
 
 
 def get_title_candidates(documents: list[Document]) -> list[str]:
