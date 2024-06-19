@@ -1,7 +1,8 @@
+from .documents import Document
 from docstore.text_utils import common_prefix
 
 
-def get_title_candidates(documents):
+def get_title_candidates(documents: list[Document]) -> list[str]:
     title_candidates = []
 
     for doc in documents:
@@ -16,7 +17,7 @@ def get_title_candidates(documents):
     return title_candidates
 
 
-def get_union_of_tags(documents):
+def get_union_of_tags(documents: list[Document]) -> list[str]:
     """
     Get a list of every tag on any document in ``documents``.
     """

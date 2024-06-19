@@ -8,3 +8,4 @@ coverage
 mypy
 ruff
 types-beautifulsoup4
+types-tqdm

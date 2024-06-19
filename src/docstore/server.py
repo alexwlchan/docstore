@@ -172,13 +172,13 @@ def create_app(title: str, root: pathlib.Path, thumbnail_width: int) -> Flask:
     return app
 
 
-def run_profiler(*, host, port, **kwargs):  # pragma: no cover
-    app = create_app(**kwargs)
+def run_profiler(app: Flask, *, host: str, port: int) -> None:  # pragma: no cover
     app.config["PROFILE"] = True
     app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
     app.run(host=host, port=port, debug=True)
 
 
-def run_server(*, host, port, debug, **kwargs):  # pragma: no cover
-    app = create_app(**kwargs)
+def run_server(
+    app: Flask, *, host: str, port: int, debug: bool
+) -> None:  # pragma: no cover
     app.run(host=host, port=port, debug=debug)

@@ -21,11 +21,11 @@ from docstore.thumbnails import create_thumbnail, get_dimensions
 from docstore.tint_colors import choose_tint_color
 
 
-def db_path(root):
+def db_path(root: pathlib.Path) -> pathlib.Path:
     """
     Returns the path to the database.
     """
-    return os.path.join(root, "documents.json")
+    return root / "documents.json"
 
 
 _cached_documents = {
@@ -144,7 +144,14 @@ def store_new_document(
     return new_document
 
 
-def pairwise_merge_documents(root, *, doc1, doc2, new_title, new_tags):
+def pairwise_merge_documents(
+    root: pathlib.Path,
+    *,
+    doc1: Document,
+    doc2: Document,
+    new_title: str,
+    new_tags: list[str],
+) -> Document:
     """
     Merge the files on two documents together.
 
@@ -169,7 +176,7 @@ def pairwise_merge_documents(root, *, doc1, doc2, new_title, new_tags):
     return stored_doc1
 
 
-def delete_document(root, *, doc_id):
+def delete_document(root: pathlib.Path, *, doc_id: str) -> None:
     documents = read_documents(root)
     doc = [d for d in documents if d.id == doc_id][0]
 

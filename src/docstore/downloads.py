@@ -1,10 +1,11 @@
 import cgi
 import os
+import pathlib
 from urllib.request import urlretrieve
 from urllib.parse import urlparse
 
 
-def guess_filename(url, headers):
+def guess_filename(url: str, headers: dict[str, str]) -> str:
     """
     Given a URL and the HTTP response headers, guess the final name of this file.
     """
@@ -21,7 +22,7 @@ def guess_filename(url, headers):
         return fallback
 
 
-def download_file(url):  # pragma: no cover
+def download_file(url: str) -> pathlib.Path:  # pragma: no cover
     """
     Download a file from a URL.  Returns the path to the downloaded file.
     """
@@ -32,4 +33,4 @@ def download_file(url):  # pragma: no cover
     out_path = os.path.join(os.path.dirname(tmp_path), filename)
     os.rename(tmp_path, out_path)
 
-    return out_path
+    return pathlib.Path(out_path)
