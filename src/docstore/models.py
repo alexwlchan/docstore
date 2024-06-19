@@ -12,7 +12,7 @@ from docstore.git import current_commit
 DB_SCHEMA = "v2.2.0"
 
 
-def _convert_to_datetime(d):
+def _convert_to_datetime(d: datetime.datetime | str) -> datetime.datetime:
     if isinstance(d, datetime.datetime):
         return d
     else:
@@ -79,7 +79,7 @@ class DocstoreEncoder(json.JSONEncoder):
             return super().default(obj)
 
 
-def to_json(documents):
+def to_json(documents: list[Document]) -> str:
     """
     Returns a JSON string containing all the documents.
     """
@@ -107,7 +107,7 @@ def to_json(documents):
     )
 
 
-def from_json(json_string):
+def from_json(json_string: str) -> list[Document]:
     """
     Parses a JSON string containing all the documents.
     """
