@@ -12,17 +12,36 @@ This is based on
 https://github.com/dreamwidth/dw-free/blob/6ec1e146d3c464e506a77913f0abf0d51a944f95/styles/core2.s2#L4126
 """
 
+import typing
 
-def render_tag_list(tag_tally):
+
+class HtmlLiteral(typing.TypedDict):
+    type: typing.Literal["html_literal"]
+    value: str
+
+
+class TagLink(typing.TypedDict):
+    type: typing.Literal["tag_link"]
+    name: str
+    count: int
+    display_name: str
+
+
+class TagText(typing.TypedDict):
+    type: typing.Literal["tag_text"]
+    display_name: str
+
+
+def render_tag_list(tag_tally: dict[str, int]) -> list[HtmlLiteral | TagLink | TagText]:
     if not tag_tally:
         return []
 
-    prev_tags = []
+    prev_tags: list[str] = []
     tag_list_pos = 0
-    tier_elements = []
+    tier_elements: list[HtmlLiteral | TagLink | TagText] = []
     levels_to_close = 0
 
-    result = []
+    result: list[HtmlLiteral | TagLink | TagText] = []
 
     for name, count in sorted(tag_tally.items()):
         tags = name.split(":")
