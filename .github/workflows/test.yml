@@ -29,7 +29,9 @@ jobs:
         cache-dependency-path: 'dev_requirements.txt'
 
     - name: Install dependencies
-      run: pip install -r dev_requirements.txt
+      run: |
+        brew install ffmpeg
+        pip install -r dev_requirements.txt
 
     - name: Run linting
       run: |
