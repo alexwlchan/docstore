@@ -3,12 +3,15 @@ import datetime
 import functools
 import hashlib
 import os
+import pathlib
 import secrets
+import typing
 import urllib.parse
 from urllib.parse import parse_qsl, urlparse, urlencode
 
 from flask import (
     Flask,
+    Response as FlaskResponse,
     make_response,
     render_template,
     request,
@@ -19,26 +22,27 @@ import hyperlink
 import smartypants
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
-from docstore.documents import find_original_filename, read_documents
-from docstore.tag_cloud import TagCloud
-from docstore.tag_list import render_tag_list
-from docstore.text_utils import hostname, pretty_date
+from .documents import find_original_filename, read_documents
+from .models import Document
+from .tag_cloud import TagCloud
+from .tag_list import render_tag_list
+from .text_utils import hostname, pretty_date
 
 
-def tags_with_prefix(document, prefix):
+def tags_with_prefix(document: Document, prefix: str) -> list[str]:
     return [t for t in document.tags if t.startswith(prefix)]
 
 
-def tags_without_prefix(document, prefix):
+def tags_without_prefix(document: Document, prefix: str) -> list[str]:
     return [t for t in document.tags if not t.startswith(prefix)]
 
 
-def url_without_sortby(u):
+def url_without_sortby(u: str) -> str:
     url = hyperlink.URL.from_text(u)
     return str(url.remove("sortBy"))
 
 
-def serve_file(*, root, shard, filename):
+def serve_file(*, root: pathlib.Path, shard: str, filename: str) -> FlaskResponse:
     """
     Serves a file which has been saved in docstore.
 
@@ -59,7 +63,7 @@ def serve_file(*, root, shard, filename):
     return response
 
 
-def create_app(title, root, thumbnail_width):
+def create_app(title: str, root: pathlib.Path, thumbnail_width: int) -> Flask:
     app = Flask(__name__)
 
     app.config["THUMBNAIL_WIDTH"] = thumbnail_width
@@ -79,13 +83,13 @@ def create_app(title, root, thumbnail_width):
     app.jinja_env.filters["tags_without_prefix"] = tags_without_prefix
 
     @app.route("/")
-    def list_documents():
+    def list_documents() -> str:
         request_tags = set(request.args.getlist("tag"))
         documents = [
             doc for doc in read_documents(root) if request_tags.issubset(set(doc.tags))
         ]
 
-        tag_tally = collections.Counter()
+        tag_tally: dict[str, int] = collections.Counter()
         for doc in documents:
             for t in doc.tags:
                 tag_tally[t] += 1
@@ -106,7 +110,7 @@ def create_app(title, root, thumbnail_width):
                 app.config["_RANDOM_SEED"] = secrets.token_bytes()
             seed = app.config["_RANDOM_SEED"]
 
-            def sort_key(d):
+            def sort_key(d: Document) -> str:
                 h = hashlib.md5()
                 h.update(d.id.encode("utf8"))
                 h.update(seed)
@@ -134,7 +138,7 @@ def create_app(title, root, thumbnail_width):
         return html
 
     @app.route("/thumbnails/<shard>/<filename>")
-    def thumbnails(shard, filename):
+    def thumbnails(shard: str, filename: str) -> FlaskResponse:
         return send_from_directory(
             os.path.abspath(os.path.join(root, "thumbnails", shard)), filename
         )
@@ -146,22 +150,24 @@ def create_app(title, root, thumbnail_width):
         ),
     )
 
+    QueryString: typing.TypeAlias = list[tuple[str, str]]
+
     @app.template_filter("add_tag")
     @functools.lru_cache()
-    def add_tag(query_string, tag):
+    def add_tag(query_string: QueryString, tag: str) -> str:
         return "?" + urlencode(
             [(k, v) for k, v in query_string if k != "page"] + [("tag", tag)]
         )
 
     @app.template_filter("remove_tag")
-    def remove_tag(query_string, tag):
+    def remove_tag(query_string: QueryString, tag: str) -> str:
         return "?" + urlencode(
             [(k, v) for k, v in query_string if (k, v) != ("tag", tag)]
         )
 
     @app.template_filter("set_page")
     @functools.lru_cache()
-    def set_page(query_string, page):
+    def set_page(query_string: QueryString, page: int) -> str:
         pageless_qs = [(k, v) for k, v in query_string if k != "page"]
         if page == 1:
             return "?" + urlencode(pageless_qs)
@@ -171,13 +177,13 @@ def create_app(title, root, thumbnail_width):
     return app
 
 
-def run_profiler(*, host, port, **kwargs):  # pragma: no cover
-    app = create_app(**kwargs)
+def run_profiler(app: Flask, *, host: str, port: int) -> None:  # pragma: no cover
     app.config["PROFILE"] = True
-    app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
+    app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])  # type: ignore
     app.run(host=host, port=port, debug=True)
 
 
-def run_server(*, host, port, debug, **kwargs):  # pragma: no cover
-    app = create_app(**kwargs)
+def run_server(
+    app: Flask, *, host: str, port: int, debug: bool
+) -> None:  # pragma: no cover
     app.run(host=host, port=port, debug=debug)

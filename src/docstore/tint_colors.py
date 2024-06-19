@@ -1,10 +1,16 @@
 import colorsys
 import subprocess
+import typing
 
 import wcag_contrast_ratio as contrast
 
 
-def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
+Color: typing.TypeAlias = tuple[float, float, float]
+
+
+def choose_tint_color_from_dominant_colors(
+    dominant_colors: list[Color], background_color: Color
+) -> Color:
     """
     Given a set of dominant colors (say, from a k-means algorithm) and the
     background against which they'll be displayed, choose a tint color.
@@ -13,8 +19,10 @@ def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
     """
     # The minimum contrast ratio for text and background to meet WCAG AA
     # is 4.5:1, so discard any dominant colours with a lower contrast.
-    sufficient_contrast_colors = [
-        col for col in dominant_colors if contrast.rgb(col, background_color) >= 4.5
+    sufficient_contrast_colors: list[Color] = [
+        typing.cast(Color, tuple(col))
+        for col in dominant_colors
+        if contrast.rgb(col, background_color) >= 4.5
     ]
 
     # If none of the dominant colours meet WCAG AA with the background,
@@ -34,22 +42,21 @@ def choose_tint_color_from_dominant_colors(dominant_colors, background_color):
     # Of the colors with sufficient contrast, pick the one with the
     # highest saturation.  This is meant to optimise for colors that are
     # more colourful/interesting than simple greys and browns.
-    hsv_candidates = {
-        tuple(rgb_col): colorsys.rgb_to_hsv(*rgb_col)
-        for rgb_col in sufficient_contrast_colors
+    hsv_candidates: dict[Color, Color] = {
+        rgb_col: colorsys.rgb_to_hsv(*rgb_col) for rgb_col in sufficient_contrast_colors
     }
 
     return max(hsv_candidates, key=lambda rgb_col: hsv_candidates[rgb_col][2])
 
 
-def from_hex(hs):
+def from_hex(hs: str | bytes) -> Color:
     """
     Returns an RGB tuple from a hex string, e.g. #ff0102 -> (255, 1, 2)
     """
     return int(hs[1:3], 16), int(hs[3:5], 16), int(hs[5:7], 16)
 
 
-def choose_tint_color_for_file(path):
+def choose_tint_color_for_file(path: str) -> Color:
     """
     Returns the tint colour for a file.
     """
@@ -68,12 +75,12 @@ def choose_tint_color_for_file(path):
     )
 
 
-def choose_tint_color(*, thumbnail_path, file_path, **kwargs):
+def choose_tint_color(*, thumbnail_path: str, file_path: str) -> Color:
     # In general, we use the thumbnail to choose the tint color.  The thumbnail
     # is what the tint color will usually appear next to.  However, thumbnails
     # for animated GIFs are MP4 videos rather than images, so we need to go to
     # the original image to get the tint color.
     if file_path.endswith((".jpg", ".jpeg", ".gif", ".png")):
-        return choose_tint_color_for_file(file_path, **kwargs)
+        return choose_tint_color_for_file(file_path)
     else:
-        return choose_tint_color_for_file(thumbnail_path, **kwargs)
+        return choose_tint_color_for_file(thumbnail_path)

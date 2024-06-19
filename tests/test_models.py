@@ -1,4 +1,5 @@
 import datetime
+import typing
 import uuid
 
 import pytest
@@ -6,11 +7,11 @@ import pytest
 from docstore.models import Dimensions, Document, File, Thumbnail, from_json, to_json
 
 
-def is_recent(ds):
+def is_recent(ds: datetime.datetime) -> bool:
     return (datetime.datetime.now() - ds).seconds < 2
 
 
-def test_document_defaults():
+def test_document_defaults() -> None:
     d1 = Document(title="My test document")
     assert uuid.UUID(d1.id)
     assert is_recent(d1.date_saved)
@@ -21,7 +22,7 @@ def test_document_defaults():
     assert d1.id != d2.id
 
 
-def test_file_defaults():
+def test_file_defaults() -> None:
     f = File(
         filename="cats.jpg",
         path="files/c/cats.jpg",
@@ -37,7 +38,7 @@ def test_file_defaults():
     assert is_recent(f.date_saved)
 
 
-def test_can_serialise_document_to_json():
+def test_can_serialise_document_to_json() -> None:
     f = File(
         filename="cats.jpg",
         path="files/c/cats.jpg",
@@ -55,6 +56,6 @@ def test_can_serialise_document_to_json():
 
 
 @pytest.mark.parametrize("documents", [[1, 2, 3], {"a", "b", "c"}])
-def test_to_json_with_bad_list_is_typeerror(documents):
+def test_to_json_with_bad_list_is_typeerror(documents: typing.Any) -> None:
     with pytest.raises(TypeError, match=r"Expected type List\[Document\]!"):
         to_json(documents)

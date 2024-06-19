@@ -1,7 +1,10 @@
+import datetime
 import hashlib
 import json
 import os
+import pathlib
 import shutil
+import typing
 
 import cattr
 
@@ -19,20 +22,25 @@ from docstore.thumbnails import create_thumbnail, get_dimensions
 from docstore.tint_colors import choose_tint_color
 
 
-def db_path(root):
+def db_path(root: pathlib.Path) -> pathlib.Path:
     """
     Returns the path to the database.
     """
-    return os.path.join(root, "documents.json")
+    return root / "documents.json"
 
 
-_cached_documents = {
-    "last_modified": None,
-    "contents": None,
+class CachedDocuments(typing.TypedDict):
+    last_modified: float
+    contents: list[Document]
+
+
+_cached_documents: CachedDocuments = {
+    "last_modified": -1,
+    "contents": [],
 }
 
 
-def read_documents(root):
+def read_documents(root: pathlib.Path) -> list[Document]:
     """
     Get a list of all the documents.
     """
@@ -60,7 +68,7 @@ def read_documents(root):
     return result
 
 
-def write_documents(*, root, documents):
+def write_documents(*, root: pathlib.Path, documents: list[Document]) -> None:
     json_string = to_json(documents)
 
     os.makedirs(root, exist_ok=True)
@@ -69,7 +77,7 @@ def write_documents(*, root, documents):
         out_file.write(json_string)
 
 
-def sha256(path):
+def sha256(path: pathlib.Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as infile:
         for byte_block in iter(lambda: infile.read(4096), b""):
@@ -78,7 +86,15 @@ def sha256(path):
     return "sha256:%s" % h.hexdigest()
 
 
-def store_new_document(*, root, path, title, tags, source_url, date_saved):
+def store_new_document(
+    *,
+    root: pathlib.Path,
+    path: pathlib.Path,
+    title: str,
+    tags: list[str],
+    source_url: str | None,
+    date_saved: datetime.datetime,
+) -> Document:
     filename = os.path.basename(path)
 
     # Files are sharded by the first letter of their filename,
@@ -87,7 +103,7 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
 
     dst = os.path.join(root, "files", shard, filename)
 
-    out_path = normalised_filename_copy(src=path, dst=dst)
+    out_path = normalised_filename_copy(src=str(path), dst=dst)
 
     thumbnail_path = create_thumbnail(out_path)
     thumbnail_name = os.path.basename(thumbnail_path)
@@ -110,7 +126,7 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
                 filename=filename,
                 path=os.path.relpath(out_path, root),
                 size=os.stat(out_path).st_size,
-                checksum=sha256(out_path),
+                checksum=sha256(pathlib.Path(out_path)),
                 source_url=source_url,
                 thumbnail=Thumbnail(
                     path=os.path.relpath(thumb_out_path, root),
@@ -134,7 +150,14 @@ def store_new_document(*, root, path, title, tags, source_url, date_saved):
     return new_document
 
 
-def pairwise_merge_documents(root, *, doc1, doc2, new_title, new_tags):
+def pairwise_merge_documents(
+    root: pathlib.Path,
+    *,
+    doc1: Document,
+    doc2: Document,
+    new_title: str,
+    new_tags: list[str],
+) -> Document:
     """
     Merge the files on two documents together.
 
@@ -159,7 +182,7 @@ def pairwise_merge_documents(root, *, doc1, doc2, new_title, new_tags):
     return stored_doc1
 
 
-def delete_document(root, *, doc_id):
+def delete_document(root: pathlib.Path, *, doc_id: str) -> None:
     documents = read_documents(root)
     doc = [d for d in documents if d.id == doc_id][0]
 
@@ -184,7 +207,7 @@ def delete_document(root, *, doc_id):
     write_documents(root=root, documents=documents)
 
 
-def find_original_filename(root, *, path):
+def find_original_filename(root: pathlib.Path, *, path: str) -> str:
     """
     Returns the name of the original file stored in this path.
     """

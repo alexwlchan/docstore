@@ -9,7 +9,7 @@ from PIL import Image, UnidentifiedImageError
 from docstore.models import Dimensions
 
 
-def _is_animated_gif(path):
+def _is_animated_gif(path: str) -> bool:
     """
     Returns True if the file at ``path`` is an animated GIF.
     """
@@ -22,7 +22,7 @@ def _is_animated_gif(path):
         return getattr(im, "is_animated", False)
 
 
-def _create_gif_thumbnail_from_ffmpeg(*, path, max_size, out_dir):
+def _create_gif_thumbnail_from_ffmpeg(*, path: str, max_size: int, out_dir: str) -> str:
     im = Image.open(path)
 
     if im.width > im.height and im.width >= max_size:
@@ -54,7 +54,7 @@ def _create_gif_thumbnail_from_ffmpeg(*, path, max_size, out_dir):
     return out_path
 
 
-def _create_thumbnail_from_quick_look(*, path, max_size, out_dir):
+def _create_thumbnail_from_quick_look(*, path: str, max_size: int, out_dir: str) -> str:
     try:
         subprocess.check_call(
             ["qlmanage", "-t", path, "-s", f"{max_size}x{max_size}", "-o", out_dir],
@@ -88,21 +88,23 @@ def _create_thumbnail_from_quick_look(*, path, max_size, out_dir):
     return result
 
 
-def create_thumbnail(path, *, max_size=400):
+def create_thumbnail(path: str, *, max_size: int = 400) -> str:
     """
     Creates a thumbnail of the file at ``path``.
 
     Returns the path to the new file.
     """
-    kwargs = {"path": path, "max_size": max_size, "out_dir": tempfile.mkdtemp()}
-
     if _is_animated_gif(path):
-        return _create_gif_thumbnail_from_ffmpeg(**kwargs)
+        return _create_gif_thumbnail_from_ffmpeg(
+            path=path, max_size=max_size, out_dir=tempfile.mkdtemp()
+        )
     else:
-        return _create_thumbnail_from_quick_look(**kwargs)
+        return _create_thumbnail_from_quick_look(
+            path=path, max_size=max_size, out_dir=tempfile.mkdtemp()
+        )
 
 
-def get_dimensions(path):
+def get_dimensions(path: str) -> Dimensions:
     """
     Returns the (width, height) of a given path.
     """

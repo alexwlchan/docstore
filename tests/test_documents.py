@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import pathlib
 import shutil
 
 from docstore.documents import (
@@ -14,18 +15,20 @@ from docstore.documents import (
 from docstore.models import Dimensions, Document, File, Thumbnail
 
 
-def test_sha256():
+def test_sha256() -> None:
+    p = pathlib.Path("tests/files/cluster.png")
+
     assert (
-        sha256("tests/files/cluster.png")
+        sha256(p)
         == "sha256:683cbee0c2dda22b42fd92bda0f31e4b6b49cd8650a7924d72a14a30f11bfbe5"
     )
 
 
-def test_read_blank_documents_is_empty(tmpdir):
+def test_read_blank_documents_is_empty(tmpdir: pathlib.Path) -> None:
     assert read_documents(tmpdir) == []
 
 
-def test_can_write_and_read_documents(tmpdir):
+def test_can_write_and_read_documents(tmpdir: pathlib.Path) -> None:
     documents = [Document(title="My first document")]
 
     write_documents(root=tmpdir, documents=documents)
@@ -35,7 +38,7 @@ def test_can_write_and_read_documents(tmpdir):
         assert read_documents(tmpdir) == documents
 
 
-def test_can_merge_documents(tmpdir, root):
+def test_can_merge_documents(tmpdir: pathlib.Path, root: pathlib.Path) -> None:
     shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "cluster1.png")
     shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "cluster2.png")
 
@@ -77,7 +80,7 @@ def test_can_merge_documents(tmpdir, root):
     ]
 
 
-def test_merging_uses_earliest_date(tmpdir):
+def test_merging_uses_earliest_date(tmpdir: pathlib.Path) -> None:
     doc1 = Document(title="Doc1", date_saved=datetime.datetime(2010, 1, 1))
     doc2 = Document(title="Doc2", date_saved=datetime.datetime(2002, 2, 2))
 
@@ -98,7 +101,7 @@ def test_merging_uses_earliest_date(tmpdir):
     assert stored_documents[0].date_saved == doc2.date_saved
 
 
-def test_store_new_document(tmpdir):
+def test_store_new_document(tmpdir: pathlib.Path) -> None:
     root = tmpdir / "root"
     shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "My Cluster.png")
 
@@ -169,7 +172,7 @@ def test_store_new_document(tmpdir):
     assert len(os.listdir(root / "thumbnails" / "m")) == 2
 
 
-def test_deleting_document(tmpdir, root):
+def test_deleting_document(tmpdir: pathlib.Path, root: pathlib.Path) -> None:
     root = tmpdir / "root"
     shutil.copyfile(src="tests/files/cluster.png", dst=tmpdir / "cluster.png")
 

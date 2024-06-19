@@ -1,8 +1,11 @@
+from collections.abc import Iterable
 import datetime
 import functools
 import json
 import os
+import pathlib
 import sys
+import typing
 
 import click
 
@@ -16,11 +19,11 @@ import click
     show_default=True,
 )
 @click.pass_context
-def main(ctx, root):
-    ctx.obj = root
+def main(ctx, root):  # type: ignore
+    ctx.obj = pathlib.Path(root)
 
 
-def _require_existing_instance(inner):
+def _require_existing_instance(inner):  # type: ignore
     """
     When you call ``docstore add``, most of the time you want to be adding
     documents to an existing instance, not creating a new instance.
@@ -30,14 +33,14 @@ def _require_existing_instance(inner):
     """
 
     @functools.wraps(inner)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs):  # type: ignore
         from docstore.documents import db_path
 
         root = click.get_current_context().obj
 
         if (
             root == "."
-            and not os.path.exists(db_path("."))
+            and not os.path.exists(db_path(pathlib.Path(".")))
             and not any(ag == "--root" or ag.startswith("--root=") for ag in sys.argv)
         ):  # pragma: no cover
             click.echo(
@@ -63,28 +66,39 @@ def _require_existing_instance(inner):
 @click.option("--debug", default=False, is_flag=True, help="Run in debug mode.")
 @click.option("--profile", default=False, is_flag=True, help="Run a profiler.")
 @click.pass_obj
-def serve(root, debug, profile, **kwargs):  # pragma: no cover
-    from docstore.server import run_profiler, run_server
+def serve(
+    root: pathlib.Path,
+    host: str,
+    port: int,
+    debug: bool,
+    profile: bool,
+    title: str,
+    thumbnail_width: int,
+) -> None:  # pragma: no cover
+    from docstore.server import create_app, run_profiler, run_server
+
+    app = create_app(root=root, title=title, thumbnail_width=thumbnail_width)
 
     if profile:
-        run_profiler(root=root, **kwargs)
+        run_profiler(app, host=host, port=port)
     else:
-        run_server(root=root, debug=debug, **kwargs)
+        run_server(app, host=host, port=port, debug=debug)
 
 
-def _add_document(root, path, title, tags, source_url):
-    tags = tags or ""
-    tags = [t.strip() for t in tags.split(",") if t.strip()]
-
-    title = title or ""
-
+def _add_document(
+    root: pathlib.Path,
+    path: pathlib.Path,
+    title: str | None,
+    tags: str | None,
+    source_url: str | None,
+) -> None:
     from docstore.documents import store_new_document
 
     document = store_new_document(
         root=root,
         path=path,
-        title=title,
-        tags=tags,
+        title=title or "",
+        tags=[t.strip() for t in (tags or "").split(",") if t.strip()],
         source_url=source_url,
         date_saved=datetime.datetime.now(),
     )
@@ -108,7 +122,7 @@ def _add_document(root, path, title, tags, source_url):
 )
 @click.option("--source_url", help="Where was this file downloaded from?.")
 @click.pass_obj
-@_require_existing_instance
+@_require_existing_instance  # type: ignore
 def add(root, path, title, tags, source_url):
     return _add_document(
         root=root, path=path, title=title, tags=tags, source_url=source_url
@@ -123,8 +137,14 @@ def add(root, path, title, tags, source_url):
 @click.option("--tags", help="The tags to apply to the file.")
 @click.option("--source_url", help="Where was this file downloaded from?.")
 @click.pass_obj
-@_require_existing_instance
-def add_from_url(root, url, title, tags, source_url):  # pragma: no cover
+@_require_existing_instance  # type: ignore
+def add_from_url(
+    root: pathlib.Path,
+    url: str,
+    title: str | None,
+    tags: str | None,
+    source_url: str | None,
+) -> None:  # pragma: no cover
     from docstore.downloads import download_file
 
     path = download_file(url)
@@ -142,18 +162,18 @@ def add_from_url(root, url, title, tags, source_url):  # pragma: no cover
     required=True,
 )
 @click.pass_obj
-def migrate(root, v1_path):  # pragma: no cover
+def migrate(root: pathlib.Path, v1_path: pathlib.Path) -> None:  # pragma: no cover
     documents = json.load(open(os.path.join(v1_path, "documents.json")))
 
     for _, doc in documents.items():
-        stored_file_path = os.path.join(v1_path, "files", doc["file_identifier"])
+        stored_file_path = v1_path / "files" / doc["file_identifier"]
 
         try:
-            filename_path = os.path.join(v1_path, "files", doc["filename"])
+            filename_path = v1_path / "files" / doc["filename"]
         except KeyError:
             filename_path = stored_file_path
 
-        if os.path.exists(stored_file_path):
+        if stored_file_path.exists():
             os.rename(stored_file_path, filename_path)
 
             from docstore.documents import store_new_document
@@ -172,7 +192,7 @@ def migrate(root, v1_path):  # pragma: no cover
 @main.command(help="Delete one or more documents")
 @click.argument("doc_ids", nargs=-1)
 @click.pass_obj
-def delete(root, doc_ids):
+def delete(root: pathlib.Path, doc_ids: list[str]) -> None:
     from docstore.documents import db_path, delete_document
 
     if not os.path.exists(db_path(root)):
@@ -185,7 +205,7 @@ def delete(root, doc_ids):
 
 @main.command(help="Verify your stored files")
 @click.pass_obj
-def verify(root):
+def verify(root: pathlib.Path) -> None:
     import collections
     from docstore.documents import read_documents, sha256
     import tqdm
@@ -194,7 +214,7 @@ def verify(root):
 
     for doc in tqdm.tqdm(list(read_documents(root))):
         for f in doc.files:
-            f_path = os.path.join(root, f.path)
+            f_path = root / f.path
             if f.size != os.stat(f_path).st_size:
                 errors[f.id].append(
                     f"Size mismatch\n  actual   = {os.stat(f_path).st_size}\n  expected = {f.size}"
@@ -214,7 +234,7 @@ def verify(root):
 @click.argument("doc_ids", nargs=-1)
 @click.option("--yes", is_flag=True, help="Skip confirmation prompts.")
 @click.pass_obj
-def merge(root, doc_ids, yes):
+def merge(root: pathlib.Path, doc_ids: list[str], yes: bool) -> None:
     if len(doc_ids) == 1:
         return
 
@@ -246,7 +266,9 @@ def merge(root, doc_ids, yes):
         if yes or click.confirm("Use title?"):
             new_title = title_candidates[0]
         else:  # pragma: no cover
-            new_title = click.edit("\n".join(title_candidates)).strip()
+            new_title = typing.cast(
+                str, click.edit("\n".join(title_candidates))
+            ).strip()
 
     # What should the tags on the merged document be?
     from docstore.merging import get_union_of_tags
@@ -263,7 +285,9 @@ def merge(root, doc_ids, yes):
         if yes or click.confirm("Use tags?"):
             new_tags = all_tags
         else:  # pragma: no cover
-            new_tags = click.edit("\n".join(all_tags)).strip().splitlines()
+            new_tags = (
+                typing.cast(str, click.edit("\n".join(all_tags))).strip().splitlines()
+            )
 
     from docstore.documents import pairwise_merge_documents
 
@@ -275,7 +299,9 @@ def merge(root, doc_ids, yes):
         )
 
 
-def find_similar_pairs(tags, *, required_similarity=80):
+def find_similar_pairs(
+    tags: Iterable[str], *, required_similarity: int = 80
+) -> Iterable[tuple[str, str]]:
     """
     Find pairs of similar-looking tags in the collection ``tags``.
 
@@ -300,12 +326,12 @@ def find_similar_pairs(tags, *, required_similarity=80):
 
 @main.command(help="Show tags that might be similar")
 @click.pass_obj
-def show_similar_tags(root):
+def show_similar_tags(root: pathlib.Path) -> None:
     import collections
     from docstore.documents import read_documents
 
     documents = read_documents(root)
-    tags = collections.Counter()
+    tags: dict[str, int] = collections.Counter()
 
     for doc in documents:
         for t in doc.tags:
