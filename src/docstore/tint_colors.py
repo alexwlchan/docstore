@@ -5,7 +5,7 @@ import typing
 import wcag_contrast_ratio as contrast
 
 
-Color: typing.TypeAlias = tuple[int, int, int]
+Color: typing.TypeAlias = tuple[float, float, float]
 
 
 def choose_tint_color_from_dominant_colors(
@@ -19,8 +19,10 @@ def choose_tint_color_from_dominant_colors(
     """
     # The minimum contrast ratio for text and background to meet WCAG AA
     # is 4.5:1, so discard any dominant colours with a lower contrast.
-    sufficient_contrast_colors = [
-        col for col in dominant_colors if contrast.rgb(col, background_color) >= 4.5
+    sufficient_contrast_colors: list[Color] = [
+        typing.cast(Color, tuple(col))
+        for col in dominant_colors
+        if contrast.rgb(col, background_color) >= 4.5
     ]
 
     # If none of the dominant colours meet WCAG AA with the background,
@@ -40,15 +42,14 @@ def choose_tint_color_from_dominant_colors(
     # Of the colors with sufficient contrast, pick the one with the
     # highest saturation.  This is meant to optimise for colors that are
     # more colourful/interesting than simple greys and browns.
-    hsv_candidates = {
-        tuple(rgb_col): colorsys.rgb_to_hsv(*rgb_col)
-        for rgb_col in sufficient_contrast_colors
+    hsv_candidates: dict[Color, Color] = {
+        rgb_col: colorsys.rgb_to_hsv(*rgb_col) for rgb_col in sufficient_contrast_colors
     }
 
     return max(hsv_candidates, key=lambda rgb_col: hsv_candidates[rgb_col][2])
 
 
-def from_hex(hs: str) -> Color:
+def from_hex(hs: str | bytes) -> Color:
     """
     Returns an RGB tuple from a hex string, e.g. #ff0102 -> (255, 1, 2)
     """
