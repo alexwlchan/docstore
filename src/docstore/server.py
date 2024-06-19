@@ -3,6 +3,7 @@ import datetime
 import functools
 import hashlib
 import os
+import pathlib
 import secrets
 import urllib.parse
 from urllib.parse import parse_qsl, urlparse, urlencode
@@ -59,7 +60,7 @@ def serve_file(*, root, shard, filename):
     return response
 
 
-def create_app(title, root, thumbnail_width):
+def create_app(title: str, root: pathlib.Path, thumbnail_width: int) -> Flask:
     app = Flask(__name__)
 
     app.config["THUMBNAIL_WIDTH"] = thumbnail_width

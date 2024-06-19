@@ -1,8 +1,12 @@
+from collections.abc import Iterator
 import datetime
 import re
+import pathlib
 import shutil
+import typing
 
 import bs4
+from flask.testing import FlaskClient
 import pytest
 
 from docstore.documents import store_new_document, write_documents
@@ -11,7 +15,7 @@ from docstore.server import create_app
 
 
 @pytest.fixture
-def client(root):
+def client(root: pathlib.Path) -> Iterator[FlaskClient]:
     app = create_app(root=root, title="My test instance", thumbnail_width=200)
     app.config["TESTING"] = True
 
@@ -19,18 +23,20 @@ def client(root):
         yield client
 
 
-def test_empty_response(client):
+def test_empty_response(client: FlaskClient) -> None:
     resp = client.get("/")
     assert resp.status_code == 200
     assert b"no documents found!" in resp.data
 
 
-def test_shows_documents(tmpdir, root, client):
+def test_shows_documents(
+    tmpdir: pathlib.Path, root: pathlib.Path, client: FlaskClient
+) -> None:
     for _ in range(3):
         shutil.copyfile("tests/files/cluster.png", str(tmpdir / "cluster.png"))
         store_new_document(
             root=root,
-            path=str(tmpdir / "cluster.png"),
+            path=tmpdir / "cluster.png",
             title="My test document",
             tags=["tag1", "tag2", "tag3"],
             source_url="https://example.org/cluster",
@@ -50,7 +56,7 @@ def test_shows_documents(tmpdir, root, client):
     assert resp.data == open("tests/files/cluster.png", "rb").read()
 
 
-def test_filters_documents_by_tag(root, client):
+def test_filters_documents_by_tag(root: pathlib.Path, client: FlaskClient) -> None:
     documents = [Document(title=f"Document {i}", tags=[f"tag{i}"]) for i in range(3)]
     write_documents(root=root, documents=documents)
 
@@ -61,7 +67,7 @@ def test_filters_documents_by_tag(root, client):
     assert b"Document 2" not in resp.data
 
 
-def test_paginates_document(root, client):
+def test_paginates_document(root: pathlib.Path, client: FlaskClient) -> None:
     documents = [Document(title=f"Document {i}") for i in range(200)]
     write_documents(root=root, documents=documents)
 
@@ -83,7 +89,7 @@ def test_paginates_document(root, client):
     assert b"Document 0" in resp_page_2.data
 
 
-def test_documents_with_lots_of_tags(root, client):
+def test_documents_with_lots_of_tags(root: pathlib.Path, client: FlaskClient) -> None:
     documents = [Document(title=f"Document {i}", tags=[f"tag{i}"]) for i in range(200)]
 
     documents.extend(
@@ -103,8 +109,15 @@ def test_documents_with_lots_of_tags(root, client):
     assert b'<details id="tagList">' in resp.data
 
 
-def tidy(html_str):
+def tidy(html_str: typing.Any) -> str:
+    assert isinstance(html_str, str)
     return re.sub(r"\s+", " ", html_str.strip())
+
+
+class TestCase(typing.TypedDict):
+    tags: list[str]
+    expected_title: str
+    urls: list[str]
 
 
 @pytest.mark.parametrize(
@@ -152,7 +165,9 @@ def tidy(html_str):
         },
     ],
 )
-def test_shows_attribution_tags(root, client, test_case):
+def test_shows_attribution_tags(
+    root: pathlib.Path, client: FlaskClient, test_case: TestCase
+) -> None:
     doc_tags = test_case["tags"] + ["tag1", "tag2"]
 
     doc = Document(title="My document", tags=doc_tags)
@@ -166,15 +181,17 @@ def test_shows_attribution_tags(root, client, test_case):
         soup = bs4.BeautifulSoup(resp.data, "html.parser")
 
         h2_title = soup.find("h2", attrs={"class": "title"})
+        assert h2_title is not None
         assert tidy(h2_title.text) == test_case["expected_title"].format(
             title=doc.title, doc_id=doc.id
         )
 
         tags_list = soup.find("div", attrs={"class": "tags"})
+        assert tags_list is not None
         assert tidy(tags_list.text) == "tagged with: tag1 tag2"
 
 
-def test_links_attribution_tags(root, client):
+def test_links_attribution_tags(root: pathlib.Path, client: FlaskClient) -> None:
     doc = Document(title="My document", tags=["by:John Smith"])
     write_documents(root=root, documents=[doc])
 
@@ -184,7 +201,9 @@ def test_links_attribution_tags(root, client):
     assert resp.status_code == 200
 
     soup = bs4.BeautifulSoup(resp.data, "html.parser")
+
     h2_title = soup.find("h2", attrs={"class": "title"})
+    assert isinstance(h2_title, bs4.Tag)
     assert h2_title.find("a", attrs={"href": "?tag=by%3AJohn+Smith"}) is not None
 
     # If the tag is selected, the attribution tag in the title is regular text,
@@ -193,11 +212,13 @@ def test_links_attribution_tags(root, client):
     assert resp.status_code == 200
 
     soup = bs4.BeautifulSoup(resp.data, "html.parser")
+
     h2_title = soup.find("h2", attrs={"class": "title"})
+    assert h2_title is not None
     assert h2_title.find("a") is None
 
 
-def test_sets_thumbnail_width(client):
+def test_sets_thumbnail_width(client: FlaskClient) -> None:
     """
     If the user sets a custom thumbnail width, the appropriate CSS style is
     added to the rendered page.
@@ -207,23 +228,28 @@ def test_sets_thumbnail_width(client):
     resp = client.get("/")
 
     soup = bs4.BeautifulSoup(resp.data, "html.parser")
+
     style_tag = soup.find("style")
+    assert isinstance(style_tag, bs4.Tag)
     assert tidy(style_tag.string) == ".thumbnail { width: 100px; }"
 
 
-def test_tags_are_sorted_alphabetically(root, client):
+def test_tags_are_sorted_alphabetically(
+    root: pathlib.Path, client: FlaskClient
+) -> None:
     doc = Document(title="My document", tags=["bulgaria", "austria", "croatia"])
     write_documents(root=root, documents=[doc])
 
     resp = client.get("/")
 
     soup = bs4.BeautifulSoup(resp.data, "html.parser")
-    tags_div = soup.find("div", attrs={"class": "tags"})
 
+    tags_div = soup.find("div", attrs={"class": "tags"})
+    assert tags_div is not None
     assert tidy(tags_div.text) == "tagged with: austria bulgaria croatia"
 
 
-def test_gets_curly_quotes(root, client):
+def test_gets_curly_quotes(root: pathlib.Path, client: FlaskClient) -> None:
     app = create_app(root=root, title="Isn't this a good title?", thumbnail_width=200)
     app.config["TESTING"] = True
 
@@ -232,9 +258,10 @@ def test_gets_curly_quotes(root, client):
 
     soup = bs4.BeautifulSoup(resp.data, "html.parser")
 
-    assert soup.find("title").text.strip() == "docstore/Isn’t this a good title?"
+    title = soup.find("title")
+    assert title is not None
+    assert title.text.strip() == "docstore/Isn’t this a good title?"
 
-    assert (
-        soup.find("div", attrs={"id": "aside_inner"}).text.strip()
-        == "docstore/Isn’t this a good title?"
-    )
+    aside_inner = soup.find("div", attrs={"id": "aside_inner"})
+    assert aside_inner is not None
+    assert aside_inner.text.strip() == "docstore/Isn’t this a good title?"
