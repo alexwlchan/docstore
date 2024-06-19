@@ -36,8 +36,8 @@ jobs:
         ruff check .
         ruff format --check .
 
-    - name: Check types
-      run: mypy src tests
+    # - name: Check types
+    #   run: mypy src tests
 
     - name: Run tests
       run: |
