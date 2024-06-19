@@ -78,6 +78,8 @@ rapidfuzz==3.9.3
     # via
     #   -r requirements.txt
     #   docstore
+ruff==0.4.9
+    # via -r dev_requirements.in
 smartypants==2.0.1
     # via
     #   -r requirements.txt
