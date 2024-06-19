@@ -1,7 +1,4 @@
-import collections
 import colorsys
-import math
-import os
 import subprocess
 
 import wcag_contrast_ratio as contrast
@@ -61,13 +58,10 @@ def choose_tint_color_for_file(path):
     cmd = ["dominant_colours", "--no-palette", "--max-colours=12", path]
 
     dominant_colors = [
-        from_hex(line)
-        for line in subprocess.check_output(cmd).splitlines()
+        from_hex(line) for line in subprocess.check_output(cmd).splitlines()
     ]
 
-    colors = [
-        (r / 255, g / 255, b / 255) for r, g, b in dominant_colors
-    ]
+    colors = [(r / 255, g / 255, b / 255) for r, g, b in dominant_colors]
 
     return choose_tint_color_from_dominant_colors(
         dominant_colors=colors, background_color=background_color

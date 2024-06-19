@@ -60,7 +60,7 @@ def _create_thumbnail_from_quick_look(*, path, max_size, out_dir):
             ["qlmanage", "-t", path, "-s", f"{max_size}x{max_size}", "-o", out_dir],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            timeout=5
+            timeout=5,
         )
     except subprocess.TimeoutExpired:
         # It's possible for somethign to go wrong with the Quick Look

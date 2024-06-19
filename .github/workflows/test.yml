@@ -1,0 +1,48 @@
+name: Test
+
+on:
+  push:
+    branches:
+    - main
+
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  test:
+    # Note: this project uses some macOS-specific tools like `qlmanage`, so
+    # the tests need to run on macOS.
+    #
+    # This is different from my other Python projects, which usually run on
+    # `ubuntu-latest`.
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+        cache: 'pip'
+        cache-dependency-path: 'dev_requirements.txt'
+
+    - name: Install dependencies
+      run: |
+        brew install ffmpeg
+        .github/install-github-bin alexwlchan/dominant_colours
+        pip install -r dev_requirements.txt
+
+    - name: Run linting
+      run: |
+        ruff check .
+        ruff format --check .
+
+    # - name: Check types
+    #   run: mypy src tests
+
+    - name: Run tests
+      run: |
+        coverage run -m pytest tests
+        coverage report

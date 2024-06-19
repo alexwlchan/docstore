@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# Install one of my Rust binaries from GitHub.
+#
+# This was originally written to pull just my Rust binaries, but it
+# turns out it can work reasonably well for other projects.  This allows
+# me to bypass Homebrew, which is generally nicer.
+#
+# For my CLI tools written in Rust, I use a GitHub Action [1]
+# to compile binaries and add them to a release on GitHub.
+#
+# These are the "canonical" versions, rather than recompiling on
+# each machine and having slightly different versions because I
+# was using different checkouts of the code.
+#
+# This script gets the latest version of a binary from GitHub and
+# adds it to my $PATH.
+#
+# This script isn't meant to be run directly (hence the underscore) --
+# I have other scripts that invoke it (e.g. install-vfd), so I can find
+# those scripts with autocomplete in my shell, even on a new machine.
+#
+# TODO: I publish macOS/Windows/Linux binaries, but this script only
+# fetches the macOS binary.  In theory, it could detect which OS it's
+# running on and pick the right binary.
+#
+# [1]: https://github.com/taiki-e/upload-rust-binary-action
+
+set -o errexit
+set -o nounset
+
+if (( "$#" != 1 ))
+then
+  echo "Usage: _install-rust-bin <REPO_NAME>"
+fi
+
+REPO_NAME="$1"
+
+RELEASES_API_URL="https://api.github.com/repos/$REPO_NAME/releases/latest"
+
+# Fetch the asset URL using the GitHub Releases API [2].
+#
+# For the purposes of this script, these are the interesting bits of the
+# API response that we want to pay attention to:
+#
+#     {
+#       "assets": [
+#         {
+#           "name": "vfd-x86_64-apple-darwin.tar.gz",
+#           "url": "https://api.github.com/repos/alexwlchan/books.alexwlchan.net/releases/assets/64229966",
+#           ...
+#         },
+#         {
+#           "name": "vfd-x86_64-pc-windows-msvc.zip",
+#           "url": "https://api.github.com/repos/alexwlchan/books.alexwlchan.net/releases/assets/64229889",
+#           ...
+#         },
+#         {
+#           "name": "vfd-x86_64-unknown-linux-gnu.tar.gz",
+#           "url": "https://api.github.com/repos/alexwlchan/books.alexwlchan.net/releases/assets/64229611",
+#           ...
+#         }
+#       ],
+#     }
+#
+# [2]: https://docs.github.com/en/rest/releases/releases#get-the-latest-release
+#
+# Note: this will filter out ARM binaries because I'm not running on
+# Apple Silicon yet; this will need updating eventually.
+#
+ASSET_URL=$(curl --silent "$RELEASES_API_URL" \
+  | jq -r '.assets | .[] | select(.name | contains("darwin")) | select(.name | contains("arm") | not) | select(.name | contains("aarch64") | not) | .url' \
+  | grep -v arm64
+)
+
+if [[ "$ASSET_URL" == "" ]]
+then
+  echo "No macOS download available for the latest version! Is it still building?" >&2
+  exit 1
+fi
+
+# Download and unpack the asset using the GitHub Release Assets API [3].
+#
+# We supply the headers required by the GitHub API, and the `--location`
+# flag caused curl to follow redirects.
+#
+# Note: this assumes the binary is packaged as a tar.gz.  The Windows
+# binaries are zipped instead of tar.gz-ed, so if you want to support
+# Windows, inspect the "content_type" field in the Releases API response.
+#
+# [3]: https://docs.github.com/en/rest/releases/assets#get-a-release-asset
+
+cd $(mktemp -d)
+
+curl \
+  --header "Accept: application/octet-stream" \
+  --location \
+  --silent \
+  "$ASSET_URL" > "asset.tar.gz"
+
+# Identify the name of the binary, which may be different from the repo name.
+#
+# We list all the files in the asset package, which should contain a single
+# file, and assume that's the name of the binary.
+ASSET_FILES=$(tar --list --file "asset.tar.gz")
+
+if [[ "$REPO_NAME" == "BurntSushi/ripgrep" ]]
+then
+  BINARY_PATH=$(echo "$ASSET_FILES" | grep "/rg$")
+  BINARY_NAME="rg"
+else
+  if (( $(echo "$ASSET_FILES" | wc -l) != 1 ))
+  then
+    echo "Release asset doesn't contain exactly 1 file; not sure what to do:" >&2
+    echo "$ASSET_FILES" >&2
+    exit 1
+  fi
+
+  BINARY_PATH="$(echo "$ASSET_FILES" | head -n 1)"
+  BINARY_NAME="$BINARY_PATH"
+fi
+
+# Now actually extract the binary, make it executable, and add it to the PATH.
+tar --extract --gunzip --file "asset.tar.gz"
+
+chmod +x "$BINARY_PATH"
+sudo mv "$BINARY_PATH" /usr/local/bin
+
+which "$BINARY_NAME"
+"$BINARY_NAME" --version
