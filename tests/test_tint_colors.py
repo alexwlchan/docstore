@@ -2,12 +2,13 @@ import pytest
 
 from docstore.thumbnails import create_thumbnail
 from docstore.tint_colors import (
+    Color,
     choose_tint_color_from_dominant_colors,
     choose_tint_color,
 )
 
 
-def test_choose_tint_color():
+def test_choose_tint_color() -> None:
     thumbnail_path = create_thumbnail("tests/files/Newtons_cradle.gif")
 
     tint_color = choose_tint_color(
@@ -25,8 +26,10 @@ def test_choose_tint_color():
     ],
 )
 def test_selects_black_or_white_if_unsufficient_contrast(
-    dominant_color, background_color, expected_tint
-):
+    dominant_color: Color,
+    background_color: Color,
+    expected_tint: Color,
+) -> None:
     assert (
         choose_tint_color_from_dominant_colors(
             dominant_colors=[dominant_color], background_color=background_color
