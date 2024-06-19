@@ -4,7 +4,7 @@ import subprocess
 
 
 @functools.lru_cache()
-def current_commit():
+def current_commit() -> str:
     """
     Returns the commit of the current docstore version.
     """
