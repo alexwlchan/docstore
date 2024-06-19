@@ -98,9 +98,9 @@ def create_app(title, root, thumbnail_width):
         sort_by = request.args.get("sortBy", "date (newest first)")
 
         if sort_by.startswith("date"):
-            sort_key = lambda d: d.date_saved
+            sort_key = lambda d: d.date_saved  # noqa
         elif sort_by.startswith("title"):
-            sort_key = lambda d: d.title.lower()
+            sort_key = lambda d: d.title.lower()  # noqa
         elif sort_by == "random":
             if page == 1:
                 app.config["_RANDOM_SEED"] = secrets.token_bytes()

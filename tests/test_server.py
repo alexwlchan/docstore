@@ -44,7 +44,7 @@ def test_shows_documents(tmpdir, root, client):
 
     # TODO: Detect this thumbnail URL from the page HTML
     resp = client.get("/thumbnails/c/cluster.png")
-    assert resp.data[:8] == b"\x89\x50\x4E\x47\x0D\x0A\x1A\x0A"  # PNG magic number
+    assert resp.data[:8] == b"\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"  # PNG magic number
 
     resp = client.get("/files/c/cluster.png")
     assert resp.data == open("tests/files/cluster.png", "rb").read()

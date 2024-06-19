@@ -53,7 +53,6 @@ def render_tag_list(tag_tally):
 
             elif tags[pos] != prev_tags[pos] or show_lower_tiers:
                 if tags[pos] != prev_tags[pos]:
-
                     # The current tag's tier is not the same as the previous
                     # tag's tier of the same level.  This means we may need
                     # to close some lists.

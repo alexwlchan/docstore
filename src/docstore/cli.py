@@ -196,12 +196,17 @@ def verify(root):
         for f in doc.files:
             f_path = os.path.join(root, f.path)
             if f.size != os.stat(f_path).st_size:
-                errors[f.id].append(f"Size mismatch\n  actual   = {os.stat(f_path).st_size}\n  expected = {f.size}")
+                errors[f.id].append(
+                    f"Size mismatch\n  actual   = {os.stat(f_path).st_size}\n  expected = {f.size}"
+                )
 
             if f.checksum != sha256(f_path):
-                errors[f.id].append(f"Checksum mismatch\n  actual   = {sha256(f_path)}\n  expected = {f.checksum}")
+                errors[f.id].append(
+                    f"Checksum mismatch\n  actual   = {sha256(f_path)}\n  expected = {f.checksum}"
+                )
 
     from pprint import pprint
+
     pprint(errors)
 
 
