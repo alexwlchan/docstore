@@ -1,6 +1,8 @@
+import datetime
 import hashlib
 import json
 import os
+import pathlib
 import shutil
 
 import cattr
@@ -32,7 +34,7 @@ _cached_documents = {
 }
 
 
-def read_documents(root):
+def read_documents(root: pathlib.Path) -> list[Document]:
     """
     Get a list of all the documents.
     """
@@ -60,7 +62,7 @@ def read_documents(root):
     return result
 
 
-def write_documents(*, root, documents):
+def write_documents(*, root: pathlib.Path, documents: list[Document]) -> None:
     json_string = to_json(documents)
 
     os.makedirs(root, exist_ok=True)
@@ -69,7 +71,7 @@ def write_documents(*, root, documents):
         out_file.write(json_string)
 
 
-def sha256(path):
+def sha256(path: pathlib.Path) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as infile:
         for byte_block in iter(lambda: infile.read(4096), b""):
@@ -78,7 +80,15 @@ def sha256(path):
     return "sha256:%s" % h.hexdigest()
 
 
-def store_new_document(*, root, path, title, tags, source_url, date_saved):
+def store_new_document(
+    *,
+    root: pathlib.Path,
+    path: pathlib.Path,
+    title: str,
+    tags: list[str],
+    source_url: str | None,
+    date_saved: datetime.datetime,
+) -> Document:
     filename = os.path.basename(path)
 
     # Files are sharded by the first letter of their filename,
