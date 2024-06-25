@@ -20,7 +20,7 @@ click==8.1.7
     # via
     #   -r requirements.txt
     #   flask
-coverage==7.5.3
+coverage[toml]==7.5.3
     # via
     #   -r dev_requirements.in
     #   pytest-cov
@@ -47,7 +47,7 @@ markupsafe==2.1.5
     #   -r requirements.txt
     #   jinja2
     #   werkzeug
-mypy==1.10.0
+mypy==1.10.1
     # via -r dev_requirements.in
 mypy-extensions==1.0.0
     # via mypy
