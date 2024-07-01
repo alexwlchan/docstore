@@ -26,7 +26,7 @@ markupsafe==2.1.5
     # via
     #   jinja2
     #   werkzeug
-pillow==10.3.0
+pillow==10.4.0
     # via -r requirements.in
 rapidfuzz==3.9.3
     # via -r requirements.in
