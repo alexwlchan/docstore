@@ -28,7 +28,7 @@ markupsafe==2.1.5
     #   werkzeug
 pillow==10.4.0
     # via -r requirements.in
-rapidfuzz==3.9.3
+rapidfuzz==3.9.4
     # via -r requirements.in
 smartypants==2.0.1
     # via -r requirements.in
