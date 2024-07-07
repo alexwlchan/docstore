@@ -63,7 +63,7 @@ pytest==8.2.2
     #   pytest-cov
 pytest-cov==5.0.0
     # via -r dev_requirements.in
-rapidfuzz==3.9.3
+rapidfuzz==3.9.4
     # via -r requirements.txt
 ruff==0.4.10
     # via -r dev_requirements.in
