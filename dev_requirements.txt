@@ -57,7 +57,7 @@ pillow==10.4.0
     # via -r requirements.txt
 pluggy==1.5.0
     # via pytest
-pytest==8.2.2
+pytest==8.3.2
     # via
     #   -r dev_requirements.in
     #   pytest-cov
