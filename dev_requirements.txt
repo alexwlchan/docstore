@@ -2,7 +2,7 @@
 #    uv pip compile dev_requirements.in --output-file dev_requirements.txt
 -e file:.
     # via -r dev_requirements.in
-attrs==23.2.0
+attrs==24.2.0
     # via
     #   -r requirements.txt
     #   cattrs
